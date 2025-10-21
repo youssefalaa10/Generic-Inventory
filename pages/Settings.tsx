@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useToasts } from '../components/Toast';
-import { TrashIcon } from '../components/Icon';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { TrashIcon } from '../components/Icon';
+import { useToasts } from '../components/Toast';
 
 interface SettingsProps {
     settings: { 
@@ -64,23 +64,25 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>إعدادات النظام</h3>
-                    <button className="btn btn-secondary" style={{ marginTop: '1rem' }} onClick={handleSave}>
-                        حفظ كل الإعدادات
-                    </button>
+            <div className="glass-pane settings-page-container" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="settings-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 className="settings-page-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>إعدادات النظام</h3>
+                    <div className="settings-page-actions">
+                        <button className="btn btn-secondary settings-button" style={{ marginTop: '1rem' }} onClick={handleSave}>
+                            حفظ كل الإعدادات
+                        </button>
+                    </div>
                 </div>
                 
-                <p style={{ color: 'var(--text-secondary)', marginTop: '-1rem' }}>
+                <p className="settings-page-description" style={{ color: 'var(--text-secondary)', marginTop: '-1rem' }}>
                     هذه الصفحة مخصصة للمسؤولين لإدارة المستخدمين، الصلاحيات، إعدادات التكاملات، والإشعارات.
                 </p>
 
-                 <div style={{ borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem' }}>
-                    <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>إدارة المستخدمين</h4>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>إضافة، تعديل، وحذف المستخدمين وتعيين الأدوار لهم.</p>
+                 <div className="settings-section" style={{ borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem' }}>
+                    <h4 className="settings-section-title" style={{ fontSize: '1.1rem', fontWeight: 600 }}>إدارة المستخدمين</h4>
+                    <p className="settings-section-description" style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>إضافة، تعديل، وحذف المستخدمين وتعيين الأدوار لهم.</p>
                     {/* This button would navigate to the Users page */}
-                    <button className="btn btn-primary" style={{ marginTop: '0.75rem' }}>
+                    <button className="btn btn-primary settings-button" style={{ marginTop: '0.75rem' }}>
                         إدارة المستخدمين
                     </button>
                 </div>
