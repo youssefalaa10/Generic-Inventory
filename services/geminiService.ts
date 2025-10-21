@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
-import { InvoiceData, ChatbotDataContext, RenewableData, RenewableCategory, DailyBriefingContext, PurchaseOrderSuggestionContext, SuggestedPurchaseOrderItem } from '../types';
+import { InvoiceData, ChatbotDataContext, RenewableData, RenewableCategory, DailyBriefingContext, PurchaseOrderSuggestionContext, SuggestedPurchaseOrderItem, FormulaSuggestionContext, NewProductIdeaContext, NewProductIdeaResponse, FormulaLine, Product } from '../types';
 
 // IMPORTANT: This key is for demonstration purposes. 
 // In a real application, it must be secured and managed via environment variables.
@@ -305,6 +305,7 @@ export async function getChatbotResponse(query: string, context: ChatbotDataCont
                 quantity: i.quantity,
                 minStock: i.minStock,
                 isLow: i.quantity <= i.minStock && i.minStock > 0,
+                expiryDate: i.expiryDate,
             }
         }),
         recentSales: context.sales.slice(-10).map(s => ({...s, items: s.items.length })), // don't send full item details
@@ -408,4 +409,137 @@ export async function getPurchaseOrderSuggestion(
     console.error("Error calling Gemini API for purchase order suggestion:", error);
     throw new Error("Failed to get purchase order suggestion from AI.");
   }
+}
+
+
+export async function getFormulaSuggestion(context: FormulaSuggestionContext): Promise<FormulaLine[]> {
+    if (!API_KEY) {
+        console.log("Simulating Gemini formula suggestion.");
+        return new Promise(resolve => setTimeout(() => resolve([
+            { id: "1", materialId: 1, materialName: "زيت الورد الدمشقي", materialSku: "RM-OIL-001", kind: "AROMA_OIL", percentage: 40 },
+            { id: "2", materialId: 3, materialName: "زيت المسك الأبيض", materialSku: "RM-OIL-003", kind: "AROMA_OIL", percentage: 30 },
+            { id: "3", materialId: 7, materialName: "كحول عطور 96%", materialSku: "RM-CHEM-001", kind: "ETHANOL", percentage: 30 },
+        ]), 1500));
+    }
+
+    const systemInstruction = `You are a master perfumer AI assistant. Your task is to create a perfume formula based on a user's description and a list of available raw materials with their stock levels.
+- The formula percentages MUST add up to exactly 100.
+- Only use materials from the provided 'rawMaterials' list. Match them by their 'id'.
+- CRUCIAL: Prioritize using materials where 'availableQuantity' is greater than 0. You can use materials with 0 quantity if absolutely necessary for the fragrance profile, but it is highly preferred to use what is in stock.
+- Provide sensible percentages.
+- The 'kind' property should be logically derived from the material name (e.g., 'AROMA_OIL', 'ETHANOL', 'DI_WATER', 'FIXATIVE').
+- Your entire response MUST be a valid JSON array conforming to the schema for FormulaLine[].
+- Do not include materials with 0 percentage.`;
+    
+    const contents = `User Prompt: "${context.prompt}"\n\nAvailable Raw Materials: ${JSON.stringify(context.rawMaterials)}`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: contents,
+            config: {
+                systemInstruction: systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            id: { type: Type.STRING },
+                            materialId: { type: Type.NUMBER },
+                            materialName: { type: Type.STRING },
+                            materialSku: { type: Type.STRING },
+                            kind: { type: Type.STRING },
+                            percentage: { type: Type.NUMBER },
+                            density: { type: Type.NUMBER, nullable: true },
+                        },
+                        required: ["id", "materialId", "materialName", "materialSku", "kind", "percentage"]
+                    }
+                }
+            }
+        });
+        const jsonString = response.text.trim();
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error("Error calling Gemini API for formula suggestion:", error);
+        throw new Error("Failed to get formula suggestion from AI.");
+    }
+}
+
+
+export async function getNewProductIdea(context: NewProductIdeaContext): Promise<NewProductIdeaResponse> {
+    if (!API_KEY) {
+        console.log("Simulating Gemini new product idea.");
+        return new Promise(resolve => setTimeout(() => resolve({
+            productName: "Simulated Sunset Oud",
+            fragranceNotes: {
+                top: "Bergamot, Saffron",
+                middle: "Rose, Geranium",
+                base: "Oud, Amber, Musk",
+            },
+            formula: [
+                { id: "1", materialId: 2, materialName: "زيت العود الكمبودي", materialSku: "RM-OIL-002", kind: "AROMA_OIL", percentage: 25 },
+                { id: "2", materialId: 1, materialName: "زيت الورد الدمشقي", materialSku: "RM-OIL-001", kind: "AROMA_OIL", percentage: 15 },
+                { id: "3", materialId: 7, materialName: "كحول عطور 96%", materialSku: "RM-CHEM-001", kind: "ETHANOL", percentage: 60 },
+            ]
+        }), 1500));
+    }
+
+    const systemInstruction = `You are a creative director and master perfumer AI. Your task is to invent a new perfume product idea based on a user's theme and a list of available raw materials with their stock levels.
+- Create a compelling 'productName' in English.
+- Describe the 'fragranceNotes' with top, middle, and base notes.
+- Create a 'formula' for the perfume. The formula percentages MUST add up to exactly 100.
+- Only use materials from the provided 'rawMaterials' list for the formula.
+- CRUCIAL: The formula you create should strongly prioritize using materials where 'availableQuantity' is greater than 0. It should be based on what is actually in stock.
+- Your entire response MUST be a valid JSON object conforming to the provided schema.`;
+
+    const contents = `User Theme: "${context.prompt}"\n\nAvailable Raw Materials: ${JSON.stringify(context.rawMaterials)}`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-pro', // Using a more creative model for this task
+            contents: contents,
+            config: {
+                systemInstruction: systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        productName: { type: Type.STRING },
+                        fragranceNotes: {
+                            type: Type.OBJECT,
+                            properties: {
+                                top: { type: Type.STRING },
+                                middle: { type: Type.STRING },
+                                base: { type: Type.STRING },
+                            },
+                            required: ["top", "middle", "base"]
+                        },
+                        formula: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    id: { type: Type.STRING },
+                                    materialId: { type: Type.NUMBER },
+                                    materialName: { type: Type.STRING },
+                                    materialSku: { type: Type.STRING },
+                                    kind: { type: Type.STRING },
+                                    percentage: { type: Type.NUMBER },
+                                    density: { type: Type.NUMBER, nullable: true },
+                                },
+                                required: ["id", "materialId", "materialName", "materialSku", "kind", "percentage"]
+                            }
+                        }
+                    },
+                    required: ["productName", "fragranceNotes", "formula"]
+                }
+            }
+        });
+        const jsonString = response.text.trim();
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error("Error calling Gemini API for new product idea:", error);
+        throw new Error("Failed to get new product idea from AI.");
+    }
 }

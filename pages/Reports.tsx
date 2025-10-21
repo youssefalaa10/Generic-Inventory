@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Sale, Purchase, Product, Branch, Expense, Customer, FinancialAccount, ExpenseCategory, SaleItem } from '../types';
+import { Sale, PurchaseInvoice, Product, Branch, Expense, Customer, FinancialAccount, ExpenseCategory, SaleItem, Supplier } from '../types';
 import { ResponsiveContainer, BarChart, XAxis, YAxis, Tooltip, Legend, Bar, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from 'recharts';
 import StatCard from '../components/StatCard';
 import { CurrencyDollarIcon, ShoppingCartIcon, ChartBarIcon, PrinterIcon, SparklesIcon, CubeIcon, DocumentTextIcon } from '../components/Icon';
@@ -8,13 +8,14 @@ import { useToasts } from '../components/Toast';
 
 interface ReportsProps {
     sales: Sale[];
-    purchases: Purchase[];
+    purchases: PurchaseInvoice[];
     products: Product[];
     branches: Branch[];
     expenses: Expense[];
     customers: Customer[];
     financialAccounts: FinancialAccount[];
     activeReport: string;
+    suppliers: Supplier[];
 }
 
 const getPastDate = (days: number) => {
@@ -23,7 +24,11 @@ const getPastDate = (days: number) => {
     return date.toISOString().split('T')[0];
 };
 
-const COLORS = ['#4f46e5', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#ec4899', '#6366f1'];
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444', '#6366f1'];
+const SALES_COLOR = '#10b981';
+const PURCHASES_COLOR = '#3b82f6';
+const FORECAST_COLOR = '#8b5cf6';
+
 const formatCurrency = (val: number) => `${val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} د.ك`;
 
 
@@ -182,7 +187,7 @@ const SalesReport: React.FC<{sales: Sale[], branches: Branch[], filters: any}> =
                             <XAxis dataKey="name" stroke="var(--text-secondary)" />
                             <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
                             <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}} formatter={(value) => formatCurrency(value as number)} />
-                            <Bar dataKey="sales" name="المبيعات" fill="#10b981" radius={[8, 8, 0, 0]} />
+                            <Bar dataKey="sales" name="المبيعات" fill={SALES_COLOR} radius={[8, 8, 0, 0]} />
                         </BarChart>
                      </ResponsiveContainer>
                 </div>
@@ -287,7 +292,7 @@ const BranchSalesReport: React.FC<{sales: Sale[], branches: Branch[], products: 
                         <XAxis dataKey="branchName" stroke="var(--text-secondary)" />
                         <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
                         <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}} formatter={(value) => formatCurrency(value as number)} />
-                        <Bar dataKey="totalSales" name="إجمالي المبيعات" fill="#10b981" radius={[8, 8, 0, 0]} />
+                        <Bar dataKey="totalSales" name="إجمالي المبيعات" fill={SALES_COLOR} radius={[8, 8, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
@@ -324,7 +329,7 @@ const BranchSalesReport: React.FC<{sales: Sale[], branches: Branch[], products: 
 
 
 // Purchases Report
-const PurchasesReport: React.FC<{purchases: Purchase[], branches: Branch[], filters: any}> = ({ purchases, branches, filters }) => {
+const PurchasesReport: React.FC<{purchases: PurchaseInvoice[], branches: Branch[], filters: any, suppliers: Supplier[]}> = ({ purchases, branches, filters, suppliers }) => {
      const filteredPurchases = useMemo(() => purchases.filter(p => {
         const purchaseDate = new Date(p.date);
         const branchMatch = filters.branch === 'all' || p.branchId === parseInt(filters.branch);
@@ -346,7 +351,7 @@ const PurchasesReport: React.FC<{purchases: Purchase[], branches: Branch[], filt
                                     <td>{p.id}</td>
                                     <td>{p.date}</td>
                                     <td>{branches.find(b => b.id === p.branchId)?.name}</td>
-                                    <td>{p.supplier.name}</td>
+                                    <td>{suppliers.find(s => s.id === p.supplierId)?.name || 'غير معروف'}</td>
                                     <td>{formatCurrency(p.amount)}</td>
                                 </tr>
                             ))}
@@ -383,6 +388,7 @@ const ProductSalesReport: React.FC<{sales: Sale[], products: Product[], filters:
             return {
                 productId: Number(productId),
                 productName: product?.name || 'Unknown Product',
+                productSku: product?.sku || 'N/A',
                 totalQuantity: stats.quantity,
                 totalRevenue: stats.revenue
             };
@@ -401,6 +407,7 @@ const ProductSalesReport: React.FC<{sales: Sale[], products: Product[], filters:
                         <thead>
                             <tr>
                                 <th>المنتج</th>
+                                <th>SKU</th>
                                 <th>إجمالي الكمية المباعة</th>
                                 <th>إجمالي الإيرادات</th>
                             </tr>
@@ -409,6 +416,7 @@ const ProductSalesReport: React.FC<{sales: Sale[], products: Product[], filters:
                             {processedData.map(p => (
                                 <tr key={p.productId}>
                                     <td style={{ fontWeight: 600 }}>{p.productName}</td>
+                                    <td>{p.productSku}</td>
                                     <td>{p.totalQuantity.toLocaleString()}</td>
                                     <td style={{ color: '#10b981', fontWeight: 600 }}>{formatCurrency(p.totalRevenue)}</td>
                                 </tr>
@@ -529,7 +537,7 @@ const AccountsReport: React.FC<{accounts: FinancialAccount[], branches: Branch[]
 };
 
 // Summary Report
-const SummaryReport: React.FC<Omit<ReportsProps, 'activeReport' | 'expenses' | 'customers' | 'financialAccounts'>> = ({ sales, purchases, branches }) => {
+const SummaryReport: React.FC<Omit<ReportsProps, 'activeReport' | 'expenses' | 'customers' | 'financialAccounts' | 'suppliers'>> = ({ sales, purchases, branches }) => {
     const totalSales = useMemo(() => sales.reduce((sum, s) => sum + s.totalAmount, 0), [sales]);
     const totalPurchases = useMemo(() => purchases.reduce((sum, p) => sum + p.amount, 0), [purchases]);
     const grossProfit = totalSales - totalPurchases;
@@ -569,8 +577,8 @@ const SummaryReport: React.FC<Omit<ReportsProps, 'activeReport' | 'expenses' | '
                         <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
                         <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}}/>
                         <Legend />
-                        <Line type="monotone" name="المبيعات" dataKey="sales" stroke="#10b981" strokeWidth={2} />
-                        <Line type="monotone" name="المشتريات" dataKey="purchases" stroke="#4F46E5" strokeWidth={2} />
+                        <Line type="monotone" name="المبيعات" dataKey="sales" stroke={SALES_COLOR} strokeWidth={2} />
+                        <Line type="monotone" name="المشتريات" dataKey="purchases" stroke={PURCHASES_COLOR} strokeWidth={2} />
                     </LineChart>
                 </ResponsiveContainer>
             </div>
@@ -663,8 +671,8 @@ const ForecastReport: React.FC<{sales: Sale[]}> = ({ sales }) => {
                                 <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
                                 <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}}/>
                                 <Legend />
-                                <Line type="monotone" name="المبيعات التاريخية" dataKey="historical" stroke="#10b981" strokeWidth={2} connectNulls />
-                                <Line type="monotone" name="المبيعات المتوقعة" dataKey="forecast" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" connectNulls />
+                                <Line type="monotone" name="المبيعات التاريخية" dataKey="historical" stroke={SALES_COLOR} strokeWidth={2} connectNulls />
+                                <Line type="monotone" name="المبيعات المتوقعة" dataKey="forecast" stroke={FORECAST_COLOR} strokeWidth={2} strokeDasharray="5 5" connectNulls />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -698,7 +706,7 @@ const Reports: React.FC<ReportsProps> = (props) => {
             case 'BranchSales':
                 return <BranchSalesReport sales={props.sales} branches={props.branches} products={props.products} filters={filters} />;
             case 'Purchases':
-                return <PurchasesReport purchases={props.purchases} branches={props.branches} filters={filters} />;
+                return <PurchasesReport purchases={props.purchases} branches={props.branches} filters={filters} suppliers={props.suppliers} />;
             case 'Products':
                 return <ProductSalesReport sales={props.sales} products={props.products} filters={filters} />;
             case 'Expenses':

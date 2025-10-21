@@ -1,6 +1,8 @@
 import React, { useState, useContext, ChangeEvent } from 'react';
 import { AuthContext } from '../App';
-import { Purchase, InvoiceData, Branch, Product, PurchaseItem, PurchaseOrderSuggestionContext, SuggestedPurchaseOrderItem, Sale, InventoryItem } from '../types';
+// FIX: Replaced non-existent types 'Purchase' and 'PurchaseItem' with 'PurchaseInvoice' and 'PurchaseInvoiceItem'.
+// FIX: Added Supplier to imports
+import { PurchaseInvoice, InvoiceData, Branch, Product, PurchaseInvoiceItem, PurchaseOrderSuggestionContext, SuggestedPurchaseOrderItem, Sale, InventoryItem, Supplier } from '../types';
 import { getPurchaseOrderSuggestion, scanInvoiceWithGemini } from '../services/geminiService';
 import { SparklesIcon } from '../components/Icon';
 import PurchaseDetailModal from '../components/PurchaseDetailModal';
@@ -8,20 +10,22 @@ import { useToasts } from '../components/Toast';
 import AIPurchaseOrderModal from '../components/AIPurchaseOrderModal';
 
 interface PurchasesProps {
-    purchases: Purchase[];
-    onSave: (purchase: Purchase) => void;
+    purchases: PurchaseInvoice[];
+    onSave: (purchase: PurchaseInvoice) => void;
     branches: Branch[];
     products: Product[];
     sales: Sale[];
     inventory: InventoryItem[];
+    // FIX: Added suppliers prop
+    suppliers: Supplier[];
 }
 
-const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, products, sales, inventory }) => {
+const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, products, sales, inventory, suppliers }) => {
     const { user } = useContext(AuthContext);
     const { addToast } = useToasts();
     const [isScanning, setIsScanning] = useState(false);
     const [scanError, setScanError] = useState<string | null>(null);
-    const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+    const [selectedPurchase, setSelectedPurchase] = useState<PurchaseInvoice | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [filterBranch, setFilterBranch] = useState<string>('all');
     const [scannedTotal, setScannedTotal] = useState<number | null>(null);
@@ -52,15 +56,18 @@ const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, prod
                 // Set scanned total for comparison in the modal
                 setScannedTotal(extractedData.amount || null);
 
-                const scannedPurchase: Partial<Purchase> = {
-                    supplier: { name: extractedData.vendor || '', contactPerson: '', email: '', phone: '' },
+                // FIX: Find supplier from list and use its ID.
+                const supplier = suppliers.find(s => s.name.toLowerCase().includes((extractedData.vendor || '').toLowerCase()));
+
+                const scannedPurchase: Partial<PurchaseInvoice> = {
+                    supplierId: supplier?.id,
                     date: extractedData.date || new Date().toISOString().split('T')[0],
                     // Amount is removed from here; it will be calculated from items.
                     items: [],
                     paymentStatus: 'Pending',
                     type: 'Local'
                 };
-                setSelectedPurchase(scannedPurchase as Purchase);
+                setSelectedPurchase(scannedPurchase as PurchaseInvoice);
                 setIsModalOpen(true);
                 addToast('تم مسح الفاتورة بنجاح! يرجى مراجعة البيانات وإضافة الأصناف.', 'success');
             };
@@ -80,14 +87,14 @@ const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, prod
         }
     };
     
-    const handleSave = (purchase: Purchase) => {
+    const handleSave = (purchase: PurchaseInvoice) => {
         onSave(purchase);
         handleCloseModal();
         addToast('تم حفظ الشراء بنجاح!', 'success');
     };
 
     const handleAddNew = () => {
-        setSelectedPurchase({} as Purchase);
+        setSelectedPurchase({} as PurchaseInvoice);
         setScannedTotal(null);
         setIsModalOpen(true);
     };
@@ -134,7 +141,7 @@ const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, prod
     };
 
     const handleCreatePoFromSuggestion = (items: { productId: number; quantity: number; unitPrice: number; }[]) => {
-        const poItems: PurchaseItem[] = items.map(item => {
+        const poItems: PurchaseInvoiceItem[] = items.map(item => {
             const product = products.find(p => p.id === item.productId);
             return {
                 ...item,
@@ -144,8 +151,9 @@ const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, prod
             };
         });
 
-        const suggestedPurchase: Partial<Purchase> = {
-            supplier: { name: '', contactPerson: '', email: '', phone: '' },
+        // FIX: Replaced `supplier` object with `supplierId` to match the PurchaseInvoice type.
+        const suggestedPurchase: Partial<PurchaseInvoice> = {
+            supplierId: 0,
             date: new Date().toISOString().split('T')[0],
             items: poItems,
             paymentStatus: 'Pending',
@@ -153,7 +161,7 @@ const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, prod
         };
 
         setIsAiModalOpen(false);
-        setSelectedPurchase(suggestedPurchase as Purchase);
+        setSelectedPurchase(suggestedPurchase as PurchaseInvoice);
         setIsModalOpen(true);
     };
 
@@ -211,7 +219,8 @@ const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, prod
                                     <tr key={p.id} style={{cursor: 'pointer'}} onClick={() => { setSelectedPurchase(p); setIsModalOpen(true); }}>
                                         <td>{p.id}</td>
                                         <td>{p.brand}</td>
-                                        <td>{p.supplier.name}</td>
+                                        {/* FIX: Look up supplier name using supplierId */}
+                                        <td>{suppliers.find(s => s.id === p.supplierId)?.name}</td>
                                         <td>{p.date}</td>
                                         <td style={{ color: '#34d399', fontWeight: '600' }}>{p.amount.toLocaleString()} د.ك</td>
                                         <td>
@@ -237,6 +246,8 @@ const Purchases: React.FC<PurchasesProps> = ({ purchases, onSave, branches, prod
                     onSave={handleSave}
                     branches={branches}
                     products={products}
+                    // FIX: Pass suppliers prop to the modal
+                    suppliers={suppliers}
                     scannedTotal={scannedTotal}
                 />
             )}

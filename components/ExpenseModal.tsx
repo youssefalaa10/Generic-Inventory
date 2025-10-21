@@ -9,19 +9,20 @@ interface ExpenseModalProps {
     financialAccounts: FinancialAccount[];
 }
 
+// FIX: Used ExpenseCategory enum members instead of string literals to ensure type safety.
 const expenseCategories: { value: ExpenseCategory, label: string }[] = [
-    { value: 'Rent', label: 'إيجار (التزام شهري)' },
-    { value: 'Salaries', label: 'رواتب' },
-    { value: 'Marketing & Branding', label: 'تسويق وعلامة تجارية' },
-    { value: 'E-commerce Fees', label: 'رسوم التجارة الإلكترونية' },
-    { value: 'Shipping & Delivery', label: 'شحن وتوصيل' },
-    { value: 'Utilities', label: 'خدمات ومرافق (كهرباء، ماء)' },
-    { value: 'Government Fees', label: 'رسوم حكومية' },
-    { value: 'Maintenance', label: 'صيانة' },
-    { value: 'Raw Materials', label: 'مواد خام' },
-    { value: 'Packaging', label: 'مواد تغليف' },
-    { value: 'Lab Supplies', label: 'مستلزمات المختبر' },
-    { value: 'Other', label: 'أخرى' },
+    { value: ExpenseCategory.Rent, label: 'إيجار (التزام شهري)' },
+    { value: ExpenseCategory.Salaries, label: 'رواتب' },
+    { value: ExpenseCategory.MarketingBranding, label: 'تسويق وعلامة تجارية' },
+    { value: ExpenseCategory.EcommerceFees, label: 'رسوم التجارة الإلكترونية' },
+    { value: ExpenseCategory.ShippingDelivery, label: 'شحن وتوصيل' },
+    { value: ExpenseCategory.Utilities, label: 'خدمات ومرافق (كهرباء، ماء)' },
+    { value: ExpenseCategory.GovernmentFees, label: 'رسوم حكومية' },
+    { value: ExpenseCategory.Maintenance, label: 'صيانة' },
+    { value: ExpenseCategory.RawMaterials, label: 'مواد خام' },
+    { value: ExpenseCategory.Packaging, label: 'مواد تغليف' },
+    { value: ExpenseCategory.LabSupplies, label: 'مستلزمات المختبر' },
+    { value: ExpenseCategory.Other, label: 'أخرى' },
 ];
 
 const ExpenseModal: React.FC<ExpenseModalProps> = ({ expense, onClose, onSave, branches, financialAccounts }) => {

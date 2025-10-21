@@ -5,7 +5,7 @@ import SaleDetailModal from '../components/SaleDetailModal';
 import { useToasts } from '../components/Toast';
 import { ChevronUpIcon, ChevronDownIcon } from '../components/Icon';
 
-interface SalesProps {
+interface SalesInvoicesProps {
     sales: Sale[];
     onSave: (sale: Sale) => void;
     branches: Branch[];
@@ -14,7 +14,7 @@ interface SalesProps {
     customers: Customer[];
 }
 
-const Sales: React.FC<SalesProps> = ({ sales, onSave, branches, products, inventory, customers }) => {
+const SalesInvoices: React.FC<SalesInvoicesProps> = ({ sales, onSave, branches, products, inventory, customers }) => {
     const { user } = useContext(AuthContext);
     const { addToast } = useToasts();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,10 +129,10 @@ const Sales: React.FC<SalesProps> = ({ sales, onSave, branches, products, invent
         <>
             <div className="glass-pane" style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>سجل المبيعات</h3>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>سجل فواتير المبيعات</h3>
                      {hasPermission('create') && (
                         <button onClick={handleAddNew} className="btn btn-secondary">
-                            إضافة عملية بيع
+                            إنشاء فاتورة جديدة
                         </button>
                     )}
                 </div>
@@ -209,4 +209,4 @@ const Sales: React.FC<SalesProps> = ({ sales, onSave, branches, products, invent
     );
 };
 
-export default Sales;
+export default SalesInvoices;

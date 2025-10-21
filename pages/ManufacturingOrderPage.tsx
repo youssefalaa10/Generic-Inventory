@@ -1,7 +1,10 @@
+
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { ManufacturingOrder, Branch, Product, InventoryItem, EmployeeData, FormulaLine, ProcessLoss, QCCheck, PackagingItem } from '../types';
-import { BeakerIcon, ChevronDownIcon, ChevronUpIcon, DocumentTextIcon, UsersIcon, LocationMarkerIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, PrinterIcon, PlusIcon, TrashIcon, CurrencyDollarIcon, CubeIcon } from '../components/Icon';
+import { BeakerIcon, ChevronDownIcon, ChevronUpIcon, DocumentTextIcon, UsersIcon, LocationMarkerIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, PrinterIcon, PlusIcon, TrashIcon, CurrencyDollarIcon, CubeIcon, SparklesIcon } from '../components/Icon';
 import { useToasts } from '../components/Toast';
+import AIFormulaModal from '../components/AIFormulaModal';
 
 // Helper: Import jspdf libraries
 import jsPDF from 'jspdf';
@@ -72,7 +75,7 @@ const validateOrder = (order: ManufacturingOrder): ValidationErrors => {
 
 // --- SUB-COMPONENTS ---
 
-const SectionCard: React.FC<{ title: string; icon: React.FC<any>; children: React.ReactNode; error?: string; }> = ({ title, icon: Icon, children, error }) => {
+const SectionCard: React.FC<{ title: string; icon: React.FC<any>; children: React.ReactNode; error?: string; rightHeaderContent?: React.ReactNode }> = ({ title, icon: Icon, children, error, rightHeaderContent }) => {
     const [isOpen, setIsOpen] = useState(true);
     return (
         <div className="glass-pane">
@@ -86,7 +89,10 @@ const SectionCard: React.FC<{ title: string; icon: React.FC<any>; children: Reac
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)' }}>{title}</h3>
                      {error && <span style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: 500, marginRight: '1rem' }}>({error})</span>}
                 </div>
-                {isOpen ? <ChevronUpIcon style={{width: '24px', height: '24px', color: 'var(--text-secondary)'}}/> : <ChevronDownIcon style={{width: '24px', height: '24px', color: 'var(--text-secondary)'}}/>}
+                <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+                    {rightHeaderContent}
+                    {isOpen ? <ChevronUpIcon style={{width: '24px', height: '24px', color: 'var(--text-secondary)'}}/> : <ChevronDownIcon style={{width: '24px', height: '24px', color: 'var(--text-secondary)'}}/>}
+                </div>
             </button>
             {isOpen && <div style={{ padding: '1.5rem' }}>{children}</div>}
         </div>
@@ -168,6 +174,7 @@ const OrderStatusManager: React.FC<{
 const ManufacturingOrderPage: React.FC<ManufacturingOrderPageProps> = (props) => {
     const [order, setOrder] = useState<ManufacturingOrder>(props.order);
     const [errors, setErrors] = useState<ValidationErrors>({});
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const { addToast } = useToasts();
     
     useEffect(() => {
@@ -213,6 +220,17 @@ const ManufacturingOrderPage: React.FC<ManufacturingOrderPageProps> = (props) =>
         props.onSave(updatedOrder); // Also save on status change
     };
 
+    const handleApplyFormula = (formula: FormulaLine[], productName?: string) => {
+        setOrder(prev => ({
+            ...prev,
+            productName: productName || prev.productName,
+            formula: formula.map(f => ({...f, id: f.id || Date.now().toString() + Math.random()})) // Ensure IDs are unique
+        }));
+        setIsAiModalOpen(false);
+        addToast('تم تطبيق الصيغة المقترحة!', 'success');
+    };
+
+    const rawMaterials = useMemo(() => props.products.filter(p => p.category === 'Raw Material'), [props.products]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -228,12 +246,16 @@ const ManufacturingOrderPage: React.FC<ManufacturingOrderPageProps> = (props) =>
                 </SectionCard>
             )}
 
-            <SectionCard title="الصيغة" icon={BeakerIcon} error={errors.formula}>
-                <FormulaBuilder order={order} setOrder={setOrder} products={props.products} />
-            </SectionCard>
+            <FormulaBuilder 
+                order={order} 
+                setOrder={setOrder} 
+                products={props.products} 
+                errors={errors}
+                onOpenAiModal={() => setIsAiModalOpen(true)}
+            />
 
             <SectionCard title="حجز الخامات" icon={CubeIcon}>
-                <MaterialReservation order={order} inventory={props.inventory}/>
+                <MaterialReservation order={order} inventory={props.inventory} products={props.products} />
             </SectionCard>
 
             <SectionCard title="المعالجة" icon={CalendarIcon}>
@@ -255,6 +277,17 @@ const ManufacturingOrderPage: React.FC<ManufacturingOrderPageProps> = (props) =>
             <SectionCard title="الناتج والترحيل" icon={CheckCircleIcon}>
                 <YieldAndSummary order={order} setOrder={setOrder} onSave={handleSave} />
             </SectionCard>
+
+            {isAiModalOpen && (
+                <AIFormulaModal
+                    isOpen={isAiModalOpen}
+                    onClose={() => setIsAiModalOpen(false)}
+                    onApplyFormula={handleApplyFormula}
+                    rawMaterials={rawMaterials}
+                    inventory={props.inventory}
+                    branchId={order.branchId}
+                />
+            )}
         </div>
     );
 };
@@ -386,8 +419,8 @@ const DistributionBuilder = ({ order, setOrder }: { order: ManufacturingOrder, s
     );
 };
 
-const FormulaBuilder = ({ order, setOrder, products }: { order: ManufacturingOrder, setOrder: (order: ManufacturingOrder) => void, products: Product[] }) => {
-    const rawMaterials = useMemo(() => products.filter(p => p.category !== 'تغليف' && p.category !== 'عطور مخصصة' && p.category !== 'عطور جاهزة'), [products]);
+const FormulaBuilder = ({ order, setOrder, products, errors, onOpenAiModal }: { order: ManufacturingOrder, setOrder: (order: ManufacturingOrder) => void, products: Product[], errors: ValidationErrors, onOpenAiModal: () => void }) => {
+    const rawMaterials = useMemo(() => products.filter(p => p.category === 'Raw Material'), [products]);
     const totalPercentage = useMemo(() => order.formula.reduce((sum: number, line: FormulaLine) => sum + (line.percentage || 0), 0), [order.formula]);
 
     const handleLineChange = (index: number, field: keyof FormulaLine, value: any) => {
@@ -400,11 +433,11 @@ const FormulaBuilder = ({ order, setOrder, products }: { order: ManufacturingOrd
             if (material) {
                 line.materialId = material.id;
                 line.materialName = material.name;
+                line.materialSku = material.sku;
                 line.density = material.density;
-                if (material.category === 'زيوت عطرية') line.kind = 'AROMA_OIL';
-                else if (material.category === 'مثبتات') line.kind = 'FIXATIVE';
-                else if (material.name.includes('Ethanol')) line.kind = 'ETHANOL';
-                else if (material.name.includes('DI Water')) line.kind = 'DI_WATER';
+                if (material.name.toLowerCase().includes('oil')) line.kind = 'AROMA_OIL';
+                else if (material.name.toLowerCase().includes('ethanol')) line.kind = 'ETHANOL';
+                else if (material.name.toLowerCase().includes('water')) line.kind = 'DI_WATER';
                 else line.kind = 'ADDITIVE';
             }
         } else if (field === 'percentage' || field === 'density') {
@@ -418,7 +451,6 @@ const FormulaBuilder = ({ order, setOrder, products }: { order: ManufacturingOrd
     };
 
     const addLine = () => {
-        // FIX: Added missing materialSku property to conform to FormulaLine type.
         const newLine: FormulaLine = { id: Date.now().toString(), materialId: 0, materialName: '', materialSku: '', kind: 'AROMA_OIL', percentage: 0 };
         setOrder({ ...order, formula: [...order.formula, newLine] });
     };
@@ -429,7 +461,17 @@ const FormulaBuilder = ({ order, setOrder, products }: { order: ManufacturingOrd
     };
 
     return (
-        <>
+        <SectionCard 
+            title="الصيغة" 
+            icon={BeakerIcon} 
+            error={errors.formula}
+            rightHeaderContent={
+                <button onClick={onOpenAiModal} className="btn btn-warning" style={{padding: '0.5rem 1rem'}}>
+                    <SparklesIcon style={{width: 20, height: 20}} />
+                    اقتراح بالذكاء الاصطناعي
+                </button>
+            }
+        >
             <div className="table-wrapper">
                 <table>
                     <thead>
@@ -447,7 +489,7 @@ const FormulaBuilder = ({ order, setOrder, products }: { order: ManufacturingOrd
                                 <td style={{padding: '0.5rem'}}>
                                      <select value={line.materialId} onChange={e => handleLineChange(index, 'materialId', e.target.value)} className="form-select">
                                         <option value={0}>اختر مادة</option>
-                                        {rawMaterials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                                        {rawMaterials.map(m => <option key={m.id} value={m.id}>{m.name} ({m.sku})</option>)}
                                     </select>
                                 </td>
                                  <td style={{padding: '0.5rem'}}>
@@ -474,31 +516,32 @@ const FormulaBuilder = ({ order, setOrder, products }: { order: ManufacturingOrd
                     الإجمالي: {totalPercentage.toFixed(2)}%
                 </div>
             </div>
-        </>
+        </SectionCard>
     );
 };
 
-const MaterialReservation = ({ order, inventory }: { order: ManufacturingOrder, inventory: InventoryItem[]}) => {
+const MaterialReservation = ({ order, inventory, products }: { order: ManufacturingOrder, inventory: InventoryItem[], products: Product[] }) => {
     
     const scaledFormula = useMemo(() => {
-        return perfumeMath.calculateQuantitiesFromFormula(order.formula, order.yield.theoreticalMl, []);
-    }, [order.formula, order.yield.theoreticalMl]);
+        return perfumeMath.calculateQuantitiesFromFormula(order.formula, order.yield.theoreticalMl, products);
+    }, [order.formula, order.yield.theoreticalMl, products]);
 
     const materialsWithStock = useMemo(() => {
         return scaledFormula.map(line => {
             const invItem = inventory.find(i => i.productId === line.materialId && i.branchId === order.branchId);
             const availableQuantity = invItem?.quantity || 0;
-            const requiredQuantity = line.requiredG; // Assuming all raw materials are measured in grams
+            const product = products.find(p => p.id === line.materialId);
+            const requiredQuantity = product?.baseUnit === 'ml' ? line.requiredMl : line.requiredG;
             
             return {
                 ...line,
                 available: availableQuantity,
                 required: requiredQuantity,
-                unit: 'g',
+                unit: product?.baseUnit || 'g',
                 isSufficient: availableQuantity >= requiredQuantity,
             };
         });
-    }, [scaledFormula, inventory, order.branchId]);
+    }, [scaledFormula, inventory, order.branchId, products]);
 
     return (
         <>
@@ -515,7 +558,7 @@ const MaterialReservation = ({ order, inventory }: { order: ManufacturingOrder, 
                     <tbody>
                         {materialsWithStock.map(mat => (
                             <tr key={mat.id} style={{ backgroundColor: !mat.isSufficient ? 'var(--highlight-low-stock)' : 'transparent' }}>
-                                <td>{mat.materialName}</td>
+                                <td>{mat.materialName} ({mat.materialSku})</td>
                                 <td>{mat.required.toFixed(2)} {mat.unit}</td>
                                 <td style={{fontWeight: 'bold'}}>{mat.available.toFixed(2)} {mat.unit}</td>
                                 <td>
@@ -584,7 +627,7 @@ const QCChecksSection: React.FC<{ qc: QCCheck | undefined; setQc: (qc: QCCheck) 
 };
 
 const PackagingPlanner = ({ order, setOrder, products, inventory }: { order: ManufacturingOrder, setOrder: (o: ManufacturingOrder) => void, products: Product[], inventory: InventoryItem[] }) => {
-    const packagingProducts = useMemo(() => products.filter(p => p.category === 'تغليف'), [products]);
+    const packagingProducts = useMemo(() => products.filter(p => p.category === 'Packaging'), [products]);
     const requiredPackaging = useMemo(() => {
         return order.packagingItems.map(item => ({
             ...item,
@@ -614,9 +657,10 @@ const PackagingPlanner = ({ order, setOrder, products, inventory }: { order: Man
                 <tbody>
                     {requiredPackaging.map((item, index) => {
                         const hasEnough = item.available >= item.required;
+                        const product = packagingProducts.find(p => p.id === item.productId);
                         return (
                             <tr key={index} style={{backgroundColor: !hasEnough ? 'var(--highlight-low-stock)' : 'transparent'}}>
-                                <td style={{padding: '0.5rem'}}><select value={item.productId} onChange={e => handleLineChange(index, 'productId', e.target.value)} className="form-select"><option>اختر...</option>{packagingProducts.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}</select></td>
+                                <td style={{padding: '0.5rem'}}><select value={item.productId} onChange={e => handleLineChange(index, 'productId', e.target.value)} className="form-select"><option>اختر...</option>{packagingProducts.map(p=><option value={p.id} key={p.id}>{p.name} ({p.sku})</option>)}</select></td>
                                 <td style={{padding: '0.5rem'}}><input type="number" value={item.qtyPerUnit} onChange={e=>handleLineChange(index, 'qtyPerUnit', e.target.value)} className="form-input"/></td>
                                 <td>{item.required}</td>
                                 <td>{item.available}</td>

@@ -1,8 +1,15 @@
-
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../App';
-import { LogoutIcon, SunIcon, MoonIcon, SearchIcon, ShieldCheckIcon } from './Icon';
 import { Product } from '../types';
+import AvatarDropdown from './AvatarDropdown';
+import {
+    LogoutIcon,
+    SunIcon,
+    MoonIcon,
+    SearchIcon,
+    ShieldCheckIcon,
+    SparklesIcon,
+} from './Icon';
 import { useToasts } from './Toast';
 
 interface HeaderProps {
@@ -12,32 +19,58 @@ interface HeaderProps {
     products: Product[];
     onProductSelect: (product: Product) => void;
     onViewMyPermissions: () => void;
+    onGenerateBriefing?: () => void;
+    onToggleDrawer?: () => void;
 }
 
 const translations: { [key: string]: string } = {
     Dashboard: 'لوحة التحكم الرئيسية',
     MyProfile: 'ملفي الشخصي',
-    Purchases: 'إدارة المشتريات',
-    Invoices: 'فواتير الشراء',
-    Sales: 'إدارة المبيعات',
-    InvoiceManagement: 'إدارة الفواتير',
+    'Sales/Invoices': 'إدارة فواتير المبيعات',
+    'Sales/Quotations': 'إدارة عروض الأسعار',
+    'Sales/Returns': 'فواتير المبيعات المرتجعة',
+    'Sales/CreditNotes': 'الإشعارات الدائنة',
+    'Sales/Recurring': 'الفواتير الدورية',
+    'Sales/Payments': 'مدفوعات العملاء',
+    'Purchases/Suppliers': 'إدارة الموردين',
+    'Purchases/Requests': 'طلبات الشراء',
+    'Purchases/RFQs': 'طلبات عروض الأسعار',
+    'Purchases/Quotations': 'عروض أسعار الموردين',
+    'Purchases/Orders': 'أوامر الشراء',
+    'Purchases/Invoices': 'فواتير الشراء',
+    'Purchases/Returns': 'مرتجعات المشتريات',
+    'Purchases/DebitNotes': 'الإشعارات المدينة',
+    'Purchases/Payments': 'مدفوعات الموردين',
     HR: 'الموارد البشرية',
     'HR/Employees': 'ملفات الموظفين',
-    'HR/Attendance': 'الحاضرين',
+    'HR/Attendance': 'الحضور والانصراف',
     'HR/LeaveRequests': 'إدارة الإجازات',
     'HR/AdvanceRequests': 'طلبات السلف',
     'HR/GeneralRequests': 'الطلبات العامة',
     'HR/Salaries': 'الرواتب والكشوف',
     Renewals: 'التجديدات والتراخيص',
     Reports: 'التقارير',
+    'Reports/Summary': 'ملخص التقارير',
+    'Reports/Sales': 'تقرير المبيعات',
+    'Reports/BrandPerformance': 'تقرير أداء العلامات التجارية',
+    'Reports/BranchSales': 'تقرير مبيعات الفروع',
+    'Reports/Products': 'تقرير مبيعات المنتجات',
+    'Reports/Purchases': 'تقرير المشتريات',
+    'Reports/Expenses': 'تقرير المصروفات',
+    'Reports/Customers': 'تقرير العملاء',
+    'Reports/Accounts': 'تقرير الحسابات المالية',
+    'Reports/Forecast': 'تقرير توقعات المبيعات',
     Settings: 'الإعدادات',
     'Settings/General': 'الإعدادات العامة',
-    Users: 'إدارة المستخدمين',
+    'Settings/Sales': 'إعدادات المبيعات',
+    'Settings/Purchases': 'إعدادات المشتريات',
+    'Settings/Suppliers': 'إعدادات الموردين',
     'Settings/Integrations': 'إعدادات التكامل',
-    Branches: 'إدارة الفروع',
-    Products: 'المنتجات',
-    'Products/Catalog': 'كتالوج المنتجات',
-    'Products/Inventory': 'المخزون',
+    'Branches': 'إدارة الفروع',
+    'Inventory/Products': 'إدارة المنتجات',
+    'Inventory/Vouchers': 'إدارة الإذون المخزنية',
+    'Inventory/Requisitions': 'الطلبيات المخزنية',
+    'Inventory/Stocktakes': 'إدارة الجرد',
     Customers: 'العملاء',
     Expenses: 'المصروفات',
     'Finance/Expenses': 'إدارة المصروفات',
@@ -51,21 +84,23 @@ const translations: { [key: string]: string } = {
     'Manufacturing/Tasks': 'مهام التصنيع',
 };
 
-
 const getTitle = (view: string) => {
-    // Try for exact match first
-    if (translations[view]) {
-        return translations[view];
-    }
-    // Try matching the parent view (e.g., 'Reports/Sales' -> 'Reports')
+    if (translations[view]) return translations[view];
     const parentView = view.split('/')[0];
-    if (translations[parentView]) {
-        return translations[parentView];
-    }
+    if (translations[parentView]) return translations[parentView];
     return view;
 };
 
-export const Header: React.FC<HeaderProps> = ({ viewTitle, theme, toggleTheme, products, onProductSelect, onViewMyPermissions }) => {
+export const Header: React.FC<HeaderProps> = ({
+    viewTitle,
+    theme,
+    toggleTheme,
+    products,
+    onProductSelect,
+    onViewMyPermissions,
+    onGenerateBriefing,
+    onToggleDrawer,
+}) => {
     const { user, logout } = useContext(AuthContext);
     const { addToast } = useToasts();
     const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -92,9 +127,26 @@ export const Header: React.FC<HeaderProps> = ({ viewTitle, theme, toggleTheme, p
 
     return (
         <header className="app-header glass-pane">
-            <h2 className="header-title">{getTitle(viewTitle)}</h2>
+            <div className="header-left">
+                {onToggleDrawer && (
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={onToggleDrawer}
+                        aria-label="Toggle navigation menu"
+                    >
+                        <div className="hamburger">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
+                )}
+                <h2 className="header-title">{getTitle(viewTitle)}</h2>
+            </div>
+
             <div className="header-controls">
-                <div style={{ position: 'relative', width: '250px' }}>
+                {/* Search box */}
+                <div className="search-container" style={{ position: 'relative', width: '250px' }}>
                     <div style={{ position: 'relative' }}>
                         <input
                             type="text"
@@ -104,17 +156,59 @@ export const Header: React.FC<HeaderProps> = ({ viewTitle, theme, toggleTheme, p
                             className="form-input"
                             style={{ paddingRight: '2.5rem' }}
                         />
-                        <SearchIcon style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', width: '20px', height: '20px', color: 'var(--text-placeholder)' }}/>
+                        <SearchIcon
+                            style={{
+                                position: 'absolute',
+                                right: '0.75rem',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                width: '20px',
+                                height: '20px',
+                                color: 'var(--text-placeholder)',
+                            }}
+                        />
                     </div>
                     {searchResults.length > 0 && (
-                        <div className="glass-pane" style={{ position: 'absolute', top: '110%', left: 0, right: 0, zIndex: 20, maxHeight: '300px', overflowY: 'auto' }}>
+                        <div
+                            className="glass-pane"
+                            style={{
+                                position: 'absolute',
+                                top: '110%',
+                                left: 0,
+                                right: 0,
+                                zIndex: 20,
+                                maxHeight: '300px',
+                                overflowY: 'auto',
+                            }}
+                        >
                             <ul style={{ listStyle: 'none', padding: '0.5rem', margin: 0 }}>
                                 {searchResults.map(p => (
-                                    <li key={p.id} onClick={() => handleProductClick(p)} style={{ padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer', transition: 'background-color 0.2s' }}
-                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--highlight-hover)'}
-                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                    <li
+                                        key={p.id}
+                                        onClick={() => handleProductClick(p)}
+                                        style={{
+                                            padding: '0.75rem 1rem',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            transition: 'background-color 0.2s',
+                                        }}
+                                        onMouseEnter={e =>
+                                            (e.currentTarget.style.backgroundColor =
+                                                'var(--highlight-hover)')
+                                        }
+                                        onMouseLeave={e =>
+                                            (e.currentTarget.style.backgroundColor = 'transparent')
+                                        }
+                                    >
                                         <p style={{ fontWeight: 600 }}>{p.name}</p>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{p.sku}</p>
+                                        <p
+                                            style={{
+                                                fontSize: '0.8rem',
+                                                color: 'var(--text-secondary)',
+                                            }}
+                                        >
+                                            {p.sku}
+                                        </p>
                                     </li>
                                 ))}
                             </ul>
@@ -122,37 +216,66 @@ export const Header: React.FC<HeaderProps> = ({ viewTitle, theme, toggleTheme, p
                     )}
                 </div>
 
-                <button onClick={toggleTheme} className="theme-toggle-btn glass-pane">
-                    {theme === 'light' ? <MoonIcon className="icon" /> : <SunIcon className="icon" />}
-                </button>
-                <div className="user-menu">
-                    <button className="user-menu-btn" onClick={() => setDropdownOpen(!isDropdownOpen)}>
-                        <div className="user-greeting">
-                            <p style={{ fontWeight: 'bold' }}>{user?.name}</p>
-                            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{user?.role}</p>
-                        </div>
-                        <div className="user-avatar">{user?.name.charAt(0)}</div>
+                {/* Optional briefing button */}
+                {viewTitle === 'Dashboard' && onGenerateBriefing && (
+                    <button
+                        onClick={onGenerateBriefing}
+                        className="theme-toggle-btn glass-pane"
+                        title="الموجز اليومي الذكي"
+                    >
+                        <SparklesIcon className="icon" />
                     </button>
-                    {isDropdownOpen && (
-                        <div className="user-dropdown glass-pane">
-                            <div className="user-dropdown-info">
-                                <strong>{user?.name}</strong>
-                                <p>{user?.role}</p>
-                            </div>
-                            <div className="user-dropdown-divider"></div>
-                            <button className="logout-btn" onClick={onViewMyPermissions}>
-                                <ShieldCheckIcon className="icon" />
-                                <span>صلاحياتي</span>
-                            </button>
-                            <div className="user-dropdown-divider"></div>
-                            <button className="logout-btn" onClick={logout}>
-                                <LogoutIcon className="icon" />
-                                <span>تسجيل الخروج</span>
-                            </button>
-                        </div>
+                )}
+
+                {/* Theme toggle */}
+                <button onClick={toggleTheme} className="theme-toggle-btn glass-pane">
+                    {theme === 'light' ? (
+                        <MoonIcon className="icon" />
+                    ) : (
+                        <SunIcon className="icon" />
                     )}
-                </div>
+                </button>
+
+                {/* User Dropdown */}
+                {user ? (
+                    <div className="user-menu">
+                        <button
+                            className="user-menu-btn"
+                            onClick={() => setDropdownOpen(!isDropdownOpen)}
+                        >
+                            <div className="user-greeting">
+                                <p style={{ fontWeight: 'bold' }}>{user?.name}</p>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                    {user?.role}
+                                </p>
+                            </div>
+                            <div className="user-avatar">{user?.name.charAt(0)}</div>
+                        </button>
+                        {isDropdownOpen && (
+                            <div className="user-dropdown glass-pane">
+                                <div className="user-dropdown-info">
+                                    <strong>{user?.name}</strong>
+                                    <p>{user?.role}</p>
+                                </div>
+                                <div className="user-dropdown-divider"></div>
+                                <button className="logout-btn" onClick={onViewMyPermissions}>
+                                    <ShieldCheckIcon className="icon" />
+                                    <span>صلاحياتي</span>
+                                </button>
+                                <div className="user-dropdown-divider"></div>
+                                <button className="logout-btn" onClick={logout}>
+                                    <LogoutIcon className="icon" />
+                                    <span>تسجيل الخروج</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <AvatarDropdown onViewMyPermissions={onViewMyPermissions} />
+                )}
             </div>
         </header>
     );
 };
+
+export default Header;

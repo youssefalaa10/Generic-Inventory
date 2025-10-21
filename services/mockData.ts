@@ -1,4 +1,6 @@
-import { User, Role, Permission, Project, Branch, Purchase, Sale, EmployeeData, RenewableItem, Product, InventoryItem, LeaveRequest, AttendanceRecord, Customer, FinancialAccount, Expense, POSSession, ProductionOrder_Legacy, InventoryAdjustmentLog, ProductionTask, ManufacturingOrder, Account, IntegrationSettings, WebhookEvent, AdvanceRequest, GeneralRequest } from '../types';
+// FIX: Added RecurringInvoice to the import list.
+// FIX: Added InventoryVoucher and InventoryRequisition to import to support new mock data.
+import { User, Role, Permission, Project, Branch, PurchaseInvoice, Sale, EmployeeData, RenewableItem, Product, InventoryItem, LeaveRequest, AttendanceRecord, Customer, FinancialAccount, Expense, POSSession, ProductionOrder_Legacy, InventoryAdjustmentLog, ProductionTask, ManufacturingOrder, Account, IntegrationSettings, WebhookEvent, AdvanceRequest, GeneralRequest, Supplier, PurchaseRequest, PurchaseOrder, PurchaseReturn, SupplierPayment, DebitNote, RequestForQuotation, PurchaseQuotation, ExpenseCategory, SalesQuotation, SalesReturn, CreditNote, CustomerPayment, RecurringInvoice, InventoryVoucher, InventoryRequisition, PurchaseSettings, JournalVoucher } from '../types';
 import { PERMISSIONS } from '../constants';
 
 export const USERS: User[] = [
@@ -23,24 +25,31 @@ export const BRANCHES: Branch[] = [
     { id: 4, projectId: 1, name: 'Generic - Online & Manufacturing' }
 ];
 
+export const MOCK_SUPPLIERS: Supplier[] = [
+    { id: 1, name: 'مورد العطور الدولي', contactPerson: 'علي رضا', email: 'ali.reza@international-perfumes.com', phone: '+971 4 123 4567', address: 'دبي, الإمارات العربية المتحدة', balance: 3500 },
+    { id: 2, name: 'مصنع الزجاجيات المحلي', contactPerson: 'سالم مبارك', email: 'salem@kuwait-glass.com', phone: '+965 2222 3333', address: 'الصليبية, الكويت', balance: 0 },
+    { id: 3, name: 'مطابع النخبة', contactPerson: 'فاطمة أحمد', email: 'info@elite-print.kw', phone: '+965 1800 123', address: 'الشويخ الصناعية, الكويت', balance: -200 }, // Credit balance
+];
+
+
 export const PRODUCTS: Product[] = [
     // Raw Materials - Oils
-    { id: 1, name: 'زيت الورد الدمشقي', sku: 'RM-OIL-001', category: 'Raw Material', unitPrice: 15, baseUnit: 'g', density: 0.98 },
-    { id: 2, name: 'زيت العود الكمبودي', sku: 'RM-OIL-002', category: 'Raw Material', unitPrice: 40, baseUnit: 'g', density: 0.95 },
-    { id: 3, name: 'زيت المسك الأبيض', sku: 'RM-OIL-003', category: 'Raw Material', unitPrice: 5, baseUnit: 'g', density: 1.05 },
-    { id: 102, name: 'زيت العنبر والفانيلا', sku: 'RM-OIL-004', category: 'Raw Material', unitPrice: 8, baseUnit: 'g', density: 1.02 },
+    { id: 1, name: 'زيت الورد الدمشقي', sku: 'RM-OIL-001', category: 'Raw Material', unitPrice: 15, baseUnit: 'g', density: 0.98, trackInventory: true, hasExpiryDate: true },
+    { id: 2, name: 'زيت العود الكمبودي', sku: 'RM-OIL-002', category: 'Raw Material', unitPrice: 40, baseUnit: 'g', density: 0.95, trackInventory: true, hasExpiryDate: true },
+    { id: 3, name: 'زيت المسك الأبيض', sku: 'RM-OIL-003', category: 'Raw Material', unitPrice: 5, baseUnit: 'g', density: 1.05, trackInventory: true, hasExpiryDate: true },
+    { id: 102, name: 'زيت العنبر والفانيلا', sku: 'RM-OIL-004', category: 'Raw Material', unitPrice: 8, baseUnit: 'g', density: 1.02, trackInventory: true, hasExpiryDate: true },
 
     // Raw Materials - Chemicals
-    { id: 7, name: 'كحول عطور 96%', sku: 'RM-CHEM-001', category: 'Raw Material', unitPrice: 0.1, baseUnit: 'ml', density: 0.82},
-    { id: 101, name: 'ماء مقطر', sku: 'RM-CHEM-002', category: 'Raw Material', unitPrice: 0.01, baseUnit: 'ml', density: 1.0 },
-    { id: 103, name: 'مثبت - مسك كيتون', sku: 'RM-CHEM-003', category: 'Raw Material', unitPrice: 0.2, baseUnit: 'g', density: 1.32 },
+    { id: 7, name: 'كحول عطور 96%', sku: 'RM-CHEM-001', category: 'Raw Material', unitPrice: 0.1, baseUnit: 'ml', density: 0.82, trackInventory: true },
+    { id: 101, name: 'ماء مقطر', sku: 'RM-CHEM-002', category: 'Raw Material', unitPrice: 0.01, baseUnit: 'ml', density: 1.0, trackInventory: true },
+    { id: 103, name: 'مثبت - مسك كيتون', sku: 'RM-CHEM-003', category: 'Raw Material', unitPrice: 0.2, baseUnit: 'g', density: 1.32, trackInventory: true },
     
     // Packaging
-    { id: 4, name: 'زجاجة عطر 50مل (شفاف)', sku: 'PKG-BTL-001', category: 'Packaging', unitPrice: 2.5, baseUnit: 'pcs' },
-    { id: 5, name: 'زجاجة عطر 100مل (أسود)', sku: 'PKG-BTL-002', category: 'Packaging', unitPrice: 3.5, baseUnit: 'pcs' },
-    { id: 6, name: 'علبة كرتون فاخرة (أسود)', sku: 'PKG-BOX-001', category: 'Packaging', unitPrice: 1, baseUnit: 'pcs' },
-    { id: 201, name: 'بخاخ ذهبي 18مم', sku: 'PKG-SPR-001', category: 'Packaging', unitPrice: 0.25, baseUnit: 'pcs' },
-    { id: 202, name: 'غطاء مغناطيسي أسود', sku: 'PKG-CAP-001', category: 'Packaging', unitPrice: 0.4, baseUnit: 'pcs' },
+    { id: 4, name: 'زجاجة عطر 50مل (شفاف)', sku: 'PKG-BTL-001', category: 'Packaging', unitPrice: 2.5, baseUnit: 'pcs', trackInventory: true },
+    { id: 5, name: 'زجاجة عطر 100مل (أسود)', sku: 'PKG-BTL-002', category: 'Packaging', unitPrice: 3.5, baseUnit: 'pcs', trackInventory: true },
+    { id: 6, name: 'علبة كرتون فاخرة (أسود)', sku: 'PKG-BOX-001', category: 'Packaging', unitPrice: 1, baseUnit: 'pcs', trackInventory: true },
+    { id: 201, name: 'بخاخ ذهبي 18مم', sku: 'PKG-SPR-001', category: 'Packaging', unitPrice: 0.25, baseUnit: 'pcs', trackInventory: true },
+    { id: 202, name: 'غطاء مغناطيسي أسود', sku: 'PKG-CAP-001', category: 'Packaging', unitPrice: 0.4, baseUnit: 'pcs', trackInventory: true },
     
     // Finished Goods - Arabiva
     { 
@@ -52,6 +61,8 @@ export const PRODUCTS: Product[] = [
         category: 'Finished Good', 
         unitPrice: 45,
         baseUnit: 'pcs',
+        trackInventory: true,
+        hasExpiryDate: true,
         components: [
             { productId: 2, quantity: 3 },  // 3g Oud
             { productId: 1, quantity: 1 },  // 1g Rose
@@ -71,6 +82,8 @@ export const PRODUCTS: Product[] = [
         category: 'Finished Good', 
         unitPrice: 12,
         baseUnit: 'pcs',
+        trackInventory: true,
+        hasExpiryDate: true,
         // This is a simple oil, but packaging is still a component
         components: [
             { productId: 3, quantity: 12 },  // 12g White Musk
@@ -80,17 +93,17 @@ export const PRODUCTS: Product[] = [
 
 export const INVENTORY: InventoryItem[] = [
     // Branch 1: Arabiva - السالمية
-    { branchId: 1, productId: 8, quantity: 50, minStock: 10 }, // Arabiva Oud Royal
+    { branchId: 1, productId: 8, quantity: 50, minStock: 10, expiryDate: '2025-06-30' }, // Arabiva Oud Royal
     
     // Branch 4: Generic - Online & Manufacturing
-    { branchId: 4, productId: 1, quantity: 5000, minStock: 1000 }, // Rose Oil
-    { branchId: 4, productId: 2, quantity: 2500, minStock: 500 }, // Oud Oil
-    { branchId: 4, productId: 3, quantity: 10000, minStock: 2000 }, // Musk Oil
-    { branchId: 4, productId: 7, quantity: 50000, minStock: 10000 }, // Alcohol
+    { branchId: 4, productId: 1, quantity: 5000, minStock: 1000, expiryDate: '2026-01-15' }, // Rose Oil
+    { branchId: 4, productId: 2, quantity: 2500, minStock: 500, expiryDate: '2025-09-01' }, // Oud Oil
+    { branchId: 4, productId: 3, quantity: 10000, minStock: 2000 }, // Musk Oil - no expiry
+    { branchId: 4, productId: 7, quantity: 50000, minStock: 10000 }, // Alcohol - no expiry
     { branchId: 4, productId: 4, quantity: 2000, minStock: 500 }, // 50ml Bottle
     { branchId: 4, productId: 5, quantity: 1500, minStock: 500 }, // 100ml Bottle
     { branchId: 4, productId: 6, quantity: 5000, minStock: 1000 }, // Box
-    { branchId: 4, productId: 9, quantity: 200, minStock: 50 }, // Generic Pure Musk Oil
+    { branchId: 4, productId: 9, quantity: 200, minStock: 50, expiryDate: '2025-07-20' }, // Generic Pure Musk Oil
 ];
 
 export const INVENTORY_ADJUSTMENT_LOGS: InventoryAdjustmentLog[] = [];
@@ -103,9 +116,9 @@ export const CUSTOMERS: Customer[] = [
 ];
 
 
-export const PURCHASES: Purchase[] = [
+export const MOCK_PURCHASE_INVOICES: PurchaseInvoice[] = [
     { 
-        id: 1, branchId: 4, brand: 'Generic', supplier: { name: 'مورد العطور الدولي', contactPerson: 'علي رضا', email: 'ali.reza@international-perfumes.com', phone: '+971 4 123 4567' }, 
+        id: 1, branchId: 4, brand: 'Generic', supplierId: 1, 
         date: '2024-03-15', 
         amountInCurrency: 37000,
         currency: 'USD',
@@ -120,7 +133,7 @@ export const PURCHASES: Purchase[] = [
         ]
     },
     { 
-        id: 2, branchId: 4, brand: 'Generic', supplier: { name: 'مصنع الزجاجيات المحلي', contactPerson: 'سالم مبارك', email: 'salem@kuwait-glass.com', phone: '+965 2222 3333' }, 
+        id: 2, branchId: 4, brand: 'Generic', supplierId: 2, 
         date: '2024-03-20',
         amountInCurrency: 3500,
         currency: 'KWD',
@@ -135,6 +148,30 @@ export const PURCHASES: Purchase[] = [
     },
 ];
 
+export const MOCK_PURCHASE_REQUESTS: PurchaseRequest[] = [
+    { id: 1, date: '2024-07-20', requestedByUserId: 2, branchId: 4, items: [{ productId: 1, quantity: 500, notes: 'Urgent for new batch' }], status: 'Approved' },
+    { id: 2, date: '2024-07-22', requestedByUserId: 4, branchId: 1, items: [{ productId: 6, quantity: 1000 }], status: 'Pending Approval' },
+];
+
+export const MOCK_RFQS: RequestForQuotation[] = [
+    { id: 1, date: '2024-07-21', purchaseRequestIds: [1], supplierIds: [1, 2], items: [{ productId: 1, quantity: 500 }], deadline: '2024-07-28', status: 'Sent' }
+];
+export const MOCK_QUOTATIONS: PurchaseQuotation[] = [
+    { id: 1, rfqId: 1, supplierId: 1, date: '2024-07-23', items: [{ productId: 1, quantity: 500, unitPrice: 14.5, total: 7250 }], totalAmount: 7250, status: 'Received' }
+];
+
+export const MOCK_PURCHASE_ORDERS: PurchaseOrder[] = [
+    { id: 1001, date: '2024-07-21', supplierId: 1, items: [{ productId: 1, quantity: 500, unitPrice: 14.5, total: 7250 }], totalAmount: 7250, status: 'Confirmed' },
+    { id: 1002, date: '2024-07-25', supplierId: 2, items: [{ productId: 4, quantity: 2000, unitPrice: 2.4, total: 4800 }], totalAmount: 4800, status: 'Draft' },
+];
+
+export const MOCK_PURCHASE_RETURNS: PurchaseReturn[] = [];
+export const MOCK_DEBIT_NOTES: DebitNote[] = [];
+export const MOCK_SUPPLIER_PAYMENTS: SupplierPayment[] = [
+    { id: 1, date: '2024-04-01', supplierId: 1, amount: 11100, paymentMethod: 'Card', notes: 'Payment for INV-1' }
+];
+
+
 export const SALES: Sale[] = [
     { id: 101, branchId: 1, brand: 'Arabiva', invoiceNumber: 'INV-A-001', customerId: 4, customerName: 'زبون نقدي عام', date: '2024-07-22', totalAmount: 90, paymentMethod: 'K-Net', paymentStatus: 'Paid', sessionId: 1, items: [
         { id: 1, productName: 'Arabiva Oud Royal 50ml', productId: 8, quantity: 2, unitPrice: 45, total: 90 },
@@ -142,6 +179,73 @@ export const SALES: Sale[] = [
     { id: 102, branchId: 4, brand: 'Generic', invoiceNumber: 'INV-G-001', customerId: 4, customerName: 'زبون نقدي عام', date: '2024-07-22', totalAmount: 24, paymentMethod: 'Card', paymentStatus: 'Paid', sessionId: 1, items: [
         { id: 2, productName: 'Generic Pure Musk Oil 12ml', productId: 9, quantity: 2, unitPrice: 12, total: 24 },
     ]},
+];
+
+export const MOCK_SALES_QUOTATIONS: SalesQuotation[] = [
+    { id: 1, quoteNumber: 'QT-2024-001', customerId: 1, date: '2024-07-20', expiryDate: '2024-08-20', items: [{ productId: 8, productName: 'Arabiva Oud Royal 50ml', quantity: 10, unitPrice: 40, total: 400 }], totalAmount: 400, status: 'Sent' },
+    { id: 2, quoteNumber: 'QT-2024-002', customerId: 2, date: '2024-07-22', expiryDate: '2024-07-29', items: [{ productId: 9, productName: 'Generic Pure Musk Oil 12ml', quantity: 50, unitPrice: 10, total: 500 }], totalAmount: 500, status: 'Accepted' },
+];
+
+export const MOCK_SALES_RETURNS: SalesReturn[] = [
+    { id: 1, returnNumber: 'RTN-S-001', date: '2024-07-25', originalInvoiceId: 101, customerId: 4, items: [{productId: 8, quantity: 1, reason: 'Damaged box'}], totalReturnedAmount: 45, status: 'Returned' }
+];
+
+export const MOCK_CREDIT_NOTES: CreditNote[] = [
+    { id: 1, noteNumber: 'CN-2024-001', date: '2024-07-25', salesReturnId: 1, customerId: 4, amount: 45, reason: 'Credit for returned item from invoice #101', status: 'Open' }
+];
+
+export const MOCK_RECURRING_INVOICES: RecurringInvoice[] = [];
+
+export const MOCK_CUSTOMER_PAYMENTS: CustomerPayment[] = [
+    { id: 1, paymentNumber: 'PAY-C-001', date: '2024-07-28', customerId: 1, amount: 500, paymentMethod: 'Card', appliedToInvoiceId: undefined, notes: 'Payment on account' }
+];
+
+// FIX: Added mock data for inventory vouchers and requisitions.
+export const MOCK_INVENTORY_VOUCHERS: InventoryVoucher[] = [
+    {
+        id: 'VO-2024-001',
+        date: '2024-07-20',
+        status: 'تمت الموافقة',
+        description: 'إذن صرف مواد خام لأمر تصنيع MO-20240728-001',
+        details: 'صرف 900g زيت عنبر، 100g مثبت',
+        createdBy: 'خالد (صانع عطور)',
+        branch: 'Generic - Online & Manufacturing',
+        type: 'down'
+    },
+    {
+        id: 'VO-2024-002',
+        date: '2024-07-22',
+        status: 'تمت الموافقة',
+        description: 'إذن إضافة بضاعة تامة الصنع',
+        details: 'إضافة 97 وحدة من Arabiva EDP 50ml - Amber Vanilla',
+        createdBy: 'خالد (صانع عطور)',
+        branch: 'Generic - Online & Manufacturing',
+        type: 'up'
+    }
+];
+
+export const MOCK_INVENTORY_REQUISITIONS: InventoryRequisition[] = [
+    {
+        id: 'REQ-001',
+        date: '2024-07-25',
+        type: 'Transfer',
+        warehouseId: 4, // Manufacturing
+        items: [
+            { productId: 8, quantity: 50 } // Arabiva Oud Royal
+        ],
+        notes: 'تحويل بضاعة جاهزة لفرع السالمية'
+    },
+    {
+        id: 'REQ-002',
+        date: '2024-07-26',
+        type: 'Purchase',
+        warehouseId: 4, // Manufacturing
+        items: [
+            { productId: 1, quantity: 1000 }, // Rose oil
+            { productId: 4, quantity: 2000 }, // 50ml Bottle
+        ],
+        notes: 'طلب شراء مواد خام ناقصة'
+    }
 ];
 
 
@@ -275,10 +379,11 @@ export const FINANCIAL_ACCOUNTS: FinancialAccount[] = [
 ];
 
 export const EXPENSES: Expense[] = [
-    { id: 1, date: '2024-07-01', branchId: 1, category: 'Rent', amount: 1500, description: 'إيجار شهر يوليو - فرع السالمية', paidFromAccountId: 2 },
-    { id: 2, date: '2024-07-05', branchId: 4, category: 'Marketing & Branding', amount: 800, description: 'حملة إعلانية انستغرام (Generic)', paidFromAccountId: 1 },
-    { id: 3, date: '2024-07-10', branchId: 2, category: 'Utilities', amount: 250, description: 'فاتورة كهرباء وماء', paidFromAccountId: 3 },
-    { id: 4, date: '2024-07-12', branchId: 4, category: 'E-commerce Fees', amount: 120, description: 'رسوم بوابة الدفع', paidFromAccountId: 1 },
+    // FIX: Used ExpenseCategory enum members instead of string literals to ensure type safety.
+    { id: 1, date: '2024-07-01', branchId: 1, category: ExpenseCategory.Rent, amount: 1500, description: 'إيجار شهر يوليو - فرع السالمية', paidFromAccountId: 2 },
+    { id: 2, date: '2024-07-05', branchId: 4, category: ExpenseCategory.MarketingBranding, amount: 800, description: 'حملة إعلانية انستغرام (Generic)', paidFromAccountId: 1 },
+    { id: 3, date: '2024-07-10', branchId: 2, category: ExpenseCategory.Utilities, amount: 250, description: 'فاتورة كهرباء وماء', paidFromAccountId: 3 },
+    { id: 4, date: '2024-07-12', branchId: 4, category: ExpenseCategory.EcommerceFees, amount: 120, description: 'رسوم بوابة الدفع', paidFromAccountId: 1 },
 ];
 
 export const SESSIONS: POSSession[] = [
@@ -408,6 +513,7 @@ export const CHART_OF_ACCOUNTS: Account[] = [
                  { id: '1-1320', name: 'مواد خام - تغليف وكحول', type: 'Asset' },
                  { id: '1-1330', name: 'بضاعة تامة الصنع - عطور', type: 'Asset' },
             ]},
+            { id: '1-1400', name: 'مصاريف مدفوعة مقدماً', type: 'Asset' },
         ]},
         { id: '1-2000', name: 'الأصول الثابتة', type: 'Asset', children: [
             { id: '1-2100', name: 'أثاث ومعدات', type: 'Asset' },
@@ -443,6 +549,27 @@ export const CHART_OF_ACCOUNTS: Account[] = [
             { id: '5-3200', name: 'تسويق - براند Generic Perfumes', type: 'Expense' },
         ]},
     ]},
+];
+
+export const MOCK_JOURNAL_VOUCHERS: JournalVoucher[] = [
+    {
+        id: 1,
+        date: '2024-07-25',
+        reference: 'قيد تسوية إيجار مدفوع مقدماً لشهر يوليو',
+        lines: [
+            { id: 1, accountId: '5-2200', debit: 1500, credit: 0, description: 'مصروف إيجار شهر يوليو' },
+            { id: 2, accountId: '1-1400', debit: 0, credit: 1500, description: 'تخفيض رصيد الإيجار المدفوع مقدماً' },
+        ]
+    },
+    {
+        id: 2,
+        date: '2024-07-20',
+        reference: 'تحويل مبلغ من حساب البنك إلى الخزينة',
+        lines: [
+            { id: 3, accountId: '1-1110', debit: 1000, credit: 0, description: 'إيداع في خزينة فرع السالمية' },
+            { id: 4, accountId: '1-1120', debit: 0, credit: 1000, description: 'سحب من حساب البنك' },
+        ]
+    }
 ];
 
 
@@ -489,4 +616,15 @@ export const MOCK_INTEGRATION_SETTINGS: IntegrationSettings = {
             { event: 'purchase.created', url: generateWebhookUrl('purchase.created'), isEnabled: false },
         ]
     }
+};
+
+export const MOCK_PURCHASE_SETTINGS: PurchaseSettings = {
+  defaultPaymentTermsDays: 30,
+  defaultShippingPreference: 'Delivery',
+  isApprovalWorkflowEnabled: true,
+  approvalTiers: [
+    { id: 1, minAmount: 0, approverRole: Role.BranchManager },
+    { id: 2, minAmount: 5000, approverRole: Role.Accountant },
+    { id: 3, minAmount: 20000, approverRole: Role.SuperAdmin },
+  ]
 };

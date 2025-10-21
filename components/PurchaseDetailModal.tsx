@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Purchase, PurchaseItem, Branch, Product, Currency } from '../types';
+import { PurchaseInvoice, PurchaseInvoiceItem, Branch, Product, Currency, Supplier } from '../types';
 import { PencilIcon, TrashIcon, PlusIcon } from './Icon';
 
 interface PurchaseDetailModalProps {
-    purchase: Purchase;
+    purchase: PurchaseInvoice;
     onClose: () => void;
-    onSave: (purchase: Purchase) => void;
+    onSave: (purchase: PurchaseInvoice) => void;
     branches: Branch[];
     products: Product[];
+    suppliers: Supplier[];
     scannedTotal?: number | null;
 }
 
@@ -17,16 +18,16 @@ const defaultCurrencies: { value: Currency, label: string }[] = [
     { value: 'EUR', label: 'يورو (EUR)' },
 ];
 
-const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onClose, onSave, branches, products, scannedTotal }) => {
+const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onClose, onSave, branches, products, suppliers, scannedTotal }) => {
     const isCreating = !purchase.id;
     const [isEditing, setIsEditing] = useState(isCreating);
-    const [editablePurchase, setEditablePurchase] = useState<Partial<Purchase>>(
+    const [editablePurchase, setEditablePurchase] = useState<Partial<PurchaseInvoice>>(
         isCreating 
         ? {
             id: 0,
             brand: 'Generic',
             branchId: 4, // Default to Generic/Manufacturing branch
-            supplier: { name: '', contactPerson: '', email: '', phone: '' },
+            supplierId: suppliers[0]?.id || 0,
             date: new Date().toISOString().split('T')[0],
             amount: 0,
             amountInCurrency: 0,
@@ -58,10 +59,8 @@ const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onC
         }));
     }, [editablePurchase.items, editablePurchase.exchangeRate]);
     
-    const handleHeaderChange = (field: keyof Purchase | keyof Purchase['supplier'], value: any) => {
-         if (['name', 'contactPerson', 'email', 'phone'].includes(field as string)) {
-            setEditablePurchase(prev => ({ ...prev, supplier: { ...prev.supplier, [field as keyof Purchase['supplier']]: value as string }}));
-        } else if (field === 'currency') {
+    const handleHeaderChange = (field: keyof PurchaseInvoice, value: any) => {
+        if (field === 'currency') {
             const newRate = value === 'KWD' ? 1 : (editablePurchase.exchangeRate === 1 ? 0.30 : editablePurchase.exchangeRate);
              setEditablePurchase(prev => ({ ...prev, currency: value, exchangeRate: newRate }));
         } else if (field === 'brand') {
@@ -70,11 +69,11 @@ const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onC
             setEditablePurchase(prev => ({ ...prev, brand: value as 'Arabiva' | 'Generic', branchId: brandBranches[0]?.id || 0 }));
         }
          else {
-            setEditablePurchase(prev => ({ ...prev, [field as keyof Purchase]: value }));
+            setEditablePurchase(prev => ({ ...prev, [field as keyof PurchaseInvoice]: value }));
         }
     }
 
-    const handleItemChange = (index: number, field: keyof PurchaseItem, value: string | number) => {
+    const handleItemChange = (index: number, field: keyof PurchaseInvoiceItem, value: string | number) => {
         const newItems = [...(editablePurchase.items || [])];
         const item = { ...newItems[index] };
         
@@ -96,7 +95,7 @@ const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onC
     };
 
     const handleAddItem = () => {
-        const newItem: PurchaseItem = {
+        const newItem: PurchaseInvoiceItem = {
             id: Date.now(),
             productName: '',
             productId: 0,
@@ -113,7 +112,7 @@ const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onC
     };
 
     const handleSave = () => {
-        onSave(editablePurchase as Purchase);
+        onSave(editablePurchase as PurchaseInvoice);
     };
 
     const handleCancel = () => {
@@ -141,12 +140,14 @@ const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onC
         return branches.filter(b => b.projectId === 1);
     }, [editablePurchase.brand, branches]);
 
+    const supplierName = useMemo(() => suppliers.find(s => s.id === editablePurchase.supplierId)?.name || 'Unknown', [editablePurchase.supplierId, suppliers]);
+
 
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content glass-pane" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2 style={{fontSize: '1.5rem', fontWeight: 600}}>{isCreating ? 'إضافة شراء جديد' : `تفاصيل الشراء #${purchase.id}`}</h2>
+                    <h2 style={{fontSize: '1.5rem', fontWeight: 600}}>{isCreating ? 'إضافة فاتورة شراء' : `تفاصيل الفاتورة #${purchase.id}`}</h2>
                     <button onClick={onClose} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '2rem', cursor: 'pointer'}}>&times;</button>
                 </div>
 
@@ -155,15 +156,11 @@ const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onC
                         <div className="glass-pane" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
                             <h3 style={{fontSize: '1.1rem', fontWeight: 600, color: 'var(--primary-color)'}}>معلومات المورد</h3>
                             {isEditing ? (
-                                <>
-                                    <input type="text" placeholder="اسم المورد" value={editablePurchase.supplier?.name} onChange={e => handleHeaderChange('name', e.target.value)} className="form-input" />
-                                    <input type="text" placeholder="شخص الاتصال" value={editablePurchase.supplier?.contactPerson} onChange={e => handleHeaderChange('contactPerson', e.target.value)} className="form-input" />
-                                </>
+                                <select value={editablePurchase.supplierId} onChange={e => handleHeaderChange('supplierId', parseInt(e.target.value))} className="form-select">
+                                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
                             ) : (
-                                <>
-                                    <p><strong>الاسم:</strong> {purchase.supplier.name}</p>
-                                    <p style={{color: 'var(--text-secondary)'}}><strong>شخص الاتصال:</strong> {purchase.supplier.contactPerson}</p>
-                                </>
+                                <p><strong>الاسم:</strong> {supplierName}</p>
                             )}
                         </div>
                         <div className="glass-pane" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -275,7 +272,7 @@ const PurchaseDetailModal: React.FC<PurchaseDetailModalProps> = ({ purchase, onC
                     <div>
                     {isEditing ? (
                         <div style={{display: 'flex', gap: '1rem'}}>
-                            <button onClick={handleSave} className="btn btn-secondary">{isCreating ? 'حفظ الشراء' : 'حفظ التعديلات'}</button>
+                            <button onClick={handleSave} className="btn btn-secondary">{isCreating ? 'حفظ الفاتورة' : 'حفظ التعديلات'}</button>
                             <button onClick={handleCancel} className="btn btn-ghost">إلغاء</button>
                         </div>
                     ) : (

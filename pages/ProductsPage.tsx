@@ -1,36 +1,15 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { useToasts } from '../components/Toast';
-import { PencilIcon, PlusIcon } from '../components/Icon';
-import ProductModal from '../components/ProductModal';
+import { PlusIcon } from '../components/Icon';
 
 interface ProductsPageProps {
     products: Product[];
-    onSave: (product: Product) => void;
+    onProductSelect: (product: Product) => void;
+    onAddNew: () => void;
 }
 
-const ProductsPage: React.FC<ProductsPageProps> = ({ products, onSave }) => {
-    const { addToast } = useToasts();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<Partial<Product> | null>(null);
+const ProductsPage: React.FC<ProductsPageProps> = ({ products, onProductSelect, onAddNew }) => {
     const [searchTerm, setSearchTerm] = useState('');
-
-    const handleSave = (product: Product) => {
-        onSave(product);
-        setIsModalOpen(false);
-        setSelectedProduct(null);
-        addToast(`تم ${product.id ? 'تحديث' : 'إضافة'} المنتج بنجاح!`, 'success');
-    };
-
-    const handleAddNew = () => {
-        setSelectedProduct({});
-        setIsModalOpen(true);
-    };
-    
-    const handleEdit = (product: Product) => {
-        setSelectedProduct(product);
-        setIsModalOpen(true);
-    };
 
     const filteredProducts = products.filter(p => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -43,10 +22,10 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ products, onSave }) => {
             <div className="glass-pane" style={{ padding: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>كتالوج المنتجات</h3>
-                        <p style={{ color: 'var(--text-secondary)'}}>إدارة جميع المنتجات، بما في ذلك المواد الخام والسلع التامة الصنع.</p>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>المنتجات والخدمات</h3>
+                        <p style={{ color: 'var(--text-secondary)'}}>اختر منتجاً لعرض تفاصيله أو أضف منتجاً جديداً.</p>
                     </div>
-                    <button onClick={handleAddNew} className="btn btn-primary">
+                    <button onClick={onAddNew} className="btn btn-primary">
                         <PlusIcon style={{ width: '20px', height: '20px' }} />
                         إضافة منتج جديد
                     </button>
@@ -69,36 +48,22 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ products, onSave }) => {
                                 <th>الفئة</th>
                                 <th>الوحدة الأساسية</th>
                                 <th>سعر الوحدة</th>
-                                <th>إجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredProducts.map(product => (
-                                <tr key={product.id}>
+                                <tr key={product.id} onClick={() => onProductSelect(product)} style={{ cursor: 'pointer' }}>
                                     <td>{product.sku}</td>
                                     <td style={{fontWeight: 600}}>{product.name}</td>
                                     <td>{product.category}</td>
                                     <td>{product.baseUnit}</td>
                                     <td style={{color: 'var(--secondary-color)'}}>{product.unitPrice.toFixed(3)} د.ك</td>
-                                    <td>
-                                        <button onClick={() => handleEdit(product)} style={{color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="تعديل المنتج">
-                                            <PencilIcon style={{width:'20px', height:'20px'}}/>
-                                        </button>
-                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </div>
-            {isModalOpen && selectedProduct && (
-                <ProductModal
-                    product={selectedProduct}
-                    allProducts={products}
-                    onClose={() => { setIsModalOpen(false); setSelectedProduct(null); }}
-                    onSave={handleSave}
-                />
-            )}
         </>
     );
 };

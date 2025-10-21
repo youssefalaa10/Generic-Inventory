@@ -45,29 +45,38 @@ export interface Branch {
   name: string;
 }
 
-export interface PurchaseItem {
+export interface PurchaseInvoiceItem {
   id: number;
   productName: string;
   productId: number;
   quantity: number;
   unitPrice: number;
   total: number;
+  description?: string;
+  discountPercent?: number;
+  taxPercent?: number;
 }
 
 export interface Supplier {
+    id: number;
     name: string;
     contactPerson: string;
     email: string;
     phone: string;
+    address: string;
+    balance: number; // Positive for money owed to them, negative for credit
 }
 
 export type Currency = 'KWD' | 'USD' | 'EUR';
 
-export interface Purchase {
+export type DocStatus = 'Draft' | 'Pending' | 'Approved' | 'Rejected' | 'Confirmed' | 'Billed' | 'Paid' | 'Overdue' | 'Returned' | 'Cancelled' | 'Closed' | 'Sent' | 'Accepted' | 'Expired' | 'Open' | 'Applied' | 'Void' | 'Active' | 'Paused' | 'Ended' | 'Completed';
+
+
+export interface PurchaseInvoice {
   id: number;
   branchId: number;
   brand: 'Arabiva' | 'Generic';
-  supplier: Supplier;
+  supplierId: number;
   date: string;
   amount: number; // Final amount in KWD
   amountInCurrency: number;
@@ -76,7 +85,150 @@ export interface Purchase {
   type: 'Local' | 'External';
   description: string;
   paymentStatus: 'Paid' | 'Pending' | 'Overdue';
-  items: PurchaseItem[];
+  items: PurchaseInvoiceItem[];
+  purchaseOrderId?: number;
+  notes?: string;
+  attachments?: string;
+  templateId?: string;
+}
+
+export interface PurchaseRequestItem {
+    productId: number;
+    quantity: number;
+    notes?: string;
+}
+export interface PurchaseRequest {
+    id: number;
+    name?: string; // "مسمى"
+    date: string;
+    dueDate?: string;
+    requestedByUserId: number;
+    branchId: number;
+    items: PurchaseRequestItem[];
+    status: 'Draft' | 'Pending Approval' | 'Approved' | 'Rejected' | 'Ordered';
+    notes?: string;
+    attachment?: string;
+}
+
+export interface PurchaseOrderItem {
+    productId: number;
+    description?: string;
+    quantity: number;
+    unitPrice: number;
+    discountPercent?: number;
+    taxId?: number;
+    total: number;
+}
+export interface PurchaseOrder {
+    id: number;
+    date: string;
+    supplierId: number;
+    items: PurchaseOrderItem[];
+    totalAmount: number;
+    status: 'Draft' | 'Confirmed' | 'Billed' | 'Completed' | 'Cancelled';
+    quotationId?: number;
+    notes?: string;
+    shippingCost?: number;
+    discountAmount?: number;
+    templateId?: string;
+    validUntil?: string;
+    currency?: Currency;
+}
+
+export interface PurchaseReturnItem {
+    productId: number;
+    quantity: number;
+    reason: string;
+    description?: string;
+    unitPrice: number;
+    discountPercent?: number;
+    taxId?: number;
+    total: number;
+}
+export interface PurchaseReturn {
+    id: number;
+    date: string;
+    supplierId: number;
+    returnNumber?: string;
+    items: PurchaseReturnItem[];
+    totalReturnedAmount: number;
+    status: 'Draft' | 'Returned';
+    notes?: string;
+    shippingCost?: number;
+    discountAmount?: number;
+    purchaseInvoiceId?: number; // Link to original invoice
+}
+
+export interface DebitNoteItem {
+    id: number;
+    productId: number;
+    description?: string;
+    quantity: number;
+    unitPrice: number;
+    discountPercent?: number;
+    taxId?: number;
+    total: number;
+}
+
+export interface DebitNote {
+    id: number;
+    date: string;
+    supplierId: number;
+    items: DebitNoteItem[];
+    amount: number;
+    reason: string;
+    debitNoteNumber?: string;
+    notes?: string;
+    purchaseReturnId?: number;
+}
+
+export interface RequestForQuotationItem {
+    productId: number;
+    quantity: number;
+}
+export interface RequestForQuotation {
+    id: number;
+    date: string;
+    code?: string;
+    supplierIds: number[];
+    items: RequestForQuotationItem[];
+    deadline: string;
+    dueDate?: string;
+    status: 'Draft' | 'Sent' | 'Closed';
+    notes?: string;
+    attachment?: string;
+    purchaseRequestIds?: number[];
+}
+
+export interface PurchaseQuotationItem {
+    productId: number;
+    description?: string;
+    quantity: number;
+    unitPrice: number;
+    discountPercent?: number;
+    taxId?: number;
+    total: number;
+}
+export interface PurchaseQuotation {
+    id: number;
+    rfqId: number;
+    supplierId: number;
+    date: string;
+    items: PurchaseQuotationItem[];
+    totalAmount: number;
+    status: 'Received' | 'Accepted' | 'Rejected';
+    notes?: string;
+    shippingCost?: number;
+    discountAmount?: number;
+}
+
+export interface SupplierPayment {
+    id: number;
+    date: string;
+    supplierId: number;
+    amount: number;
+    paymentMethod: PaymentMethod;
+    notes?: string;
 }
 
 export interface SaleItem {
@@ -103,7 +255,76 @@ export interface Sale {
   paymentStatus: 'Paid' | 'Pending' | 'Overdue';
   items: SaleItem[];
   sessionId?: number;
+  quotationId?: number;
 }
+
+export interface SalesQuotationItem {
+    productId: number;
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+}
+export interface SalesQuotation {
+    id: number;
+    quoteNumber: string;
+    customerId: number;
+    date: string;
+    expiryDate: string;
+    items: SalesQuotationItem[];
+    totalAmount: number;
+    status: 'Draft' | 'Sent' | 'Accepted' | 'Rejected' | 'Expired';
+}
+
+export interface SalesReturnItem {
+    productId: number;
+    quantity: number;
+    reason: string;
+}
+export interface SalesReturn {
+    id: number;
+    returnNumber: string;
+    date: string;
+    originalInvoiceId: number;
+    customerId: number;
+    items: SalesReturnItem[];
+    totalReturnedAmount: number;
+    status: 'Draft' | 'Returned' | 'Completed';
+}
+
+export interface CreditNote {
+    id: number;
+    noteNumber: string;
+    date: string;
+    salesReturnId?: number;
+    customerId: number;
+    amount: number;
+    reason: string;
+    status: 'Open' | 'Applied' | 'Void';
+}
+
+export interface RecurringInvoice {
+    id: number;
+    customerId: number;
+    startDate: string;
+    frequency: 'Monthly' | 'Quarterly' | 'Yearly';
+    items: SaleItem[]; // Re-use SaleItem
+    totalAmount: number;
+    nextInvoiceDate: string;
+    status: 'Active' | 'Paused' | 'Ended';
+}
+
+export interface CustomerPayment {
+    id: number;
+    paymentNumber: string;
+    date: string;
+    customerId: number;
+    amount: number;
+    paymentMethod: PaymentMethod;
+    appliedToInvoiceId?: number;
+    notes?: string;
+}
+
 
 export type EmployeeAttachmentType = 'Passport' | 'ID' | 'CV' | 'Other';
 
@@ -176,17 +397,32 @@ export interface Product {
   name: string;
   sku: string;
   category: string;
-  unitPrice: number; // Per piece for 'pcs', per gram for 'g', per ml for 'ml'
+  unitPrice: number;
   baseUnit: 'pcs' | 'g' | 'ml';
-  productLine?: string; // e.g., "Oud Collection", "Musk Series"
-  fragranceNotes?: { // Optional for non-perfume items
-    top: string;
-    middle: string;
-    base: string;
-  };
+  productLine?: string;
+  fragranceNotes?: { top: string; middle: string; base: string; };
   components?: { productId: number; quantity: number }[];
   barcode?: string;
   density?: number; // g/ml
+  
+  // New detailed fields
+  description?: string;
+  brand?: string;
+  unitTemplate?: string;
+  purchasePrice?: number;
+  taxId?: number;
+  isTaxable?: boolean;
+  lowestSellingPrice?: number;
+  discountPercent?: number;
+  hasExpiryDate?: boolean;
+  trackInventory?: boolean;
+  trackingType?: 'None' | 'Quantity';
+  alertQuantity?: number;
+  internalNotes?: string;
+  tags?: string;
+  status?: 'Active' | 'Inactive';
+  supplierProductCode?: string;
+  image?: string;
 }
 
 export interface InventoryItem {
@@ -210,6 +446,42 @@ export interface InventoryAdjustmentLog {
   newQuantity: number;
   reason: AdjustmentReason;
   notes?: string;
+}
+
+export interface InventoryMovement {
+  id: string | number;
+  date: string;
+  type: string;
+  quantityChange: number;
+  quantityAfter: number;
+  relatedDoc?: string;
+  user?: string;
+  branchId: number;
+}
+
+export interface InventoryVoucher {
+    id: string;
+    date: string;
+    status: 'تمت الموافقة';
+    description: string;
+    details: string;
+    createdBy: string;
+    branch: string;
+    type: 'up' | 'down';
+}
+
+export interface InventoryRequisitionItem {
+    productId: number;
+    quantity: number;
+}
+export interface InventoryRequisition {
+    id: string;
+    date: string;
+    type: 'Purchase' | 'Transfer';
+    warehouseId: number;
+    items: InventoryRequisitionItem[];
+    notes?: string;
+    attachments?: any[];
 }
 
 
@@ -296,7 +568,20 @@ export interface Customer {
 }
 
 // Finance Module Types
-export type ExpenseCategory = 'Utilities' | 'Rent' | 'Salaries' | 'Marketing & Branding' | 'Raw Materials' | 'Packaging' | 'E-commerce Fees' | 'Lab Supplies' | 'Shipping & Delivery' | 'Government Fees' | 'Maintenance' | 'Other';
+export enum ExpenseCategory {
+    Utilities = 'Utilities',
+    Rent = 'Rent',
+    Salaries = 'Salaries',
+    MarketingBranding = 'Marketing & Branding',
+    RawMaterials = 'Raw Materials',
+    Packaging = 'Packaging',
+    EcommerceFees = 'E-commerce Fees',
+    LabSupplies = 'Lab Supplies',
+    ShippingDelivery = 'Shipping & Delivery',
+    GovernmentFees = 'Government Fees',
+    Maintenance = 'Maintenance',
+    Other = 'Other'
+}
 
 export interface Expense {
     id: number;
@@ -323,6 +608,32 @@ export interface Account {
   name: string;
   type: AccountType;
   children?: Account[];
+}
+
+export interface GeneralLedgerEntry {
+  id: string;
+  date: string;
+  account: string;
+  description: string;
+  debit: number;
+  credit: number;
+  sourceType: 'Sale' | 'Purchase' | 'Expense' | 'Other';
+  sourceId: number | string;
+}
+
+export interface JournalVoucherLine {
+    id: number;
+    accountId: string;
+    debit: number;
+    credit: number;
+    description?: string;
+}
+
+export interface JournalVoucher {
+    id: number;
+    date: string;
+    reference: string;
+    lines: JournalVoucherLine[];
 }
 
 
@@ -374,13 +685,14 @@ export interface ProductionTask {
 
 export interface ChatbotDataContext {
   sales: Sale[];
-  purchases: Purchase[];
+  purchases: PurchaseInvoice[];
   products: Product[];
   inventory: InventoryItem[];
   customers: Customer[];
   employees: EmployeeData[];
   branches: Branch[];
   expenses: Expense[];
+  suppliers: Supplier[];
 }
 
 export interface DailyBriefingContext {
@@ -392,15 +704,6 @@ export interface DailyBriefingContext {
   criticalLowStockItems: { name: string; quantity: number; minStock: number; }[];
   pendingHRRequests: number;
   upcomingRenewals: { name: string; daysUntilExpiry: number; }[];
-}
-
-export interface SuggestedPurchaseOrderItem {
-  productId: number;
-  productName: string;
-  sku: string;
-  currentStock: number;
-  recommendedQuantity: number;
-  reasoning: string;
 }
 
 export interface PurchaseOrderSuggestionContext {
@@ -416,6 +719,47 @@ export interface PurchaseOrderSuggestionContext {
   }[];
 }
 
+export interface FormulaSuggestionContext {
+  prompt: string;
+  rawMaterials: {
+    id: number;
+    name: string;
+    sku: string;
+    baseUnit: 'g' | 'ml';
+    availableQuantity: number;
+  }[];
+}
+
+export interface NewProductIdeaContext {
+  prompt: string;
+  rawMaterials: {
+    id: number;
+    name: string;
+    sku: string;
+    baseUnit: 'g' | 'ml';
+    availableQuantity: number;
+  }[];
+}
+
+export interface NewProductIdeaResponse {
+    productName: string;
+    fragranceNotes: {
+        top: string;
+        middle: string;
+        base: string;
+    };
+    formula: FormulaLine[];
+}
+
+
+export interface SuggestedPurchaseOrderItem {
+  productId: number;
+  productName: string;
+  sku: string;
+  currentStock: number;
+  recommendedQuantity: number;
+  reasoning: string;
+}
 
 // Perfume Manufacturing Types
 export type Concentration = "EDT_15" | "EDP_20" | "EXTRAIT_30" | "OIL_100";
@@ -536,6 +880,19 @@ export interface IntegrationSettings {
     myFatoorah: PaymentGatewaySettings;
     whatsapp: WhatsAppSettings;
     n8n: N8nSettings;
+}
+
+export interface PurchaseApprovalTier {
+  id: number;
+  minAmount: number;
+  approverRole: Role;
+}
+
+export interface PurchaseSettings {
+  defaultPaymentTermsDays: number;
+  defaultShippingPreference: 'Collect' | 'Delivery';
+  isApprovalWorkflowEnabled: boolean;
+  approvalTiers: PurchaseApprovalTier[];
 }
 
 // Declare QRCode library from CDN for TypeScript

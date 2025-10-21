@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { Product, InventoryItem, Sale, SaleItem, PaymentMethod, IntegrationSettings, Customer, Branch } from '../types';
 import { AuthContext } from '../App';
@@ -305,6 +306,7 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
                                     <div style={{height: '60px', marginBottom: '0.5rem', background: 'var(--highlight-hover)', borderRadius: '8px'}}></div>
                                     <div>
                                         <p style={{ fontWeight: 600, minHeight: '40px' }}>{p.name}</p>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '-0.25rem' }}>{p.sku}</p>
                                         <p style={{ color: 'var(--secondary-color)', fontWeight: 'bold' }}>
                                             {p.unitPrice.toFixed(2)} د.ك {p.baseUnit !== 'pcs' ? ` / ${p.baseUnit}`: ''}
                                         </p>
@@ -363,6 +365,9 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
                                 <div key={item.productId} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '1rem' }}>
                                     <div style={{flex: 1}}>
                                         <p style={{ fontWeight: 600 }}>{item.productName}</p>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                            SKU: {productInfo?.sku}
+                                        </p>
                                         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                             {(productInfo?.baseUnit === 'g' || productInfo?.baseUnit === 'ml') ? item.quantity.toFixed(3) : item.quantity} {productInfo?.baseUnit !== 'pcs' ? productInfo?.baseUnit : ''} x {item.unitPrice.toFixed(2)} د.ك
                                         </p>

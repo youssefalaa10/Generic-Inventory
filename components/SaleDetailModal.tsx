@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sale, SaleItem, Branch, Product, InventoryItem, Customer } from '../types';
 import { TrashIcon, PlusIcon } from './Icon';
@@ -206,7 +207,7 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ sale, onClose, onSave
                                         <td style={{padding: '0.5rem'}}>
                                             <select value={item.productId} onChange={e => handleItemChange(index, 'productId', e.target.value)} className="form-select">
                                                 <option value={0}>اختر منتج</option>
-                                                {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
                                             </select>
                                         </td>
                                         <td style={{padding: '0.5rem'}}>

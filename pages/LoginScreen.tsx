@@ -28,11 +28,11 @@ const LoginScreen: React.FC = () => {
             color: 'white', fontWeight: 'bold', fontSize: '2rem',
             boxShadow: '0 8px 24px color-mix(in srgb, var(--primary-color) 40%, transparent)'
           }}>
-            F
+            A
           </div>
         </div>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-            نظام الإدارة المالية المتكامل
+            ASAS System
         </h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
             يرجى تحديد دورك لتسجيل الدخول

@@ -79,9 +79,19 @@ const Settings: React.FC<SettingsProps> = ({ settings, setSettings }) => {
                  <div style={{ borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem' }}>
                     <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>إدارة المستخدمين</h4>
                     <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>إضافة، تعديل، وحذف المستخدمين وتعيين الأدوار لهم.</p>
+                    {/* This button would navigate to the Users page */}
                     <button className="btn btn-primary" style={{ marginTop: '0.75rem' }}>
                         إدارة المستخدمين
                     </button>
+                </div>
+                 <div style={{ borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem' }}>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>إعدادات المشتريات والموردين</h4>
+                    <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>تكوين الإعدادات الافتراضية لوحدة المشتريات والموردين.</p>
+                     <div style={{display: 'flex', gap: '1rem', marginTop: '0.75rem'}}>
+                        {/* These buttons would navigate to their respective settings pages */}
+                        <button className="btn btn-ghost">إعدادات المشتريات</button>
+                        <button className="btn btn-ghost">إعدادات الموردين</button>
+                    </div>
                 </div>
                  <div style={{ borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem' }}>
                     <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>الإعدادات المالية</h4>
