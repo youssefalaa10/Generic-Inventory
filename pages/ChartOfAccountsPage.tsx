@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { Account, Sale, PurchaseInvoice, Expense, GeneralLedgerEntry } from '../types';
-import { ChevronDownIcon, PlusIcon, CollectionIcon } from '../components/Icon';
+import React, { useMemo, useState } from 'react';
+import { ChevronDownIcon, CollectionIcon } from '../components/Icon';
+import { Account, Expense, GeneralLedgerEntry, PurchaseInvoice, Sale } from '../types';
 
 interface ChartOfAccountsPageProps {
     accounts: Account[];
@@ -166,8 +166,8 @@ const ChartOfAccountsPage: React.FC<ChartOfAccountsPageProps> = ({ accounts, sal
     return (
         <div className="coa-container">
             <div className="coa-tree-pane glass-pane">
-                 <div style={{padding: '1.5rem 1.5rem 0.5rem 1.5rem'}}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>دليل الحسابات</h3>
+                 <div className="coa-tree-header" style={{padding: '1.5rem 1.5rem 0.5rem 1.5rem'}}>
+                    <h3 className="coa-tree-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>دليل الحسابات</h3>
                  </div>
                  <ul className="coa-tree" style={{padding: '0.5rem 1.5rem 1.5rem 1.5rem'}}>
                     {accounts.map(account => (
@@ -186,8 +186,8 @@ const ChartOfAccountsPage: React.FC<ChartOfAccountsPageProps> = ({ accounts, sal
                 {selectedAccountDetails ? (
                     <>
                         <div className="coa-detail-header">
-                            <h3>{selectedAccountDetails.account.name}</h3>
-                            <p>#{selectedAccountDetails.account.id} - {selectedAccountDetails.account.type}</p>
+                            <h3 className="coa-detail-title">{selectedAccountDetails.account.name}</h3>
+                            <p className="coa-detail-subtitle">#{selectedAccountDetails.account.id} - {selectedAccountDetails.account.type}</p>
                         </div>
                         <div className="summary-grid" style={{gridTemplateColumns: '1fr 1fr 1fr'}}>
                             <div className="summary-item">
@@ -205,10 +205,10 @@ const ChartOfAccountsPage: React.FC<ChartOfAccountsPageProps> = ({ accounts, sal
                                 </p>
                             </div>
                         </div>
-                        <div className="glass-pane">
-                            <h4 style={{padding: '1rem 1.5rem', borderBottom: '1px solid var(--surface-border)', fontWeight: 600}}>آخر الحركات</h4>
-                            <div className="table-wrapper" style={{background: 'transparent', border: 'none'}}>
-                                <table>
+                        <div className="glass-pane coa-transactions-pane">
+                            <h4 className="coa-transactions-title" style={{padding: '1rem 1.5rem', borderBottom: '1px solid var(--surface-border)', fontWeight: 600}}>آخر الحركات</h4>
+                            <div className="table-wrapper coa-transactions-table-wrapper" style={{background: 'transparent', border: 'none'}}>
+                                <table className="coa-transactions-table">
                                     <thead>
                                         <tr>
                                             <th>التاريخ</th>
@@ -222,21 +222,21 @@ const ChartOfAccountsPage: React.FC<ChartOfAccountsPageProps> = ({ accounts, sal
                                             <tr key={t.id}>
                                                 <td>{t.date}</td>
                                                 <td>{t.description}</td>
-                                                <td style={{textAlign: 'center', color: t.debit > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}}>{t.debit > 0 ? formatCurrency(t.debit) : '-'}</td>
-                                                <td style={{textAlign: 'center', color: t.credit > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}}>{t.credit > 0 ? formatCurrency(t.credit) : '-'}</td>
+                                                <td className="coa-transaction-debit" style={{textAlign: 'center', color: t.debit > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}}>{t.debit > 0 ? formatCurrency(t.debit) : '-'}</td>
+                                                <td className="coa-transaction-credit" style={{textAlign: 'center', color: t.credit > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}}>{t.credit > 0 ? formatCurrency(t.credit) : '-'}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
-                                {selectedAccountDetails.transactions.length === 0 && <p style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>لا توجد حركات لعرضها.</p>}
+                                {selectedAccountDetails.transactions.length === 0 && <p className="coa-no-transactions" style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>لا توجد حركات لعرضها.</p>}
                             </div>
                         </div>
                     </>
                 ) : (
                     <div className="coa-detail-placeholder glass-pane">
-                        <CollectionIcon style={{width: 48, height: 48, marginBottom: '1rem'}}/>
-                        <h3 style={{fontSize: '1.25rem', fontWeight: 600}}>اختر حساباً من الدليل</h3>
-                        <p>لعرض تفاصيله المالية وحركاته الأخيرة.</p>
+                        <CollectionIcon className="coa-placeholder-icon" style={{width: 48, height: 48, marginBottom: '1rem'}}/>
+                        <h3 className="coa-placeholder-title" style={{fontSize: '1.25rem', fontWeight: 600}}>اختر حساباً من الدليل</h3>
+                        <p className="coa-placeholder-description">لعرض تفاصيله المالية وحركاته الأخيرة.</p>
                     </div>
                 )}
             </div>

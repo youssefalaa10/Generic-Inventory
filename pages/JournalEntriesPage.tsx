@@ -39,8 +39,8 @@ const JournalEntriesPage: React.FC<JournalEntriesPageProps> = ({ journalVouchers
                 <div className="journal-entries-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h3 className="journal-entries-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>القيود اليومية</h3>
                     <button className="btn btn-primary journal-entries-button" onClick={handleAddNew}>
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        قيد يومية جديد
+                        <PlusIcon className="journal-entries-button-icon" style={{ width: '20px', height: '20px' }} />
+                        <span className="journal-entries-button-text">قيد يومية جديد</span>
                     </button>
                 </div>
                 <div className="table-wrapper journal-entries-table-wrapper">
@@ -55,10 +55,10 @@ const JournalEntriesPage: React.FC<JournalEntriesPageProps> = ({ journalVouchers
                         </thead>
                         <tbody>
                             {journalVouchers.map(voucher => (
-                                <tr key={voucher.id} onClick={() => handleEdit(voucher)} style={{cursor: 'pointer'}}>
-                                    <td>JV-{voucher.id}</td>
-                                    <td>{new Date(voucher.date).toLocaleDateString('ar-EG')}</td>
-                                    <td>{voucher.reference}</td>
+                                <tr key={voucher.id} onClick={() => handleEdit(voucher)} className="journal-entries-row" style={{cursor: 'pointer'}}>
+                                    <td className="journal-entries-id">JV-{voucher.id}</td>
+                                    <td className="journal-entries-date">{new Date(voucher.date).toLocaleDateString('ar-EG')}</td>
+                                    <td className="journal-entries-reference">{voucher.reference}</td>
                                     <td className="journal-entries-amount" style={{textAlign: 'right', fontWeight: 600}}>{totalAmount(voucher).toLocaleString('ar-EG', {minimumFractionDigits: 2})} د.ك</td>
                                 </tr>
                             ))}
