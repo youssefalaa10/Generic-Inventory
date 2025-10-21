@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { User, EmployeeData, LeaveRequest, AdvanceRequest, GeneralRequest, AttendanceRecord, SalaryPayment, RequestStatus, LeaveType, GeneralRequestType, EmployeeBenefit } from '../types';
-import { CalendarIcon, CurrencyDollarIcon, DocumentTextIcon, ClockIcon, UsersIcon, ShieldCheckIcon, BeakerIcon, SparklesIcon, TruckIcon, AcademicCapIcon } from '../components/Icon';
+import { AcademicCapIcon, BeakerIcon, CalendarIcon, ClockIcon, CurrencyDollarIcon, DocumentTextIcon, ShieldCheckIcon, SparklesIcon, TruckIcon, UsersIcon } from '../components/Icon';
 import StatCard from '../components/StatCard';
+import { AdvanceRequest, AttendanceRecord, EmployeeBenefit, EmployeeData, GeneralRequest, GeneralRequestType, LeaveRequest, LeaveType, RequestStatus, SalaryPayment, User } from '../types';
 
 interface EmployeePortalProps {
     user: User;
@@ -28,11 +28,11 @@ const benefitIcons: { [key: string]: React.FC<any> } = {
 const BenefitCard: React.FC<{ benefit: EmployeeBenefit }> = ({ benefit }) => {
     const Icon = benefitIcons[benefit.icon] || UsersIcon; // UsersIcon as a fallback
     return (
-        <div className="glass-pane" style={{ padding: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '1rem', borderLeft: '4px solid var(--primary-color)' }}>
-            <Icon style={{ width: '28px', height: '28px', color: 'var(--primary-color)', flexShrink: 0, marginTop: '4px' }} />
-            <div>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>{benefit.title}</h4>
-                <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem' }}>{benefit.description}</p>
+        <div className="glass-pane benefit-card">
+            <Icon className="benefit-icon" />
+            <div className="benefit-content">
+                <h4>{benefit.title}</h4>
+                <p>{benefit.description}</p>
             </div>
         </div>
     );
@@ -129,32 +129,32 @@ const EmployeePortal: React.FC<EmployeePortalProps> = (props) => {
 
     return (
         <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div className="glass-pane" style={{ padding: '1.5rem' }}>
+            <div className="employee-portal-container">
+                <div className="glass-pane employee-welcome-section">
                     <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>مرحباً, {currentEmployee.name}</h2>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>{currentEmployee.position}</p>
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                <div className="employee-stats-grid">
                     <StatCard title="رصيد الإجازات المتبقي" value={`${leaveBalance.remaining} يوم`} icon={CalendarIcon} iconBg="linear-gradient(135deg, #3b82f6, #60a5fa)" />
                     <StatCard title="إجمالي السلف" value={`${currentEmployee.advances.toLocaleString()} د.ك`} icon={CurrencyDollarIcon} iconBg="linear-gradient(135deg, #f59e0b, #fbbf24)" />
                     <StatCard title="صافي الراتب الأخير" value={`${(latestPayslip?.netSalary || 0).toLocaleString()} د.ك`} icon={DocumentTextIcon} iconBg="linear-gradient(135deg, #10b981, #34d399)" />
                 </div>
 
-                <div className="glass-pane" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                <div className="glass-pane employee-actions-section">
                     <button onClick={() => setModal('leave')} className="btn btn-primary">تقديم طلب إجازة</button>
                     <button onClick={() => setModal('advance')} className="btn btn-secondary">طلب سلفة</button>
                     <button onClick={() => setModal('general')} className="btn btn-ghost">طلب عام</button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                     <div className="glass-pane" style={{ gridColumn: 'span 2', padding: '1.5rem' }}>
+                <div className="employee-main-grid">
+                     <div className="glass-pane employee-benefits-section">
                         <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                              <SparklesIcon style={{width: '24px', height: '24px', color: 'var(--primary-color)'}} />
                             المزايا والفوائد
                         </h3>
                         {currentEmployee.benefits && currentEmployee.benefits.length > 0 ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+                            <div className="employee-benefits-grid">
                                 {currentEmployee.benefits.map((benefit, index) => (
                                     <BenefitCard key={index} benefit={benefit} />
                                 ))}
@@ -165,7 +165,7 @@ const EmployeePortal: React.FC<EmployeePortalProps> = (props) => {
                     </div>
 
                     <SalaryDetails payslip={latestPayslip} />
-                     <div className="glass-pane" style={{ padding: '1.5rem' }}>
+                     <div className="glass-pane attendance-section">
                         <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                              <ClockIcon style={{width: '24px', height: '24px', color: 'var(--primary-color)'}} />
                             سجل الحضور الأخير
@@ -193,11 +193,11 @@ const EmployeePortal: React.FC<EmployeePortalProps> = (props) => {
                             </table>
                         </div>
                     </div>
-                     <div className="glass-pane" style={{ gridColumn: 'span 2', padding: '1.5rem' }}>
+                     <div className="glass-pane employee-requests-section">
                         <MyRequestsView requests={myRequests} />
                     </div>
 
-                    <div className="glass-pane" style={{ gridColumn: 'span 2', padding: '1.5rem' }}>
+                    <div className="glass-pane employee-leave-history-section">
                         <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <CalendarIcon style={{ width: '24px', height: '24px', color: 'var(--primary-color)' }} />
                             سجل الإجازات
@@ -268,16 +268,16 @@ const MyRequestsView = ({ requests }: { requests: any[] }) => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className="employee-requests-controls">
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>طلباتي الأخيرة</h3>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <select className="form-select" value={filter} onChange={e => setFilter(e.target.value)} style={{ flexBasis: '200px' }}>
+                <div className="employee-requests-filters">
+                    <select className="form-select" value={filter} onChange={e => setFilter(e.target.value)}>
                         <option value="all">كل الطلبات</option>
                         <option value="Leave">الإجازات</option>
                         <option value="Advance">السلف</option>
                         <option value="General">الطلبات العامة</option>
                     </select>
-                    <select className="form-select" value={sort} onChange={e => setSort(e.target.value)} style={{ flexBasis: '200px' }}>
+                    <select className="form-select" value={sort} onChange={e => setSort(e.target.value)}>
                         <option value="date">الأحدث أولاً</option>
                         <option value="status">حسب الحالة</option>
                     </select>
@@ -295,7 +295,7 @@ const MyRequestsView = ({ requests }: { requests: any[] }) => {
 };
 
 const SalaryDetails: React.FC<{ payslip: SalaryPayment | null | undefined }> = ({ payslip }) => (
-    <div className="glass-pane" style={{ padding: '1.5rem' }}>
+    <div className="glass-pane salary-details-section">
         <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <DocumentTextIcon style={{width: '24px', height: '24px', color: 'var(--primary-color)'}} />
             تفاصيل الراتب
@@ -315,9 +315,9 @@ const SalaryDetails: React.FC<{ payslip: SalaryPayment | null | undefined }> = (
                 <PayslipRow label="إجازة غير مدفوعة" value={payslip.deductions.unpaidLeave} isDeduction />
                 <PayslipRow label="إجمالي الخصومات" value={payslip.deductions.total} isTotal isDeduction />
                 <hr style={{ border: 'none', borderTop: '1px solid var(--surface-border)', margin: '0.5rem 0' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                <div className="payslip-net-salary">
                     <span>صافي الراتب</span>
-                    <span style={{ color: 'var(--primary-color)' }}>
+                    <span className="amount">
                         {payslip.netSalary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} د.ك
                     </span>
                 </div>
@@ -331,8 +331,8 @@ const SalaryDetails: React.FC<{ payslip: SalaryPayment | null | undefined }> = (
 );
 
 const PayslipRow: React.FC<{ label: string, value: number, isTotal?: boolean, isDeduction?: boolean }> = ({ label, value, isTotal, isDeduction }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0', fontWeight: isTotal ? 'bold' : 'normal', fontSize: isTotal ? '1.05rem' : '1rem' }}>
-        <span style={{ color: isDeduction ? '#ef4444' : 'var(--text-primary)' }}>{label}</span>
+    <div className={`payslip-row ${isTotal ? 'total' : ''} ${isDeduction ? 'deduction' : ''}`}>
+        <span className="label">{label}</span>
         <span>{value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} د.ك</span>
     </div>
 );

@@ -42,7 +42,12 @@ const allNavItems: NavItem[] = [
     {
         name: 'المبيعات', view: 'Sales', icon: DocumentTextIcon, permission: 'sales:read',
         children: [
-            { name: 'إدارة الفواتير', view: 'Sales' },
+            { name: 'إدارة الفواتير', view: 'Sales/Invoices' },
+            { name: 'إدارة عروض الأسعار', view: 'Sales/Quotations' },
+            { name: 'الفواتير المرتجعة', view: 'Sales/Returns' },
+            { name: 'الإشعارات الدائنة', view: 'Sales/CreditNotes' },
+            { name: 'الفواتير الدورية', view: 'Sales/Recurring' },
+            { name: 'مدفوعات العملاء', view: 'Sales/Payments' },
         ]
     },
     {
@@ -52,14 +57,19 @@ const allNavItems: NavItem[] = [
             { name: 'الجلسات', view: 'POS/Sessions' },
         ]
     },
+    { name: 'العملاء', view: 'Customers', icon: UserIcon },
     {
-        name: 'العملاء', view: 'Customers', icon: UserIcon,
-    },
-    {
-        name: 'المنتجات', view: 'Products', icon: CubeIcon, permission: 'products:read',
+        name: 'المخزون', view: 'Inventory', icon: CubeIcon, permission: 'inventory:read',
         children: [
-            { name: 'كتالوج المنتجات', view: 'Products/Catalog' },
-            { name: 'المخزون', view: 'Products/Inventory' },
+            { name: 'إدارة المنتجات', view: 'Inventory/Products' },
+            { name: 'إدارة الإذون المخزنية', view: 'Inventory/Vouchers' },
+            { name: 'الطلبيات المخزنية', view: 'Inventory/Requisitions' },
+            { name: 'تتبع المنتجات', view: 'Inventory/Tracking' },
+            { name: 'قوائم الأسعار', view: 'Inventory/Pricelists' },
+            { name: 'المستودعات', view: 'Branches' },
+            { name: 'إدارة الجرد', view: 'Inventory/Stocktakes' },
+            { name: 'إعدادات المخزون', view: 'Settings/Inventory' },
+            { name: 'إعدادات المنتجات', view: 'Settings/Products' },
         ]
     },
     {
@@ -71,6 +81,17 @@ const allNavItems: NavItem[] = [
     },
     {
         name: 'المشتريات', view: 'Purchases', icon: TruckIcon, permission: 'purchases:read',
+        children: [
+            { name: 'إدارة الموردين', view: 'Purchases/Suppliers' },
+            { name: 'طلبات الشراء', view: 'Purchases/Requests' },
+            { name: 'طلبات عروض الأسعار', view: 'Purchases/RFQs' },
+            { name: 'عروض أسعار الموردين', view: 'Purchases/Quotations' },
+            { name: 'أوامر الشراء', view: 'Purchases/Orders' },
+            { name: 'فواتير الشراء', view: 'Purchases/Invoices' },
+            { name: 'مرتجعات المشتريات', view: 'Purchases/Returns' },
+            { name: 'الإشعارات المدينة', view: 'Purchases/DebitNotes' },
+            { name: 'مدفوعات الموردين', view: 'Purchases/Payments' },
+        ]
     },
     {
         name: 'المالية', view: 'Finance', icon: SafeIcon,
@@ -97,27 +118,20 @@ const allNavItems: NavItem[] = [
             { name: 'الرواتب والكشوف', view: 'HR/Salaries', permission: 'payroll:read' },
         ]
     },
-    {
-        name: 'المنظمة', view: 'Organization', icon: HierarchyIcon,
-        children: [
-            { name: 'إدارة الفروع', view: 'Branches' },
-        ]
-    },
-    {
-        name: 'التجديدات', view: 'Renewals', icon: CalendarIcon, permission: 'licenses:read',
-    },
+    { name: 'المنظمة', view: 'Organization', icon: HierarchyIcon, children: [{ name: 'إدارة الفروع', view: 'Branches' }] },
+    { name: 'التجديدات والتراخيص', view: 'Renewals', icon: CalendarIcon, permission: 'licenses:read' },
     {
         name: 'التقارير', view: 'Reports', icon: ChartBarIcon, permission: 'reports:read:full',
         children: [
-            { name: 'ملخص التقارير', view: 'Reports/Summary' },
-            { name: 'تقرير المبيعات', view: 'Reports/Sales' },
+            { name: 'ملخص', view: 'Reports/Summary' },
+            { name: 'المبيعات', view: 'Reports/Sales' },
             { name: 'أداء العلامات التجارية', view: 'Reports/BrandPerformance' },
             { name: 'مبيعات الفروع', view: 'Reports/BranchSales' },
-            { name: 'تقرير المشتريات', view: 'Reports/Purchases' },
             { name: 'مبيعات المنتجات', view: 'Reports/Products' },
-            { name: 'تقرير المصروفات', view: 'Reports/Expenses' },
-            { name: 'أرصدة العملاء', view: 'Reports/Customers' },
-            { name: 'كشف الحسابات', view: 'Reports/Accounts' },
+            { name: 'المشتريات', view: 'Reports/Purchases' },
+            { name: 'المصروفات', view: 'Reports/Expenses' },
+            { name: 'العملاء', view: 'Reports/Customers' },
+            { name: 'الحسابات المالية', view: 'Reports/Accounts' },
             { name: 'توقعات المبيعات (AI)', view: 'Reports/Forecast' },
         ]
     },
@@ -125,8 +139,11 @@ const allNavItems: NavItem[] = [
         name: 'الإعدادات', view: 'Settings', icon: CogIcon, permission: 'settings:manage',
         children: [
             { name: 'عام', view: 'Settings/General' },
+            { name: 'المبيعات', view: 'Settings/Sales' },
+            { name: 'المشتريات', view: 'Settings/Purchases' },
+            { name: 'الموردين', view: 'Settings/Suppliers' },
             { name: 'المستخدمين', view: 'Users' },
-            { name: 'التكاملات', view: 'Settings/Integrations', permission: 'integrations:manage'},
+            { name: 'التكاملات', view: 'Settings/Integrations', permission: 'integrations:manage' },
         ]
     },
 ];

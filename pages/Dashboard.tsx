@@ -1,11 +1,11 @@
 
 
-import React, { useMemo, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import React, { useMemo } from 'react';
+import { CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ChartBarIcon, CubeIcon, CurrencyDollarIcon, ExclamationIcon, Icon, ShoppingCartIcon, TruckIcon, UsersIcon } from '../components/Icon';
 import StatCard from '../components/StatCard';
 import TargetStatCard from '../components/TargetStatCard';
-import { CurrencyDollarIcon, ShoppingCartIcon, UsersIcon, ChartBarIcon, ExclamationIcon, CubeIcon, TruckIcon, PlusIcon, Icon } from '../components/Icon';
-import { Sale, PurchaseInvoice, EmployeeData, InventoryItem, Product, Branch, Account, Expense, RenewableItem, LeaveRequest, AdvanceRequest, GeneralRequest, ExpenseCategory, Supplier } from '../types';
+import { Account, AdvanceRequest, Branch, EmployeeData, Expense, ExpenseCategory, GeneralRequest, InventoryItem, LeaveRequest, Product, PurchaseInvoice, RenewableItem, Sale, Supplier } from '../types';
 
 interface DashboardProps {
     sales: Sale[];
@@ -171,7 +171,7 @@ const Dashboard: React.FC<DashboardProps> = ({ sales, purchases, employees, inve
     }, [sales, products]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="dashboard-container">
             {lowStockItems.length > 0 && (
                 <div className="glass-pane" style={{ padding: '1.5rem', borderLeft: '5px solid #f59e0b' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -195,9 +195,9 @@ const Dashboard: React.FC<DashboardProps> = ({ sales, purchases, employees, inve
                 </div>
             )}
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2.5fr', gap: '1.5rem', alignItems: 'flex-start' }}>
+            <div className="dashboard-main-grid-alt">
                 {/* Left Column: Stats */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="dashboard-stats-column">
                     <StatCard title="إجمالي المبيعات" value={`${totalSales.toLocaleString()} د.ك`} icon={CurrencyDollarIcon} iconBg="linear-gradient(135deg, #10b981, #34d399)" />
                     <StatCard title="إجمالي المشتريات" value={`${totalPurchases.toLocaleString()} د.ك`} icon={ShoppingCartIcon} iconBg="linear-gradient(135deg, #3b82f6, #60a5fa)" />
                     <StatCard title="عدد الموظفين" value={totalEmployees.toString()} icon={UsersIcon} iconBg="linear-gradient(135deg, #8b5cf6, #a78bfa)" />
@@ -212,7 +212,7 @@ const Dashboard: React.FC<DashboardProps> = ({ sales, purchases, employees, inve
                 </div>
 
                 {/* Right Column: Charts & Activity */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="dashboard-charts-column">
                     <div className="glass-pane" style={{ padding: '1.5rem' }}>
                         <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem' }}>الأداء الشهري (مبيعات مقابل مشتريات)</h3>
                         <ResponsiveContainer width="100%" height={300}>
@@ -236,12 +236,12 @@ const Dashboard: React.FC<DashboardProps> = ({ sales, purchases, employees, inve
                         </ResponsiveContainer>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                    <div className="dashboard-charts-grid">
                         <div className="glass-pane" style={{ padding: '1.5rem', minHeight: '350px' }}>
                             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>توزيع المصروفات</h3>
                             <ResponsiveContainer width="100%" height={280}>
                                 <PieChart>
-                                    <Pie data={expensesByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}>
+                                    <Pie data={expensesByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={({ percent }: any) => `${(percent * 100).toFixed(0)}%`}>
                                         {expensesByCategory.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                                     </Pie>
                                     <Tooltip formatter={(value: number, name: string) => [`${(value as number).toLocaleString()} د.ك`, name]} contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }}/>
