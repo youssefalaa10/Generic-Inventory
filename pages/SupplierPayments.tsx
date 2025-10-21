@@ -1,6 +1,6 @@
 import React from 'react';
-import { SupplierPayment, Supplier } from '../types';
 import { PlusIcon } from '../components/Icon';
+import { Supplier, SupplierPayment } from '../types';
 
 interface SupplierPaymentsProps {
     payments: SupplierPayment[];
@@ -12,16 +12,18 @@ const SupplierPayments: React.FC<SupplierPaymentsProps> = ({ payments, suppliers
     const getSupplierName = (id: number) => suppliers.find(s => s.id === id)?.name || 'N/A';
 
     return (
-        <div className="glass-pane" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>مدفوعات الموردين</h3>
-                <button className="btn btn-primary">
-                    <PlusIcon style={{ width: '20px', height: '20px' }} />
-                    تسجيل دفعة جديدة
-                </button>
+        <div className="glass-pane supplier-payments-container" style={{ padding: '1.5rem' }}>
+            <div className="supplier-payments-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 className="supplier-payments-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>مدفوعات الموردين</h3>
+                <div className="supplier-payments-actions">
+                    <button className="btn btn-primary supplier-payments-button">
+                        <PlusIcon style={{ width: '20px', height: '20px' }} />
+                        تسجيل دفعة جديدة
+                    </button>
+                </div>
             </div>
-            <div className="table-wrapper">
-                <table>
+            <div className="supplier-payments-table-wrapper table-wrapper">
+                <table className="supplier-payments-table">
                     <thead>
                         <tr>
                             <th>رقم الدفعة</th>
@@ -37,7 +39,7 @@ const SupplierPayments: React.FC<SupplierPaymentsProps> = ({ payments, suppliers
                                 <td>#{p.id}</td>
                                 <td>{new Date(p.date).toLocaleDateString('ar-EG')}</td>
                                 <td>{getSupplierName(p.supplierId)}</td>
-                                <td style={{fontWeight: 600, color: 'var(--secondary-color)'}}>{p.amount.toLocaleString()} د.ك</td>
+                                <td className="supplier-payments-amount" style={{fontWeight: 600, color: 'var(--secondary-color)'}}>{p.amount.toLocaleString()} د.ك</td>
                                 <td>{p.paymentMethod}</td>
                             </tr>
                         ))}

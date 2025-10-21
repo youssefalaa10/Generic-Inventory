@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { PurchaseQuotation, Supplier, RequestForQuotation, Product } from '../types';
 import { PlusIcon } from '../components/Icon';
 import PurchaseQuotationModal from '../components/PurchaseQuotationModal';
+import { Product, PurchaseQuotation, RequestForQuotation, Supplier } from '../types';
 
 interface PurchaseQuotationsProps {
     quotations: PurchaseQuotation[];
@@ -40,16 +40,18 @@ const PurchaseQuotations: React.FC<PurchaseQuotationsProps> = ({ quotations, sup
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>عروض أسعار الموردين</h3>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        إضافة عرض سعر
-                    </button>
+            <div className="glass-pane purchase-quotations-container" style={{ padding: '1.5rem' }}>
+                <div className="purchase-quotations-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="purchase-quotations-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>عروض أسعار الموردين</h3>
+                    <div className="purchase-quotations-actions">
+                        <button className="btn btn-primary purchase-quotations-button" onClick={handleAddNew}>
+                            <PlusIcon style={{ width: '20px', height: '20px' }} />
+                            إضافة عرض سعر
+                        </button>
+                    </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="purchase-quotations-table-wrapper table-wrapper">
+                    <table className="purchase-quotations-table">
                         <thead>
                             <tr>
                                 <th>رقم العرض</th>
@@ -67,7 +69,7 @@ const PurchaseQuotations: React.FC<PurchaseQuotationsProps> = ({ quotations, sup
                                     <td>#{q.rfqId}</td>
                                     <td>{getSupplierName(q.supplierId)}</td>
                                     <td>{new Date(q.date).toLocaleDateString('ar-EG')}</td>
-                                    <td style={{fontWeight: 600}}>{q.totalAmount.toLocaleString()} د.ك</td>
+                                    <td className="purchase-quotations-amount" style={{fontWeight: 600}}>{q.totalAmount.toLocaleString()} د.ك</td>
                                     <td>{getStatusChip(q.status)}</td>
                                 </tr>
                             ))}

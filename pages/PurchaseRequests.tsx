@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { PurchaseRequest, EmployeeData, Branch, Product } from '../types';
 import { PlusIcon } from '../components/Icon';
 import PurchaseRequestModal from '../components/PurchaseRequestModal';
+import { Branch, EmployeeData, Product, PurchaseRequest } from '../types';
 
 interface PurchaseRequestsProps {
     requests: PurchaseRequest[];
@@ -43,16 +43,18 @@ const PurchaseRequests: React.FC<PurchaseRequestsProps> = ({ requests, employees
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>طلبات الشراء</h3>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        طلب شراء جديد
-                    </button>
+            <div className="glass-pane purchase-requests-container" style={{ padding: '1.5rem' }}>
+                <div className="purchase-requests-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="purchase-requests-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>طلبات الشراء</h3>
+                    <div className="purchase-requests-actions">
+                        <button className="btn btn-primary purchase-requests-button" onClick={handleAddNew}>
+                            <PlusIcon style={{ width: '20px', height: '20px' }} />
+                            طلب شراء جديد
+                        </button>
+                    </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="purchase-requests-table-wrapper table-wrapper">
+                    <table className="purchase-requests-table">
                         <thead>
                             <tr>
                                 <th>رقم الطلب</th>

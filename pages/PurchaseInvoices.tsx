@@ -1,12 +1,12 @@
-import React, { useState, useContext, ChangeEvent } from 'react';
+import React, { ChangeEvent, useContext, useState } from 'react';
 import { AuthContext } from '../App';
 // FIX: Replaced non-existent types 'Purchase' and 'PurchaseItem' with 'PurchaseInvoice' and 'PurchaseInvoiceItem'.
-import { PurchaseInvoice, InvoiceData, Branch, Product, PurchaseInvoiceItem, PurchaseOrderSuggestionContext, SuggestedPurchaseOrderItem, Sale, InventoryItem, Supplier } from '../types';
-import { getPurchaseOrderSuggestion, scanInvoiceWithGemini } from '../services/geminiService';
+import AIPurchaseOrderModal from '../components/AIPurchaseOrderModal';
 import { SparklesIcon } from '../components/Icon';
 import PurchaseDetailModal from '../components/PurchaseDetailModal';
 import { useToasts } from '../components/Toast';
-import AIPurchaseOrderModal from '../components/AIPurchaseOrderModal';
+import { getPurchaseOrderSuggestion, scanInvoiceWithGemini } from '../services/geminiService';
+import { Branch, InventoryItem, InvoiceData, Product, PurchaseInvoice, PurchaseInvoiceItem, PurchaseOrderSuggestionContext, Sale, SuggestedPurchaseOrderItem, Supplier } from '../types';
 
 interface PurchaseInvoicesProps {
     invoices: PurchaseInvoice[];
@@ -165,38 +165,38 @@ const PurchaseInvoices: React.FC<PurchaseInvoicesProps> = ({ invoices, onSave, b
 
     return (
         <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div className="glass-pane" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="purchase-invoices-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="glass-pane purchase-invoices-header" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' }}>إضافة فاتورة شراء</h3>
-                        <p style={{ color: 'var(--text-secondary)' }}>أضف فاتورة يدوياً أو استخدم الأدوات الذكية</p>
+                        <h3 className="purchase-invoices-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' }}>إضافة فاتورة شراء</h3>
+                        <p className="purchase-invoices-description" style={{ color: 'var(--text-secondary)' }}>أضف فاتورة يدوياً أو استخدم الأدوات الذكية</p>
                     </div>
-                   <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button onClick={() => setIsAiModalOpen(true)} className="btn btn-primary">
+                   <div className="purchase-invoices-actions" style={{ display: 'flex', gap: '1rem' }}>
+                        <button onClick={() => setIsAiModalOpen(true)} className="btn btn-primary purchase-invoices-button">
                             <SparklesIcon style={{width: '20px', height: '20px'}}/>
                             <span>اقتراح أمر شراء (AI)</span>
                         </button>
-                        <label className={`btn btn-warning ${isScanning ? 'opacity-50' : ''}`}>
+                        <label className={`btn btn-warning purchase-invoices-button ${isScanning ? 'opacity-50' : ''}`}>
                             <SparklesIcon style={{width: '20px', height: '20px'}}/>
                             <span>{isScanning ? 'جاري المسح...' : 'مسح فاتورة (AI)'}</span>
                             <input type="file" style={{ display: 'none' }} onChange={handleFileChange} disabled={isScanning} accept="image/png, image/jpeg, application/pdf" />
                         </label>
-                        {hasPermission('create') && <button onClick={handleAddNew} className="btn btn-ghost">إضافة يدوية</button>}
+                        {hasPermission('create') && <button onClick={handleAddNew} className="btn btn-ghost purchase-invoices-button">إضافة يدوية</button>}
                    </div>
                 </div>
 
-                <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>سجل فواتير المشتريات</h3>
-                        <div style={{ width: '250px' }}>
+                <div className="glass-pane purchase-invoices-section" style={{ padding: '1.5rem' }}>
+                    <div className="purchase-invoices-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 className="purchase-invoices-section-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>سجل فواتير المشتريات</h3>
+                        <div className="purchase-invoices-filter" style={{ width: '250px' }}>
                             <select onChange={(e) => setFilterBranch(e.target.value)} value={filterBranch} className="form-select">
                                 <option value="all">كل الفروع</option>
                                 {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                             </select>
                         </div>
                     </div>
-                    <div className="table-wrapper">
-                        <table>
+                    <div className="purchase-invoices-table-wrapper table-wrapper">
+                        <table className="purchase-invoices-table">
                             <thead>
                                 <tr>
                                     <th>المعرف</th>
@@ -214,7 +214,7 @@ const PurchaseInvoices: React.FC<PurchaseInvoicesProps> = ({ invoices, onSave, b
                                         <td>{p.brand}</td>
                                         <td>{suppliers.find(s => s.id === p.supplierId)?.name}</td>
                                         <td>{p.date}</td>
-                                        <td style={{ color: '#34d399', fontWeight: '600' }}>{p.amount.toLocaleString()} د.ك</td>
+                                        <td className="purchase-invoices-amount" style={{ color: '#34d399', fontWeight: '600' }}>{p.amount.toLocaleString()} د.ك</td>
                                         <td>
                                             <span style={{
                                                 padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderRadius: '9999px',

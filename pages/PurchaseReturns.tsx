@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { PurchaseReturn, Supplier, Product } from '../types';
 import { PlusIcon } from '../components/Icon';
 import PurchaseReturnModal from '../components/PurchaseReturnModal';
+import { Product, PurchaseReturn, Supplier } from '../types';
 
 
 interface PurchaseReturnsProps {
@@ -38,16 +38,18 @@ const PurchaseReturns: React.FC<PurchaseReturnsProps> = ({ returns, suppliers, p
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>مرتجعات المشتريات</h3>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        مرتجع جديد
-                    </button>
+            <div className="glass-pane purchase-returns-container" style={{ padding: '1.5rem' }}>
+                <div className="purchase-returns-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="purchase-returns-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>مرتجعات المشتريات</h3>
+                    <div className="purchase-returns-actions">
+                        <button className="btn btn-primary purchase-returns-button" onClick={handleAddNew}>
+                            <PlusIcon style={{ width: '20px', height: '20px' }} />
+                            مرتجع جديد
+                        </button>
+                    </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="purchase-returns-table-wrapper table-wrapper">
+                    <table className="purchase-returns-table">
                         <thead>
                             <tr>
                                 <th>رقم المرتجع</th>
@@ -65,7 +67,7 @@ const PurchaseReturns: React.FC<PurchaseReturnsProps> = ({ returns, suppliers, p
                                     <td>{new Date(ret.date).toLocaleDateString('ar-EG')}</td>
                                     <td>{getSupplierName(ret.supplierId)}</td>
                                     <td>#{ret.purchaseInvoiceId}</td>
-                                    <td style={{fontWeight: 600, color: '#ef4444'}}>{ret.totalReturnedAmount.toLocaleString()} د.ك</td>
+                                    <td className="purchase-returns-amount" style={{fontWeight: 600, color: '#ef4444'}}>{ret.totalReturnedAmount.toLocaleString()} د.ك</td>
                                     <td>{getStatusChip(ret.status)}</td>
                                 </tr>
                             ))}

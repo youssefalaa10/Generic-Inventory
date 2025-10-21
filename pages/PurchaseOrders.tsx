@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { PurchaseOrder, Supplier, Product, PurchaseQuotation } from '../types';
 import { PlusIcon } from '../components/Icon';
 import PurchaseOrderModal from '../components/PurchaseOrderModal';
+import { Product, PurchaseOrder, PurchaseQuotation, Supplier } from '../types';
 
 interface PurchaseOrdersProps {
     orders: PurchaseOrder[];
@@ -42,16 +42,18 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ orders, suppliers, prod
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>أوامر الشراء (PO)</h3>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        أمر شراء جديد
-                    </button>
+            <div className="glass-pane purchase-orders-container" style={{ padding: '1.5rem' }}>
+                <div className="purchase-orders-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="purchase-orders-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>أوامر الشراء (PO)</h3>
+                    <div className="purchase-orders-actions">
+                        <button className="btn btn-primary purchase-orders-button" onClick={handleAddNew}>
+                            <PlusIcon style={{ width: '20px', height: '20px' }} />
+                            أمر شراء جديد
+                        </button>
+                    </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="purchase-orders-table-wrapper table-wrapper">
+                    <table className="purchase-orders-table">
                         <thead>
                             <tr>
                                 <th>رقم الأمر</th>
@@ -67,7 +69,7 @@ const PurchaseOrders: React.FC<PurchaseOrdersProps> = ({ orders, suppliers, prod
                                     <td>#{order.id}</td>
                                     <td>{new Date(order.date).toLocaleDateString('ar-EG')}</td>
                                     <td>{getSupplierName(order.supplierId)}</td>
-                                    <td style={{fontWeight: 600}}>{order.totalAmount.toLocaleString()} د.ك</td>
+                                    <td className="purchase-orders-amount" style={{fontWeight: 600}}>{order.totalAmount.toLocaleString()} د.ك</td>
                                     <td>{getStatusChip(order.status)}</td>
                                 </tr>
                             ))}

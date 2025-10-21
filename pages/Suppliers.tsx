@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Supplier } from '../types';
-import { useToasts } from '../components/Toast';
 import { PencilIcon, PlusIcon } from '../components/Icon';
 import SupplierModal from '../components/SupplierModal';
+import { useToasts } from '../components/Toast';
+import { Supplier } from '../types';
 
 interface SuppliersProps {
     suppliers: Supplier[];
@@ -46,18 +46,20 @@ const Suppliers: React.FC<SuppliersProps> = ({ suppliers, onSave }) => {
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className="glass-pane suppliers-container" style={{ padding: '1.5rem' }}>
+                <div className="suppliers-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة الموردين</h3>
-                        <p style={{ color: 'var(--text-secondary)'}}>عرض وإدارة قائمة الموردين.</p>
+                        <h3 className="suppliers-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة الموردين</h3>
+                        <p className="suppliers-description" style={{ color: 'var(--text-secondary)'}}>عرض وإدارة قائمة الموردين.</p>
                     </div>
-                    <button onClick={handleAddNew} className="btn btn-primary">
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        إضافة مورد جديد
-                    </button>
+                    <div className="suppliers-actions">
+                        <button onClick={handleAddNew} className="btn btn-primary suppliers-button">
+                            <PlusIcon style={{ width: '20px', height: '20px' }} />
+                            إضافة مورد جديد
+                        </button>
+                    </div>
                 </div>
-                 <div style={{ marginBottom: '1rem' }}>
+                 <div className="suppliers-search" style={{ marginBottom: '1rem' }}>
                     <input 
                         type="text"
                         placeholder="ابحث بالاسم، جهة الاتصال، أو الهاتف..."
@@ -66,8 +68,8 @@ const Suppliers: React.FC<SuppliersProps> = ({ suppliers, onSave }) => {
                         className="form-input"
                     />
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="suppliers-table-wrapper table-wrapper">
+                    <table className="suppliers-table">
                         <thead>
                             <tr>
                                 <th>اسم المورد</th>
@@ -86,8 +88,8 @@ const Suppliers: React.FC<SuppliersProps> = ({ suppliers, onSave }) => {
                                     <td>{supplier.phone}</td>
                                     <td>{supplier.email}</td>
                                     <td>{formatBalance(supplier.balance)}</td>
-                                    <td>
-                                        <button onClick={() => handleEdit(supplier)} style={{color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="تعديل المورد">
+                                    <td className="suppliers-actions">
+                                        <button onClick={() => handleEdit(supplier)} className="suppliers-button" style={{color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="تعديل المورد">
                                             <PencilIcon style={{width:'20px', height:'20px'}}/>
                                         </button>
                                     </td>

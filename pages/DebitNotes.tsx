@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { DebitNote, Supplier, Product } from '../types';
-import { PlusIcon } from '../components/Icon';
 import DebitNoteModal from '../components/DebitNoteModal';
+import { PlusIcon } from '../components/Icon';
+import { DebitNote, Product, Supplier } from '../types';
 
 interface DebitNotesProps {
     notes: DebitNote[];
@@ -28,16 +28,18 @@ const DebitNotes: React.FC<DebitNotesProps> = ({ notes, suppliers, products, onS
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>الإشعارات المدينة</h3>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        إشعار مدين جديد
-                    </button>
+            <div className="glass-pane debit-notes-container" style={{ padding: '1.5rem' }}>
+                <div className="debit-notes-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="debit-notes-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>الإشعارات المدينة</h3>
+                    <div className="debit-notes-actions">
+                        <button className="btn btn-primary debit-notes-button" onClick={handleAddNew}>
+                            <PlusIcon style={{ width: '20px', height: '20px' }} />
+                            إشعار مدين جديد
+                        </button>
+                    </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="debit-notes-table-wrapper table-wrapper">
+                    <table className="debit-notes-table">
                         <thead>
                             <tr>
                                 <th>رقم الإشعار</th>
@@ -54,7 +56,7 @@ const DebitNotes: React.FC<DebitNotesProps> = ({ notes, suppliers, products, onS
                                     <td>{new Date(note.date).toLocaleDateString('ar-EG')}</td>
                                     <td>{getSupplierName(note.supplierId)}</td>
                                     <td>#{note.purchaseReturnId}</td>
-                                    <td style={{fontWeight: 600, color: '#ef4444'}}>{note.amount.toLocaleString()} د.ك</td>
+                                    <td className="debit-notes-amount" style={{fontWeight: 600, color: '#ef4444'}}>{note.amount.toLocaleString()} د.ك</td>
                                 </tr>
                             ))}
                         </tbody>

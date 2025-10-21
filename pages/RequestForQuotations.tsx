@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { RequestForQuotation, Supplier, Product, PurchaseRequest } from '../types';
 import { PlusIcon } from '../components/Icon';
 import RequestForQuotationModal from '../components/RequestForQuotationModal';
+import { Product, PurchaseRequest, RequestForQuotation, Supplier } from '../types';
 
 interface RequestForQuotationsProps {
     rfqs: RequestForQuotation[];
@@ -38,16 +38,18 @@ const RequestForQuotations: React.FC<RequestForQuotationsProps> = ({ rfqs, suppl
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>طلبات عروض الأسعار (RFQ)</h3>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        إنشاء طلب جديد
-                    </button>
+            <div className="glass-pane rfq-container" style={{ padding: '1.5rem' }}>
+                <div className="rfq-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="rfq-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>طلبات عروض الأسعار (RFQ)</h3>
+                    <div className="rfq-actions">
+                        <button className="btn btn-primary rfq-button" onClick={handleAddNew}>
+                            <PlusIcon style={{ width: '20px', height: '20px' }} />
+                            إنشاء طلب جديد
+                        </button>
+                    </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="rfq-table-wrapper table-wrapper">
+                    <table className="rfq-table">
                         <thead>
                             <tr>
                                 <th>رقم الطلب</th>
