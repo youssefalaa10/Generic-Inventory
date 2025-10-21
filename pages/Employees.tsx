@@ -1,10 +1,10 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../App';
-import { EmployeeData, Branch } from '../types';
-import EmployeeModal from '../components/EmployeeModal';
-import { useToasts } from '../components/Toast';
-import { PencilIcon, TrashIcon } from '../components/Icon';
 import ConfirmationModal from '../components/ConfirmationModal';
+import EmployeeModal from '../components/EmployeeModal';
+import { PencilIcon, TrashIcon } from '../components/Icon';
+import { useToasts } from '../components/Toast';
+import { Branch, EmployeeData } from '../types';
 
 interface EmployeesProps {
     employees: EmployeeData[];

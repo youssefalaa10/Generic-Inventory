@@ -1,9 +1,9 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../App';
-import { Branch } from '../types';
-import { useToasts } from '../components/Toast';
-import { PencilIcon } from '../components/Icon';
 import BranchModal from '../components/BranchModal';
+import { PencilIcon } from '../components/Icon';
+import { useToasts } from '../components/Toast';
+import { Branch } from '../types';
 
 interface BranchesProps {
     branches: Branch[];

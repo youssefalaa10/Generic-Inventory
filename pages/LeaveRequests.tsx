@@ -1,6 +1,6 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { AuthContext } from '../App';
-import { EmployeeData, LeaveRequest, RequestStatus, LeaveType } from '../types';
+import { EmployeeData, LeaveRequest, LeaveType, RequestStatus } from '../types';
 
 interface LeaveRequestsProps {
     employees: EmployeeData[];

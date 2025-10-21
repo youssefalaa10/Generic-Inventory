@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { EmployeeData, AttendanceRecord, AttendanceStatus } from '../types';
+import React, { useMemo, useState } from 'react';
+import { AttendanceRecord, AttendanceStatus, EmployeeData } from '../types';
 
 interface AttendanceProps {
     employees: EmployeeData[];

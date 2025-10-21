@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { Sale, PurchaseInvoice, Product, Branch, Expense, Customer, FinancialAccount, ExpenseCategory, SaleItem, Supplier } from '../types';
-import { ResponsiveContainer, BarChart, XAxis, YAxis, Tooltip, Legend, Bar, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from 'recharts';
+import React, { useMemo, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ChartBarIcon, CubeIcon, CurrencyDollarIcon, DocumentTextIcon, PrinterIcon, ShoppingCartIcon, SparklesIcon } from '../components/Icon';
 import StatCard from '../components/StatCard';
-import { CurrencyDollarIcon, ShoppingCartIcon, ChartBarIcon, PrinterIcon, SparklesIcon, CubeIcon, DocumentTextIcon } from '../components/Icon';
-import { getSalesForecastWithGemini } from '../services/geminiService';
 import { useToasts } from '../components/Toast';
+import { getSalesForecastWithGemini } from '../services/geminiService';
+import { Branch, Customer, Expense, ExpenseCategory, FinancialAccount, Product, PurchaseInvoice, Sale, SaleItem, Supplier } from '../types';
 
 interface ReportsProps {
     sales: Sale[];
@@ -46,23 +46,23 @@ const FilterBar: React.FC<{
     };
 
     return (
-        <div className="glass-pane" style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>مرشحات التقرير</h3>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="glass-pane reports-filter-bar" style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+            <h3 className="reports-filter-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>مرشحات التقرير</h3>
+            <div className="reports-filter-controls" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 {showDateFilter && (
-                    <>
-                        <input type="date" name="start" value={filters.start} onChange={handleInputChange} className="form-input" style={{width: '180px'}}/>
+                    <div className="reports-date-inputs">
+                        <input type="date" name="start" value={filters.start} onChange={handleInputChange} className="form-input reports-date-input" style={{width: '180px'}}/>
                         <span>إلى</span>
-                        <input type="date" name="end" value={filters.end} onChange={handleInputChange} className="form-input" style={{width: '180px'}}/>
-                    </>
+                        <input type="date" name="end" value={filters.end} onChange={handleInputChange} className="form-input reports-date-input" style={{width: '180px'}}/>
+                    </div>
                 )}
                 {showBranchFilter && (
-                    <select name="branch" value={filters.branch} onChange={handleInputChange} className="form-select" style={{width: '220px'}}>
+                    <select name="branch" value={filters.branch} onChange={handleInputChange} className="form-select reports-branch-select" style={{width: '220px'}}>
                         <option value="all">كل الفروع</option>
                         {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                     </select>
                 )}
-                 <button className="btn btn-ghost">
+                 <button className="btn btn-ghost reports-print-button">
                     <PrinterIcon style={{width: '20px', height: '20px'}}/>
                     طباعة التقرير
                 </button>
@@ -107,27 +107,29 @@ const BrandPerformanceReport: React.FC<{sales: Sale[], filters: any}> = ({ sales
     }, [sales, filters]);
 
     return (
-        <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
-            <div className="glass-pane" style={{ padding: '1.5rem', height: '400px' }}>
-                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>مقارنة المبيعات بين العلامات التجارية</h3>
-                 <ResponsiveContainer width="100%" height="calc(100% - 40px)">
-                    <BarChart data={brandData.chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
-                        <XAxis dataKey="name" stroke="var(--text-secondary)" />
-                        <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
-                        <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}}/>
-                        <Bar dataKey="sales" name="المبيعات" radius={[8, 8, 0, 0]}>
-                            {brandData.chartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                 </ResponsiveContainer>
+        <div className="reports-brand-performance-container" style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
+            <div className="glass-pane reports-chart-container" style={{ padding: '1.5rem', height: '400px' }}>
+                 <h3 className="reports-chart-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>مقارنة المبيعات بين العلامات التجارية</h3>
+                 <div className="reports-chart-wrapper">
+                     <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                        <BarChart data={brandData.chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
+                            <XAxis dataKey="name" stroke="var(--text-secondary)" />
+                            <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
+                            <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}}/>
+                            <Bar dataKey="sales" name="المبيعات" radius={[8, 8, 0, 0]}>
+                                {brandData.chartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                     </ResponsiveContainer>
+                 </div>
             </div>
              <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>تفاصيل أداء العلامات التجارية</h3>
-                <div className="table-wrapper">
-                    <table>
+                <h3 className="reports-table-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>تفاصيل أداء العلامات التجارية</h3>
+                <div className="table-wrapper reports-table-wrapper">
+                    <table className="reports-table">
                         <thead><tr><th>العلامة التجارية</th><th>إجمالي المبيعات</th><th>عدد الوحدات المباعة</th><th>عدد الفواتير</th><th>متوسط قيمة الفاتورة</th></tr></thead>
                         <tbody>
                             {brandData.tableData.map(d => (
@@ -491,10 +493,10 @@ const CustomersReport: React.FC<{customers: Customer[]}> = ({ customers }) => {
         return <span style={{ color, fontWeight: 600 }}>{text}</span>;
     };
     return (
-         <div className="glass-pane" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>أرصدة العملاء</h3>
-            <div className="table-wrapper">
-                <table>
+         <div className="glass-pane reports-customers-container" style={{ padding: '1.5rem' }}>
+            <h3 className="reports-table-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>أرصدة العملاء</h3>
+            <div className="table-wrapper reports-table-wrapper">
+                <table className="reports-table">
                     <thead><tr><th>العميل</th><th>الهاتف</th><th>البريد الإلكتروني</th><th>الرصيد الحالي</th></tr></thead>
                     <tbody>
                         {customers.map(c => (
@@ -515,10 +517,10 @@ const CustomersReport: React.FC<{customers: Customer[]}> = ({ customers }) => {
 // Accounts Report
 const AccountsReport: React.FC<{accounts: FinancialAccount[], branches: Branch[]}> = ({ accounts, branches }) => {
     return (
-        <div className="glass-pane" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>أرصدة الحسابات المالية</h3>
-            <div className="table-wrapper">
-                <table>
+        <div className="glass-pane reports-accounts-container" style={{ padding: '1.5rem' }}>
+            <h3 className="reports-table-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>أرصدة الحسابات المالية</h3>
+            <div className="table-wrapper reports-table-wrapper">
+                <table className="reports-table">
                     <thead><tr><th>اسم الحساب</th><th>النوع</th><th>الفرع</th><th>الرصيد</th></tr></thead>
                     <tbody>
                         {accounts.map(acc => (
@@ -562,25 +564,27 @@ const SummaryReport: React.FC<Omit<ReportsProps, 'activeReport' | 'expenses' | '
         return Object.values(data).sort((a,b) => a.month.localeCompare(b.month));
     }, [sales, purchases]);
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+        <div className="reports-summary-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="reports-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 <StatCard title="إجمالي المبيعات" value={formatCurrency(totalSales)} icon={CurrencyDollarIcon} iconBg="linear-gradient(135deg, #10b981, #34d399)" />
                 <StatCard title="إجمالي المشتريات" value={formatCurrency(totalPurchases)} icon={ShoppingCartIcon} iconBg="linear-gradient(135deg, #3b82f6, #60a5fa)" />
                 <StatCard title="إجمالي الربح" value={formatCurrency(grossProfit)} icon={ChartBarIcon} iconBg="linear-gradient(135deg, #8b5cf6, #a78bfa)" />
             </div>
-            <div className="glass-pane" style={{ padding: '1.5rem', height: '400px' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>الأداء الشهري</h3>
-                <ResponsiveContainer width="100%" height="calc(100% - 40px)">
-                    <LineChart data={monthlyPerformance} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
-                        <XAxis dataKey="month" stroke="var(--text-secondary)" />
-                        <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
-                        <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}}/>
-                        <Legend />
-                        <Line type="monotone" name="المبيعات" dataKey="sales" stroke={SALES_COLOR} strokeWidth={2} />
-                        <Line type="monotone" name="المشتريات" dataKey="purchases" stroke={PURCHASES_COLOR} strokeWidth={2} />
-                    </LineChart>
-                </ResponsiveContainer>
+            <div className="glass-pane reports-chart-container" style={{ padding: '1.5rem', height: '400px' }}>
+                <h3 className="reports-chart-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>الأداء الشهري</h3>
+                <div className="reports-chart-wrapper">
+                    <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                        <LineChart data={monthlyPerformance} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
+                            <XAxis dataKey="month" stroke="var(--text-secondary)" />
+                            <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
+                            <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}}/>
+                            <Legend />
+                            <Line type="monotone" name="المبيعات" dataKey="sales" stroke={SALES_COLOR} strokeWidth={2} />
+                            <Line type="monotone" name="المشتريات" dataKey="purchases" stroke={PURCHASES_COLOR} strokeWidth={2} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
         </div>
     )
@@ -640,45 +644,47 @@ const ForecastReport: React.FC<{sales: Sale[]}> = ({ sales }) => {
     }, [historicalData, forecast]);
 
     return (
-        <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
+        <div className="reports-forecast-container" style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
             <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>توقعات المبيعات للربع القادم</h3>
-                    <button onClick={handleGenerateForecast} disabled={isLoading} className="btn btn-warning">
+                 <div className="reports-forecast-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="reports-forecast-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>توقعات المبيعات للربع القادم</h3>
+                    <button onClick={handleGenerateForecast} disabled={isLoading} className="btn btn-warning reports-forecast-button">
                         <SparklesIcon style={{width: '20px', height: '20px'}}/>
                         {isLoading ? '...جاري الإنشاء' : 'إنشاء توقعات'}
                     </button>
                 </div>
-                <p style={{color: 'var(--text-secondary)'}}>
+                <p className="reports-forecast-description" style={{color: 'var(--text-secondary)'}}>
                     استخدم الذكاء الاصطناعي لتحليل بيانات المبيعات التاريخية وتوقع الأداء المستقبلي للمساعدة في اتخاذ قرارات أفضل.
                 </p>
             </div>
             
             {isLoading && (
-                 <div className="glass-pane" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)'}}>
+                 <div className="glass-pane reports-forecast-loading" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)'}}>
                     <p>يقوم الذكاء الاصطناعي بتحليل بياناتك...</p>
                  </div>
             )}
 
             {forecast && (
-                <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
-                    <div className="glass-pane" style={{ padding: '1.5rem', height: '400px' }}>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>مخطط المبيعات التاريخية والمتوقعة</h3>
-                        <ResponsiveContainer width="100%" height="calc(100% - 40px)">
-                            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
-                                <XAxis dataKey="month" stroke="var(--text-secondary)" />
-                                <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
-                                <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}}/>
-                                <Legend />
-                                <Line type="monotone" name="المبيعات التاريخية" dataKey="historical" stroke={SALES_COLOR} strokeWidth={2} connectNulls />
-                                <Line type="monotone" name="المبيعات المتوقعة" dataKey="forecast" stroke={FORECAST_COLOR} strokeWidth={2} strokeDasharray="5 5" connectNulls />
-                            </LineChart>
-                        </ResponsiveContainer>
+                <div className="reports-forecast-results" style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
+                    <div className="glass-pane reports-forecast-chart-container" style={{ padding: '1.5rem', height: '400px' }}>
+                        <h3 className="reports-forecast-chart-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>مخطط المبيعات التاريخية والمتوقعة</h3>
+                        <div className="reports-forecast-chart-wrapper">
+                            <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                                <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
+                                    <XAxis dataKey="month" stroke="var(--text-secondary)" />
+                                    <YAxis stroke="var(--text-secondary)" tickFormatter={val => formatCurrency(val as number)} />
+                                    <Tooltip contentStyle={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px' }} cursor={{fill: 'var(--highlight-hover)'}}/>
+                                    <Legend />
+                                    <Line type="monotone" name="المبيعات التاريخية" dataKey="historical" stroke={SALES_COLOR} strokeWidth={2} connectNulls />
+                                    <Line type="monotone" name="المبيعات المتوقعة" dataKey="forecast" stroke={FORECAST_COLOR} strokeWidth={2} strokeDasharray="5 5" connectNulls />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
-                     <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><SparklesIcon /> تحليل الذكاء الاصطناعي</h3>
-                        <p style={{color: 'var(--text-primary)', lineHeight: 1.6}}>{forecast.analysis}</p>
+                     <div className="glass-pane reports-forecast-analysis" style={{ padding: '1.5rem' }}>
+                        <h3 className="reports-forecast-analysis-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><SparklesIcon /> تحليل الذكاء الاصطناعي</h3>
+                        <p className="reports-forecast-analysis-text" style={{color: 'var(--text-primary)', lineHeight: 1.6}}>{forecast.analysis}</p>
                     </div>
                 </div>
             )}
@@ -728,7 +734,7 @@ const Reports: React.FC<ReportsProps> = (props) => {
 
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="reports-page-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {(showBranchFilter || showDateFilter) && (
                  <FilterBar 
                     filters={filters}
