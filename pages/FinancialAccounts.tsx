@@ -1,6 +1,5 @@
 import React from 'react';
-import { FinancialAccount, Branch } from '../types';
-import { CurrencyDollarIcon } from '../components/Icon';
+import { Branch, FinancialAccount } from '../types';
 
 interface FinancialAccountsProps {
     financialAccounts: FinancialAccount[];
@@ -15,13 +14,13 @@ const FinancialAccounts: React.FC<FinancialAccountsProps> = ({ financialAccounts
     };
 
     return (
-        <div className="glass-pane" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>الخزائن والحسابات البنكية</h3>
+        <div className="glass-pane financial-accounts-container" style={{ padding: '1.5rem' }}>
+            <div className="financial-accounts-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 className="financial-accounts-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>الخزائن والحسابات البنكية</h3>
                 {/* <button className="btn btn-primary">إضافة حساب جديد</button> */}
             </div>
-            <div className="table-wrapper">
-                <table>
+            <div className="table-wrapper financial-accounts-table-wrapper">
+                <table className="financial-accounts-table">
                     <thead>
                         <tr>
                             <th>اسم الحساب</th>
@@ -35,7 +34,7 @@ const FinancialAccounts: React.FC<FinancialAccountsProps> = ({ financialAccounts
                             <tr key={acc.id}>
                                 <td style={{ fontWeight: 600 }}>{acc.name}</td>
                                 <td>
-                                    <span style={{
+                                    <span className="financial-account-type" style={{
                                         padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 500, borderRadius: '9999px',
                                         color: 'var(--text-secondary)',
                                         background: 'var(--surface-bg)',
@@ -45,7 +44,7 @@ const FinancialAccounts: React.FC<FinancialAccountsProps> = ({ financialAccounts
                                     </span>
                                 </td>
                                 <td>{getBranchName(acc.branchId)}</td>
-                                <td style={{ color: 'var(--secondary-color)', fontWeight: 700, fontSize: '1.1rem' }}>
+                                <td className="financial-account-balance" style={{ color: 'var(--secondary-color)', fontWeight: 700, fontSize: '1.1rem' }}>
                                     {acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} د.ك
                                 </td>
                             </tr>

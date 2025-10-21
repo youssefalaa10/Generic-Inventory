@@ -1,9 +1,8 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../App';
-import { Expense, Branch, FinancialAccount, ExpenseCategory } from '../types';
+import React, { useState } from 'react';
 import ExpenseModal from '../components/ExpenseModal';
-import { useToasts } from '../components/Toast';
 import { PencilIcon } from '../components/Icon';
+import { useToasts } from '../components/Toast';
+import { Branch, Expense, ExpenseCategory, FinancialAccount } from '../types';
 
 interface ExpensesProps {
     expenses: Expense[];
@@ -57,23 +56,23 @@ const Expenses: React.FC<ExpensesProps> = ({ expenses, onSave, branches, financi
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>سجل المصروفات</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ width: '250px' }}>
+            <div className="glass-pane expenses-page-container" style={{ padding: '1.5rem' }}>
+                <div className="expenses-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="expenses-page-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>سجل المصروفات</h3>
+                    <div className="expenses-page-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div className="expenses-filter" style={{ width: '250px' }}>
                             <select onChange={(e) => setFilterBranch(e.target.value)} value={filterBranch} className="form-select">
                                 <option value="all">كل الفروع</option>
                                 {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                             </select>
                         </div>
-                        <button onClick={handleAddNew} className="btn btn-primary">
+                        <button onClick={handleAddNew} className="btn btn-primary expenses-button">
                             إضافة مصروف جديد
                         </button>
                     </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="table-wrapper expenses-table-wrapper">
+                    <table className="expenses-table">
                         <thead>
                             <tr>
                                 <th>التاريخ</th>
@@ -91,8 +90,8 @@ const Expenses: React.FC<ExpensesProps> = ({ expenses, onSave, branches, financi
                                     <td>{branches.find(b => b.id === e.branchId)?.name}</td>
                                     <td>{categoryTranslations[e.category] || e.category}</td>
                                     <td>{e.description}</td>
-                                    <td style={{ color: '#ef4444', fontWeight: 600 }}>{e.amount.toLocaleString()} د.ك</td>
-                                    <td>
+                                    <td className="expenses-amount" style={{ color: '#ef4444', fontWeight: 600 }}>{e.amount.toLocaleString()} د.ك</td>
+                                    <td className="expenses-actions">
                                         <button onClick={() => handleEdit(e)} style={{color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}}>
                                             <PencilIcon style={{width:'20px', height:'20px'}}/>
                                         </button>

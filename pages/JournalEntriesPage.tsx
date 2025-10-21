@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { JournalVoucher, Account } from '../types';
 import { PlusIcon } from '../components/Icon';
 import JournalVoucherModal from '../components/JournalVoucherModal';
+import { Account, JournalVoucher } from '../types';
 
 interface JournalEntriesPageProps {
     journalVouchers: JournalVoucher[];
@@ -35,16 +35,16 @@ const JournalEntriesPage: React.FC<JournalEntriesPageProps> = ({ journalVouchers
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>القيود اليومية</h3>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
+            <div className="glass-pane journal-entries-container" style={{ padding: '1.5rem' }}>
+                <div className="journal-entries-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="journal-entries-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>القيود اليومية</h3>
+                    <button className="btn btn-primary journal-entries-button" onClick={handleAddNew}>
                         <PlusIcon style={{ width: '20px', height: '20px' }} />
                         قيد يومية جديد
                     </button>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="table-wrapper journal-entries-table-wrapper">
+                    <table className="journal-entries-table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -59,7 +59,7 @@ const JournalEntriesPage: React.FC<JournalEntriesPageProps> = ({ journalVouchers
                                     <td>JV-{voucher.id}</td>
                                     <td>{new Date(voucher.date).toLocaleDateString('ar-EG')}</td>
                                     <td>{voucher.reference}</td>
-                                    <td style={{textAlign: 'right', fontWeight: 600}}>{totalAmount(voucher).toLocaleString('ar-EG', {minimumFractionDigits: 2})} د.ك</td>
+                                    <td className="journal-entries-amount" style={{textAlign: 'right', fontWeight: 600}}>{totalAmount(voucher).toLocaleString('ar-EG', {minimumFractionDigits: 2})} د.ك</td>
                                 </tr>
                             ))}
                         </tbody>
