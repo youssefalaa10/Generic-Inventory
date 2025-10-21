@@ -129,49 +129,49 @@ const EmployeePortal: React.FC<EmployeePortalProps> = (props) => {
 
     return (
         <>
-            <div className="employee-portal-container">
-                <div className="glass-pane employee-welcome-section">
-                    <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>مرحباً, {currentEmployee.name}</h2>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>{currentEmployee.position}</p>
+            <div className="employee-portal-container hr-employee-portal-container">
+                <div className="glass-pane employee-welcome-section hr-employee-portal-header">
+                    <h2 className="hr-employee-portal-title" style={{ fontSize: '2rem', fontWeight: 700 }}>مرحباً, {currentEmployee.name}</h2>
+                    <p className="hr-employee-portal-subtitle" style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>{currentEmployee.position}</p>
                 </div>
                 
-                <div className="employee-stats-grid">
+                <div className="employee-stats-grid hr-employee-portal-stats">
                     <StatCard title="رصيد الإجازات المتبقي" value={`${leaveBalance.remaining} يوم`} icon={CalendarIcon} iconBg="linear-gradient(135deg, #3b82f6, #60a5fa)" />
                     <StatCard title="إجمالي السلف" value={`${currentEmployee.advances.toLocaleString()} د.ك`} icon={CurrencyDollarIcon} iconBg="linear-gradient(135deg, #f59e0b, #fbbf24)" />
                     <StatCard title="صافي الراتب الأخير" value={`${(latestPayslip?.netSalary || 0).toLocaleString()} د.ك`} icon={DocumentTextIcon} iconBg="linear-gradient(135deg, #10b981, #34d399)" />
                 </div>
 
-                <div className="glass-pane employee-actions-section">
-                    <button onClick={() => setModal('leave')} className="btn btn-primary">تقديم طلب إجازة</button>
-                    <button onClick={() => setModal('advance')} className="btn btn-secondary">طلب سلفة</button>
-                    <button onClick={() => setModal('general')} className="btn btn-ghost">طلب عام</button>
+                <div className="glass-pane employee-actions-section hr-employee-portal-actions">
+                    <button onClick={() => setModal('leave')} className="btn btn-primary hr-employee-portal-button">تقديم طلب إجازة</button>
+                    <button onClick={() => setModal('advance')} className="btn btn-secondary hr-employee-portal-button">طلب سلفة</button>
+                    <button onClick={() => setModal('general')} className="btn btn-ghost hr-employee-portal-button">طلب عام</button>
                 </div>
 
-                <div className="employee-main-grid">
-                     <div className="glass-pane employee-benefits-section">
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div className="employee-main-grid hr-employee-portal-main-grid">
+                     <div className="glass-pane employee-benefits-section hr-employee-portal-benefits">
+                        <h3 className="hr-employee-portal-section-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                              <SparklesIcon style={{width: '24px', height: '24px', color: 'var(--primary-color)'}} />
                             المزايا والفوائد
                         </h3>
                         {currentEmployee.benefits && currentEmployee.benefits.length > 0 ? (
-                            <div className="employee-benefits-grid">
+                            <div className="employee-benefits-grid hr-employee-portal-benefits-grid">
                                 {currentEmployee.benefits.map((benefit, index) => (
                                     <BenefitCard key={index} benefit={benefit} />
                                 ))}
                             </div>
                         ) : (
-                            <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '1rem 0' }}>لا توجد مزايا إضافية مسجلة حالياً.</p>
+                            <p className="hr-employee-portal-no-benefits" style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '1rem 0' }}>لا توجد مزايا إضافية مسجلة حالياً.</p>
                         )}
                     </div>
 
                     <SalaryDetails payslip={latestPayslip} />
-                     <div className="glass-pane attendance-section">
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                     <div className="glass-pane attendance-section hr-employee-portal-attendance">
+                        <h3 className="hr-employee-portal-section-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                              <ClockIcon style={{width: '24px', height: '24px', color: 'var(--primary-color)'}} />
                             سجل الحضور الأخير
                         </h3>
-                        <div className="table-wrapper">
-                            <table>
+                        <div className="table-wrapper hr-employee-portal-attendance-table-wrapper">
+                            <table className="hr-employee-portal-attendance-table">
                                 <thead>
                                     <tr>
                                         <th>التاريخ</th>
@@ -184,7 +184,7 @@ const EmployeePortal: React.FC<EmployeePortalProps> = (props) => {
                                         recentAttendance.map(att => <AttendanceRow key={att.id} record={att} />)
                                     ) : (
                                         <tr>
-                                            <td colSpan={3} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                                            <td colSpan={3} className="hr-employee-portal-no-attendance" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
                                                 لا يوجد سجل حضور لعرضه.
                                             </td>
                                         </tr>
@@ -193,7 +193,7 @@ const EmployeePortal: React.FC<EmployeePortalProps> = (props) => {
                             </table>
                         </div>
                     </div>
-                     <div className="glass-pane employee-requests-section">
+                     <div className="glass-pane employee-requests-section hr-employee-portal-requests">
                         <MyRequestsView requests={myRequests} />
                     </div>
 

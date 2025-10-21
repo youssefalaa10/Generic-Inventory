@@ -7248,3 +7248,689 @@ tbody tr:hover {
     font-size: 0.875rem;
   }
 }
+
+/* ===== HUMAN RESOURCES (HR) PAGES RESPONSIVE STYLES ===== */
+
+/* HR Employee Portal Mobile Styles */
+@media (max-width: 1024px) {
+  .hr-employee-portal-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .hr-employee-portal-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .hr-employee-portal-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .hr-employee-portal-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .hr-employee-portal-stat-card {
+    padding: 1rem;
+  }
+  
+  .hr-employee-portal-stat-title {
+    font-size: 0.875rem;
+  }
+  
+  .hr-employee-portal-stat-value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hr-employee-portal-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .hr-employee-portal-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .hr-employee-portal-title {
+    font-size: 1rem;
+  }
+  
+  .hr-employee-portal-stats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .hr-employee-portal-stat-card {
+    padding: 0.75rem;
+  }
+  
+  .hr-employee-portal-stat-title {
+    font-size: 0.8rem;
+  }
+  
+  .hr-employee-portal-stat-value {
+    font-size: 1.25rem;
+  }
+  
+  .hr-employee-portal-tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .hr-employee-portal-tab-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hr-employee-portal-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .hr-employee-portal-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .hr-employee-portal-title {
+    font-size: 0.875rem;
+  }
+  
+  .hr-employee-portal-stats {
+    gap: 0.5rem;
+  }
+  
+  .hr-employee-portal-stat-card {
+    padding: 0.5rem;
+  }
+  
+  .hr-employee-portal-stat-title {
+    font-size: 0.75rem;
+  }
+  
+  .hr-employee-portal-stat-value {
+    font-size: 1.125rem;
+  }
+  
+  .hr-employee-portal-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* HR Leave Requests Mobile Styles */
+@media (max-width: 1024px) {
+  .hr-leave-requests-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .hr-leave-requests-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .hr-leave-requests-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .hr-leave-requests-actions {
+    justify-content: center;
+  }
+  
+  .hr-leave-requests-tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .hr-leave-requests-tab-button {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .hr-leave-requests-balance-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+  
+  .hr-leave-requests-balance-card {
+    padding: 0.75rem;
+  }
+  
+  .hr-leave-requests-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .hr-leave-requests-table {
+    min-width: 600px;
+  }
+  
+  .hr-leave-requests-table th,
+  .hr-leave-requests-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hr-leave-requests-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .hr-leave-requests-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .hr-leave-requests-title {
+    font-size: 1rem;
+  }
+  
+  .hr-leave-requests-balance-card {
+    padding: 0.5rem;
+  }
+  
+  .hr-leave-requests-balance-value {
+    font-size: 1.25rem;
+  }
+  
+  .hr-leave-requests-table {
+    min-width: 500px;
+  }
+  
+  .hr-leave-requests-table th,
+  .hr-leave-requests-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .hr-leave-requests-status-chip {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .hr-leave-requests-action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .hr-leave-requests-action-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hr-leave-requests-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .hr-leave-requests-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .hr-leave-requests-title {
+    font-size: 0.875rem;
+  }
+  
+  .hr-leave-requests-balance-card {
+    padding: 0.375rem;
+  }
+  
+  .hr-leave-requests-balance-value {
+    font-size: 1.125rem;
+  }
+  
+  .hr-leave-requests-table {
+    min-width: 400px;
+  }
+  
+  .hr-leave-requests-table th,
+  .hr-leave-requests-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .hr-leave-requests-status-chip {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+  
+  .hr-leave-requests-action-button {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
+  }
+  
+  .hr-leave-requests-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* HR Advance Requests Mobile Styles */
+@media (max-width: 1024px) {
+  .hr-advance-requests-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .hr-advance-requests-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .hr-advance-requests-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .hr-advance-requests-actions {
+    justify-content: center;
+  }
+  
+  .hr-advance-requests-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .hr-advance-requests-table {
+    min-width: 600px;
+  }
+  
+  .hr-advance-requests-table th,
+  .hr-advance-requests-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hr-advance-requests-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .hr-advance-requests-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .hr-advance-requests-title {
+    font-size: 1rem;
+  }
+  
+  .hr-advance-requests-table {
+    min-width: 500px;
+  }
+  
+  .hr-advance-requests-table th,
+  .hr-advance-requests-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .hr-advance-requests-amount {
+    font-size: 0.875rem;
+  }
+  
+  .hr-advance-requests-status-chip {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .hr-advance-requests-action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .hr-advance-requests-action-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hr-advance-requests-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .hr-advance-requests-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .hr-advance-requests-title {
+    font-size: 0.875rem;
+  }
+  
+  .hr-advance-requests-table {
+    min-width: 400px;
+  }
+  
+  .hr-advance-requests-table th,
+  .hr-advance-requests-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .hr-advance-requests-amount {
+    font-size: 0.8rem;
+  }
+  
+  .hr-advance-requests-status-chip {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+  
+  .hr-advance-requests-action-button {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
+  }
+  
+  .hr-advance-requests-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* HR General Requests Mobile Styles */
+@media (max-width: 1024px) {
+  .hr-general-requests-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .hr-general-requests-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .hr-general-requests-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .hr-general-requests-actions {
+    justify-content: center;
+  }
+  
+  .hr-general-requests-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .hr-general-requests-table {
+    min-width: 600px;
+  }
+  
+  .hr-general-requests-table th,
+  .hr-general-requests-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hr-general-requests-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .hr-general-requests-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .hr-general-requests-title {
+    font-size: 1rem;
+  }
+  
+  .hr-general-requests-table {
+    min-width: 500px;
+  }
+  
+  .hr-general-requests-table th,
+  .hr-general-requests-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .hr-general-requests-status-chip {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .hr-general-requests-action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .hr-general-requests-action-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hr-general-requests-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .hr-general-requests-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .hr-general-requests-title {
+    font-size: 0.875rem;
+  }
+  
+  .hr-general-requests-table {
+    min-width: 400px;
+  }
+  
+  .hr-general-requests-table th,
+  .hr-general-requests-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .hr-general-requests-status-chip {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+  
+  .hr-general-requests-action-button {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
+  }
+  
+  .hr-general-requests-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* HR Salaries Mobile Styles */
+@media (max-width: 1024px) {
+  .hr-salaries-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .hr-salaries-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .hr-salaries-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .hr-salaries-actions {
+    justify-content: center;
+  }
+  
+  .hr-salaries-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .hr-salaries-table {
+    min-width: 600px;
+  }
+  
+  .hr-salaries-table th,
+  .hr-salaries-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hr-salaries-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .hr-salaries-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .hr-salaries-title {
+    font-size: 1rem;
+  }
+  
+  .hr-salaries-table {
+    min-width: 500px;
+  }
+  
+  .hr-salaries-table th,
+  .hr-salaries-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .hr-salaries-amount {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hr-salaries-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .hr-salaries-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .hr-salaries-title {
+    font-size: 0.875rem;
+  }
+  
+  .hr-salaries-table {
+    min-width: 400px;
+  }
+  
+  .hr-salaries-table th,
+  .hr-salaries-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .hr-salaries-amount {
+    font-size: 0.8rem;
+  }
+  
+  .hr-salaries-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* HR Modal Mobile Styles */
+@media (max-width: 768px) {
+  .hr-modal {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+    width: calc(100vw - 2rem);
+  }
+  
+  .hr-modal-header {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .hr-modal-title {
+    font-size: 1.125rem;
+    text-align: center;
+  }
+  
+  .hr-modal-body {
+    padding: 1rem;
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+  }
+  
+  .hr-modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .hr-form-row {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+  
+  .hr-form-field {
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hr-modal {
+    margin: 0.5rem;
+    max-height: calc(100vh - 1rem);
+    width: calc(100vw - 1rem);
+  }
+  
+  .hr-modal-header {
+    padding: 0.75rem;
+  }
+  
+  .hr-modal-title {
+    font-size: 1rem;
+  }
+  
+  .hr-modal-body {
+    padding: 0.75rem;
+    max-height: calc(100vh - 6rem);
+  }
+  
+  .hr-modal-footer {
+    padding: 0.75rem;
+  }
+  
+  .hr-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}

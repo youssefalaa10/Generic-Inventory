@@ -21,10 +21,10 @@ const AdvanceRequestsPage: React.FC<AdvanceRequestsPageProps> = ({ requests, emp
     }
 
     return (
-        <div className="glass-pane" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>طلبات السلف المعلقة</h3>
-            <div className="table-wrapper">
-                <table>
+        <div className="glass-pane hr-advance-requests-container" style={{ padding: '1.5rem' }}>
+            <h3 className="hr-advance-requests-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>طلبات السلف المعلقة</h3>
+            <div className="table-wrapper hr-advance-requests-table-wrapper">
+                <table className="hr-advance-requests-table">
                     <thead>
                         <tr>
                             <th>الموظف</th>
@@ -40,14 +40,14 @@ const AdvanceRequestsPage: React.FC<AdvanceRequestsPageProps> = ({ requests, emp
                             <tr key={r.id}>
                                 <td>{getEmployeeName(r.employeeId)}</td>
                                 <td>{new Date(r.requestDate).toLocaleDateString()}</td>
-                                <td style={{fontWeight: 600}}>{r.amount.toLocaleString()} د.ك</td>
+                                <td className="hr-advance-requests-amount" style={{fontWeight: 600}}>{r.amount.toLocaleString()} د.ك</td>
                                 <td>{r.reason}</td>
                                 <td>{getStatusChip(r.status)}</td>
                                 <td>
                                     {r.status === 'Pending' && (
-                                        <div style={{display: 'flex', gap: '0.5rem'}}>
-                                            <button onClick={() => onSaveRequest(r, 'Approved')} className="btn btn-secondary" style={{padding: '0.25rem 0.75rem', fontSize: '0.8rem'}}>قبول</button>
-                                            <button onClick={() => onSaveRequest(r, 'Rejected')} className="btn btn-ghost" style={{padding: '0.25rem 0.75rem', fontSize: '0.8rem'}}>رفض</button>
+                                        <div className="hr-advance-requests-action-buttons" style={{display: 'flex', gap: '0.5rem'}}>
+                                            <button onClick={() => onSaveRequest(r, 'Approved')} className="btn btn-secondary hr-advance-requests-action-button" style={{padding: '0.25rem 0.75rem', fontSize: '0.8rem'}}>قبول</button>
+                                            <button onClick={() => onSaveRequest(r, 'Rejected')} className="btn btn-ghost hr-advance-requests-action-button" style={{padding: '0.25rem 0.75rem', fontSize: '0.8rem'}}>رفض</button>
                                         </div>
                                     )}
                                 </td>
@@ -55,7 +55,7 @@ const AdvanceRequestsPage: React.FC<AdvanceRequestsPageProps> = ({ requests, emp
                         ))}
                     </tbody>
                 </table>
-                 {requests.length === 0 && <p style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>لا توجد طلبات سلف حالياً.</p>}
+                 {requests.length === 0 && <p className="hr-advance-requests-empty" style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>لا توجد طلبات سلف حالياً.</p>}
             </div>
         </div>
     );
