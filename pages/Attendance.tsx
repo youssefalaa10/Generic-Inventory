@@ -62,25 +62,25 @@ const Attendance: React.FC<AttendanceProps> = ({ employees, attendanceRecords, o
     };
 
     return (
-        <div className="glass-pane" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>تسجيل الحضور والانصراف</h3>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div className="glass-pane attendance-page-container" style={{ padding: '1.5rem' }}>
+            <div className="attendance-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 className="attendance-page-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>تسجيل الحضور والانصراف</h3>
+                <div className="attendance-page-controls" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                      <input 
                         type="date" 
                         value={selectedDate} 
                         onChange={e => setSelectedDate(e.target.value)} 
-                        className="form-input"
+                        className="form-input attendance-date-picker"
                         style={{width: '200px'}}
                     />
-                    <button onClick={handleSaveChanges} className="btn btn-secondary" disabled={Object.keys(localRecords).length === 0}>
+                    <button onClick={handleSaveChanges} className="btn btn-secondary attendance-save-button" disabled={Object.keys(localRecords).length === 0}>
                         حفظ التغييرات
                     </button>
                 </div>
             </div>
 
-            <div className="table-wrapper">
-                <table>
+            <div className="table-wrapper attendance-table-wrapper">
+                <table className="attendance-table">
                     <thead>
                         <tr>
                             <th>الموظف</th>
@@ -96,11 +96,12 @@ const Attendance: React.FC<AttendanceProps> = ({ employees, attendanceRecords, o
                                 <tr key={emp.id}>
                                     <td>{emp.name}</td>
                                     <td>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <div className="attendance-status-buttons" style={{ display: 'flex', gap: '0.5rem' }}>
                                             {(['Present', 'Late', 'Absent'] as AttendanceStatus[]).map(s => (
                                                 <button 
                                                     key={s} 
                                                     onClick={() => handleStatusChange(emp.id, s)}
+                                                    className="attendance-status-button"
                                                     style={{
                                                         padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--surface-border)',
                                                         cursor: 'pointer',
@@ -120,7 +121,7 @@ const Attendance: React.FC<AttendanceProps> = ({ employees, attendanceRecords, o
                                                 type="number"
                                                 value={record?.lateMinutes || ''}
                                                 onChange={(e) => handleLateMinutesChange(emp.id, parseInt(e.target.value) || 0)}
-                                                className="form-input"
+                                                className="form-input attendance-late-input"
                                                 style={{textAlign: 'center'}}
                                             />
                                         )}

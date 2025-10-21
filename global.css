@@ -6079,3 +6079,665 @@ tbody tr:hover {
     font-size: 0.875rem;
   }
 }
+
+/* ===== ORGANIZATION PAGES RESPONSIVE STYLES ===== */
+
+/* Branches Page Mobile Styles */
+@media (max-width: 1024px) {
+  .branches-page-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .branches-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .branches-page-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .branches-page-actions {
+    justify-content: center;
+  }
+  
+  .branches-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .branches-table {
+    min-width: 600px;
+  }
+  
+  .branches-table th,
+  .branches-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .branches-page-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .branches-page-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .branches-page-title {
+    font-size: 1rem;
+  }
+  
+  .branches-table {
+    min-width: 500px;
+  }
+  
+  .branches-table th,
+  .branches-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .branches-actions {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .branches-page-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .branches-page-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .branches-page-title {
+    font-size: 0.875rem;
+  }
+  
+  .branches-table {
+    min-width: 400px;
+  }
+  
+  .branches-table th,
+  .branches-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .branches-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Employees Page Mobile Styles */
+@media (max-width: 1024px) {
+  .employees-page-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .employees-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .employees-page-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .employees-page-actions {
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .employees-filter {
+    width: 100%;
+  }
+  
+  .employees-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .employees-table {
+    min-width: 700px;
+  }
+  
+  .employees-table th,
+  .employees-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .employees-page-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .employees-page-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .employees-page-title {
+    font-size: 1rem;
+  }
+  
+  .employees-page-actions {
+    gap: 0.5rem;
+  }
+  
+  .employees-table {
+    min-width: 600px;
+  }
+  
+  .employees-table th,
+  .employees-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .employees-salary {
+    font-size: 0.875rem;
+  }
+  
+  .employees-actions {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .employees-page-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .employees-page-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .employees-page-title {
+    font-size: 0.875rem;
+  }
+  
+  .employees-table {
+    min-width: 500px;
+  }
+  
+  .employees-table th,
+  .employees-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .employees-salary {
+    font-size: 0.8rem;
+  }
+  
+  .employees-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Attendance Page Mobile Styles */
+@media (max-width: 1024px) {
+  .attendance-page-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .attendance-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .attendance-page-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .attendance-page-controls {
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .attendance-date-picker {
+    width: 100%;
+  }
+  
+  .attendance-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .attendance-table {
+    min-width: 600px;
+  }
+  
+  .attendance-table th,
+  .attendance-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .attendance-page-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .attendance-page-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .attendance-page-title {
+    font-size: 1rem;
+  }
+  
+  .attendance-page-controls {
+    gap: 0.5rem;
+  }
+  
+  .attendance-table {
+    min-width: 500px;
+  }
+  
+  .attendance-table th,
+  .attendance-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .attendance-status-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .attendance-status-button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .attendance-late-input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .attendance-page-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .attendance-page-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .attendance-page-title {
+    font-size: 0.875rem;
+  }
+  
+  .attendance-table {
+    min-width: 400px;
+  }
+  
+  .attendance-table th,
+  .attendance-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .attendance-status-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .attendance-save-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Leave Requests Page Mobile Styles */
+@media (max-width: 1024px) {
+  .leave-requests-page-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .leave-requests-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .leave-requests-page-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .leave-requests-page-actions {
+    justify-content: center;
+  }
+  
+  .leave-requests-tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .leave-requests-tab-button {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .leave-requests-balance-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+  
+  .leave-requests-balance-card {
+    padding: 0.75rem;
+  }
+  
+  .leave-requests-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .leave-requests-table {
+    min-width: 600px;
+  }
+  
+  .leave-requests-table th,
+  .leave-requests-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .leave-requests-page-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .leave-requests-page-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .leave-requests-page-title {
+    font-size: 1rem;
+  }
+  
+  .leave-requests-balance-card {
+    padding: 0.5rem;
+  }
+  
+  .leave-requests-balance-value {
+    font-size: 1.25rem;
+  }
+  
+  .leave-requests-table {
+    min-width: 500px;
+  }
+  
+  .leave-requests-table th,
+  .leave-requests-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .leave-requests-status-chip {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .leave-requests-action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .leave-requests-action-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .leave-requests-page-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .leave-requests-page-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .leave-requests-page-title {
+    font-size: 0.875rem;
+  }
+  
+  .leave-requests-balance-card {
+    padding: 0.375rem;
+  }
+  
+  .leave-requests-balance-value {
+    font-size: 1.125rem;
+  }
+  
+  .leave-requests-table {
+    min-width: 400px;
+  }
+  
+  .leave-requests-table th,
+  .leave-requests-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .leave-requests-status-chip {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+  
+  .leave-requests-action-button {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
+  }
+  
+  .leave-requests-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Salaries Page Mobile Styles */
+@media (max-width: 1024px) {
+  .salaries-page-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .salaries-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .salaries-page-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .salaries-page-actions {
+    justify-content: center;
+  }
+  
+  .salaries-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .salaries-table {
+    min-width: 600px;
+  }
+  
+  .salaries-table th,
+  .salaries-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .salaries-page-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .salaries-page-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .salaries-page-title {
+    font-size: 1rem;
+  }
+  
+  .salaries-table {
+    min-width: 500px;
+  }
+  
+  .salaries-table th,
+  .salaries-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .salaries-amount {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .salaries-page-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .salaries-page-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .salaries-page-title {
+    font-size: 0.875rem;
+  }
+  
+  .salaries-table {
+    min-width: 400px;
+  }
+  
+  .salaries-table th,
+  .salaries-table td {
+    padding: 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .salaries-amount {
+    font-size: 0.8rem;
+  }
+  
+  .salaries-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Organization Modal Mobile Styles */
+@media (max-width: 768px) {
+  .organization-modal {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+    width: calc(100vw - 2rem);
+  }
+  
+  .organization-modal-header {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .organization-modal-title {
+    font-size: 1.125rem;
+    text-align: center;
+  }
+  
+  .organization-modal-body {
+    padding: 1rem;
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+  }
+  
+  .organization-modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .organization-form-row {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+  
+  .organization-form-field {
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .organization-modal {
+    margin: 0.5rem;
+    max-height: calc(100vh - 1rem);
+    width: calc(100vw - 1rem);
+  }
+  
+  .organization-modal-header {
+    padding: 0.75rem;
+  }
+  
+  .organization-modal-title {
+    font-size: 1rem;
+  }
+  
+  .organization-modal-body {
+    padding: 0.75rem;
+    max-height: calc(100vh - 6rem);
+  }
+  
+  .organization-modal-footer {
+    padding: 0.75rem;
+  }
+  
+  .organization-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}

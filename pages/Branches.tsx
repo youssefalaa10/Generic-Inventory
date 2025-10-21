@@ -40,17 +40,19 @@ const Branches: React.FC<BranchesProps> = ({ branches, onSave }) => {
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة الفروع</h3>
-                    {hasPermission('create') && (
-                        <button onClick={handleAddNew} className="btn btn-primary">
-                            إضافة فرع جديد
-                        </button>
-                    )}
+            <div className="glass-pane branches-page-container" style={{ padding: '1.5rem' }}>
+                <div className="branches-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="branches-page-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة الفروع</h3>
+                    <div className="branches-page-actions">
+                        {hasPermission('create') && (
+                            <button onClick={handleAddNew} className="btn btn-primary branches-button">
+                                إضافة فرع جديد
+                            </button>
+                        )}
+                    </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="table-wrapper branches-table-wrapper">
+                    <table className="branches-table">
                         <thead>
                             <tr>
                                 <th>المعرف</th>
@@ -65,7 +67,7 @@ const Branches: React.FC<BranchesProps> = ({ branches, onSave }) => {
                                     <td>{b.id}</td>
                                     <td>{b.name}</td>
                                     <td>{b.projectId === 1 ? 'Generic Perfumes' : 'Arabiva'}</td>
-                                    <td>
+                                    <td className="branches-actions">
                                         <div style={{ display: 'flex' }}>
                                             {hasPermission('update') && <button onClick={() => handleEdit(b)} style={{color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}}><PencilIcon style={{width:'20px', height:'20px'}}/></button>}
                                         </div>

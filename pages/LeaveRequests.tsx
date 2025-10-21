@@ -54,13 +54,15 @@ const LeaveRequests: React.FC<LeaveRequestsProps> = ({ employees, leaveRequests,
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة الإجازات</h3>
-                    <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>تقديم طلب إجازة</button>
+            <div className="glass-pane leave-requests-page-container" style={{ padding: '1.5rem' }}>
+                <div className="leave-requests-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 className="leave-requests-page-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة الإجازات</h3>
+                    <div className="leave-requests-page-actions">
+                        <button className="btn btn-primary leave-requests-button" onClick={() => setIsModalOpen(true)}>تقديم طلب إجازة</button>
+                    </div>
                 </div>
                 
-                <div style={{display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--surface-border)', marginBottom: '1rem'}}>
+                <div className="leave-requests-tabs" style={{display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--surface-border)', marginBottom: '1rem'}}>
                      <TabButton title="طلباتي" isActive={activeTab === 'myRequests'} onClick={() => setActiveTab('myRequests')} />
                      {isManager && <TabButton title={`طلبات معلقة (${pendingRequests.length})`} isActive={activeTab === 'pending'} onClick={() => setActiveTab('pending')} />}
                 </div>
@@ -75,7 +77,7 @@ const LeaveRequests: React.FC<LeaveRequestsProps> = ({ employees, leaveRequests,
 };
 
 const TabButton: React.FC<{title: string; isActive: boolean; onClick: () => void}> = ({ title, isActive, onClick }) => (
-    <button onClick={onClick} style={{
+    <button className="leave-requests-tab-button" onClick={onClick} style={{
         padding: '0.75rem 1.5rem', border: 'none', background: 'transparent',
         borderBottom: `3px solid ${isActive ? 'var(--primary-color)' : 'transparent'}`,
         color: isActive ? 'var(--primary-color)' : 'var(--text-secondary)',
@@ -95,10 +97,10 @@ const MyRequestsView = ({requests, getEmployeeName, calculateLeaveBalance, user,
     
     return (
         <div>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem'}}>
-                <div className="glass-pane" style={{padding: '1rem', textAlign: 'center'}}><p style={{color: 'var(--text-secondary)'}}>الرصيد السنوي</p><p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{balance.entitlement} يوم</p></div>
-                <div className="glass-pane" style={{padding: '1rem', textAlign: 'center'}}><p style={{color: 'var(--text-secondary)'}}>المستخدم</p><p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{balance.used} يوم</p></div>
-                <div className="glass-pane" style={{padding: '1rem', textAlign: 'center'}}><p style={{color: 'var(--text-secondary)'}}>المتبقي</p><p style={{fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--secondary-color)'}}>{balance.remaining} يوم</p></div>
+            <div className="leave-requests-balance-grid" style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem'}}>
+                <div className="glass-pane leave-requests-balance-card" style={{padding: '1rem', textAlign: 'center'}}><p style={{color: 'var(--text-secondary)'}}>الرصيد السنوي</p><p className="leave-requests-balance-value" style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{balance.entitlement} يوم</p></div>
+                <div className="glass-pane leave-requests-balance-card" style={{padding: '1rem', textAlign: 'center'}}><p style={{color: 'var(--text-secondary)'}}>المستخدم</p><p className="leave-requests-balance-value" style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{balance.used} يوم</p></div>
+                <div className="glass-pane leave-requests-balance-card" style={{padding: '1rem', textAlign: 'center'}}><p style={{color: 'var(--text-secondary)'}}>المتبقي</p><p className="leave-requests-balance-value" style={{fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--secondary-color)'}}>{balance.remaining} يوم</p></div>
             </div>
             <RequestTable requests={requests} getEmployeeName={getEmployeeName} />
         </div>
@@ -113,13 +115,13 @@ const RequestTable = ({requests, getEmployeeName, isManagerView, onSaveRequest}:
         const style = {
             padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderRadius: '9999px',
         };
-        if (status === 'Approved') return <span style={{...style, color: '#fff', background: '#10b981'}}>مقبول</span>
-        if (status === 'Rejected') return <span style={{...style, color: '#fff', background: '#ef4444'}}>مرفوض</span>
-        return <span style={{...style, color: '#111', background: '#f59e0b'}}>معلق</span>
+        if (status === 'Approved') return <span className="leave-requests-status-chip" style={{...style, color: '#fff', background: '#10b981'}}>مقبول</span>
+        if (status === 'Rejected') return <span className="leave-requests-status-chip" style={{...style, color: '#fff', background: '#ef4444'}}>مرفوض</span>
+        return <span className="leave-requests-status-chip" style={{...style, color: '#111', background: '#f59e0b'}}>معلق</span>
     }
     return (
-        <div className="table-wrapper">
-            <table>
+        <div className="table-wrapper leave-requests-table-wrapper">
+            <table className="leave-requests-table">
                 <thead><tr><th>{isManagerView ? 'الموظف' : 'نوع الإجازة'}</th><th>تاريخ البدء</th><th>تاريخ الانتهاء</th><th>عدد الأيام</th><th>الحالة</th>{isManagerView && <th>الإجراء</th>}</tr></thead>
                 <tbody>
                     {requests.map((r: LeaveRequest) => (
@@ -130,9 +132,9 @@ const RequestTable = ({requests, getEmployeeName, isManagerView, onSaveRequest}:
                             <td>{r.totalDays}</td>
                             <td>{getStatusChip(r.status)}</td>
                             {isManagerView && <td>
-                                <div style={{display: 'flex', gap: '0.5rem'}}>
-                                    <button onClick={() => onSaveRequest(r, 'Approved')} className="btn btn-secondary" style={{padding: '0.25rem 0.75rem', fontSize: '0.8rem'}}>قبول</button>
-                                    <button onClick={() => onSaveRequest(r, 'Rejected')} className="btn btn-ghost" style={{padding: '0.25rem 0.75rem', fontSize: '0.8rem'}}>رفض</button>
+                                <div className="leave-requests-action-buttons" style={{display: 'flex', gap: '0.5rem'}}>
+                                    <button onClick={() => onSaveRequest(r, 'Approved')} className="btn btn-secondary leave-requests-action-button" style={{padding: '0.25rem 0.75rem', fontSize: '0.8rem'}}>قبول</button>
+                                    <button onClick={() => onSaveRequest(r, 'Rejected')} className="btn btn-ghost leave-requests-action-button" style={{padding: '0.25rem 0.75rem', fontSize: '0.8rem'}}>رفض</button>
                                 </div>
                             </td>}
                         </tr>
