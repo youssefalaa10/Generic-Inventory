@@ -1,10 +1,10 @@
-import React, { useState, useContext, useMemo } from 'react';
-import { InventoryItem, Product, Branch, AdjustmentReason } from '../types';
-import { useToasts } from '../components/Toast';
+import React, { useContext, useMemo, useState } from 'react';
 import { AuthContext } from '../App';
-import { SwitchHorizontalIcon, AdjustmentsIcon, BarcodeIcon, PrinterIcon } from '../components/Icon';
-import InventoryTransferModal from '../components/InventoryTransferModal';
+import { AdjustmentsIcon, BarcodeIcon, PrinterIcon, SwitchHorizontalIcon } from '../components/Icon';
 import InventoryAdjustmentModal from '../components/InventoryAdjustmentModal';
+import InventoryTransferModal from '../components/InventoryTransferModal';
+import { useToasts } from '../components/Toast';
+import { AdjustmentReason, Branch, InventoryItem, Product } from '../types';
 
 
 interface InventoryProps {
@@ -82,38 +82,38 @@ const Inventory: React.FC<InventoryProps> = ({ inventory, products, branches, on
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>نظرة عامة على المخزون</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ width: '200px' }}>
-                            <select onChange={(e) => setFilterCategory(e.target.value)} value={filterCategory} className="form-select">
-                                <option value="all">كل الفئات</option>
-                                {productCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
+            <div className="glass-pane inventory-page-container">
+                <div className="inventory-page-header">
+                    <h3 className="inventory-page-title">نظرة عامة على المخزون</h3>
+                    <div className="inventory-page-actions">
+                        <div className="inventory-filters">
+                            <div className="inventory-filter-group">
+                                <select onChange={(e) => setFilterCategory(e.target.value)} value={filterCategory} className="form-select inventory-filter-select">
+                                    <option value="all">كل الفئات</option>
+                                    {productCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                                <select onChange={(e) => setFilterBranch(e.target.value)} value={filterBranch} className="form-select inventory-filter-select-wide">
+                                    <option value="all">كل الفروع</option>
+                                    {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                                </select>
+                            </div>
+                            {hasPermission('transfer') && (
+                                <button onClick={() => setTransferModalOpen(true)} className="btn btn-primary">
+                                    <SwitchHorizontalIcon style={{ width: '20px', height: '20px' }}/>
+                                    تحويل مخزون
+                                </button>
+                            )}
+                            {hasPermission('adjust') && (
+                                <button onClick={() => setAdjustModalOpen(true)} className="btn btn-warning">
+                                    <AdjustmentsIcon style={{ width: '20px', height: '20px' }}/>
+                                    تعديل المخزون
+                                </button>
+                            )}
                         </div>
-                        <div style={{ width: '250px' }}>
-                            <select onChange={(e) => setFilterBranch(e.target.value)} value={filterBranch} className="form-select">
-                                <option value="all">كل الفروع</option>
-                                {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                            </select>
-                        </div>
-                        {hasPermission('transfer') && (
-                            <button onClick={() => setTransferModalOpen(true)} className="btn btn-primary">
-                                <SwitchHorizontalIcon style={{ width: '20px', height: '20px' }}/>
-                                تحويل مخزون
-                            </button>
-                        )}
-                         {hasPermission('adjust') && (
-                            <button onClick={() => setAdjustModalOpen(true)} className="btn btn-warning">
-                                <AdjustmentsIcon style={{ width: '20px', height: '20px' }}/>
-                                تعديل المخزون
-                            </button>
-                        )}
                     </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="inventory-table-wrapper">
+                    <table className="inventory-table">
                         <thead>
                             <tr>
                                 <th>المنتج</th>

@@ -4132,3 +4132,641 @@ tbody tr:hover {
     max-height: none !important;
   }
 }
+
+/* ===== INVENTORY PAGES RESPONSIVE STYLES ===== */
+
+/* Inventory Page Container */
+.inventory-page-container {
+  padding: 1.5rem;
+}
+
+.inventory-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.inventory-page-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.inventory-page-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.inventory-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--surface-bg);
+  border-radius: 0.5rem;
+  border: 1px solid var(--surface-border);
+}
+
+.inventory-filter-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.inventory-filter-select {
+  flex-basis: 200px;
+  min-width: 150px;
+}
+
+.inventory-filter-select-wide {
+  flex-basis: 250px;
+  min-width: 200px;
+}
+
+.inventory-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.inventory-table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.inventory-table th {
+  background: var(--surface-bg);
+  font-weight: 600;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.inventory-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.inventory-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.inventory-table tbody tr:active {
+  background: var(--surface-active);
+}
+
+.low-stock-row {
+  background: rgba(248, 113, 113, 0.1) !important;
+}
+
+.low-stock-row:hover {
+  background: rgba(248, 113, 113, 0.2) !important;
+}
+
+/* Products Page Styles */
+.products-page-container {
+  padding: 1.5rem;
+}
+
+.products-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.products-page-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.products-page-description {
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0 0;
+}
+
+.products-search-section {
+  margin-bottom: 1rem;
+}
+
+.products-search-input {
+  width: 100%;
+  max-width: 400px;
+}
+
+.products-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.products-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+}
+
+.products-table th,
+.products-table td {
+  padding: 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.products-table th {
+  background: var(--surface-bg);
+  font-weight: 600;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.products-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.products-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.products-table tbody tr:active {
+  background: var(--surface-active);
+}
+
+/* Product Detail Page Styles */
+.product-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.product-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: var(--surface-bg);
+  border-radius: 0.5rem;
+  border: 1px solid var(--surface-border);
+}
+
+.product-title-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.product-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.product-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.product-stat-card {
+  background: var(--surface-bg);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.stat-change {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.stat-change.positive {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.stat-change.negative {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Inventory Vouchers Styles */
+.inventory-vouchers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.inventory-vouchers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.inventory-vouchers-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.inventory-vouchers-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.inventory-vouchers-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.inventory-voucher-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--surface-bg);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.inventory-voucher-card:hover {
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-voucher-icon {
+  width: 32px;
+  height: 32px;
+  border: 2px solid;
+  border-radius: 50%;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inventory-voucher-content {
+  flex: 1;
+}
+
+.inventory-voucher-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.inventory-voucher-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.inventory-voucher-meta {
+  text-align: right;
+}
+
+.inventory-voucher-status {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 0.25rem;
+}
+
+.inventory-voucher-id {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.inventory-voucher-date {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+
+.inventory-voucher-branch {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Inventory Requisitions Styles */
+.inventory-requisitions-container {
+  padding: 1.5rem;
+}
+
+.inventory-requisitions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.inventory-requisitions-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.inventory-requisitions-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.inventory-requisitions-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+}
+
+.inventory-requisitions-table th,
+.inventory-requisitions-table td {
+  padding: 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.inventory-requisitions-table th {
+  background: var(--surface-bg);
+  font-weight: 600;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.inventory-requisitions-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.inventory-requisitions-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.inventory-requisitions-table tbody tr:active {
+  background: var(--surface-active);
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 1024px) {
+  .inventory-page-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .inventory-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .inventory-filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .inventory-filter-select,
+  .inventory-filter-select-wide {
+    flex-basis: auto;
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .product-detail-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .product-actions {
+    justify-content: center;
+  }
+  
+  .product-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .inventory-vouchers-filters {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .inventory-page-container,
+  .products-page-container,
+  .inventory-requisitions-container {
+    padding: 1rem;
+  }
+  
+  .inventory-page-header,
+  .products-page-header,
+  .inventory-requisitions-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .inventory-page-actions {
+    justify-content: center;
+  }
+  
+  .inventory-table,
+  .products-table,
+  .inventory-requisitions-table {
+    min-width: 500px;
+  }
+  
+  .inventory-table th,
+  .inventory-table td,
+  .products-table th,
+  .products-table td,
+  .inventory-requisitions-table th,
+  .inventory-requisitions-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .product-detail-page {
+    padding: 0.75rem;
+  }
+  
+  .product-detail-header {
+    padding: 1rem;
+  }
+  
+  .product-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .product-stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .inventory-voucher-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .inventory-voucher-meta {
+    text-align: center;
+  }
+  
+  .inventory-vouchers-filters {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .inventory-page-container,
+  .products-page-container,
+  .inventory-requisitions-container {
+    padding: 0.75rem;
+  }
+  
+  .inventory-table,
+  .products-table,
+  .inventory-requisitions-table {
+    min-width: 400px;
+  }
+  
+  .inventory-table th,
+  .inventory-table td,
+  .products-table th,
+  .products-table td,
+  .inventory-requisitions-table th,
+  .inventory-requisitions-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .product-detail-page {
+    padding: 0.5rem;
+  }
+  
+  .product-detail-header {
+    padding: 0.75rem;
+  }
+  
+  .product-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.375rem;
+  }
+  
+  .product-stat-card {
+    padding: 0.75rem;
+  }
+  
+  .stat-value {
+    font-size: 1.25rem;
+  }
+  
+  .inventory-voucher-card {
+    padding: 0.75rem;
+  }
+  
+  .inventory-voucher-title {
+    font-size: 1rem;
+  }
+  
+  .inventory-voucher-description {
+    font-size: 0.8rem;
+  }
+}
+
+/* Tablet Landscape Optimization */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .inventory-filters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .inventory-vouchers-filters {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Print Styles for Inventory Pages */
+@media print {
+  .inventory-page-actions,
+  .inventory-filters,
+  .product-actions,
+  .inventory-vouchers-actions {
+    display: none !important;
+  }
+  
+  .inventory-page-container,
+  .products-page-container,
+  .inventory-requisitions-container {
+    padding: 0 !important;
+  }
+  
+  .inventory-table,
+  .products-table,
+  .inventory-requisitions-table {
+    min-width: auto !important;
+  }
+  
+  .inventory-table th,
+  .inventory-table td,
+  .products-table th,
+  .products-table td,
+  .inventory-requisitions-table th,
+  .inventory-requisitions-table td {
+    padding: 0.25rem !important;
+    font-size: 0.75rem !important;
+  }
+}

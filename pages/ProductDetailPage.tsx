@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { Product, InventoryItem, Sale, PurchaseInvoice, User, Branch, InventoryAdjustmentLog, InventoryMovement, SaleItem } from '../types';
-import { PencilIcon, SwitchHorizontalIcon, AdjustmentsIcon } from '../components/Icon';
+import React, { useMemo, useState } from 'react';
+import { AdjustmentsIcon, PencilIcon, SwitchHorizontalIcon } from '../components/Icon';
+import { Branch, InventoryAdjustmentLog, InventoryItem, InventoryMovement, Product, PurchaseInvoice, Sale, SaleItem, User } from '../types';
 
 interface ProductDetailPageProps {
     product: Product;
@@ -76,9 +76,9 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     };
 
     return (
-        <div className="product-detail-page" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div className="product-detail-header glass-pane" style={{padding: '1.5rem'}}>
-                <div className="product-title-group" style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+        <div className="product-detail-page">
+            <div className="product-detail-header glass-pane">
+                <div className="product-title-group">
                     <button onClick={onBack} style={{ all: 'unset', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '1.5rem' }}>&larr;</button>
                     <h2>{product.name} <span style={{fontSize: '1rem', color: 'var(--text-secondary)'}}>#{product.sku}</span></h2>
                 </div>

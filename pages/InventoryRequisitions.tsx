@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { InventoryRequisition, Product, Branch } from '../types';
 import { PlusIcon } from '../components/Icon';
 import InventoryRequisitionModal from '../components/InventoryRequisitionModal';
+import { Branch, InventoryRequisition, Product } from '../types';
 
 interface InventoryRequisitionsProps {
     requisitions: InventoryRequisition[];
@@ -20,16 +20,16 @@ const InventoryRequisitions: React.FC<InventoryRequisitionsProps> = ({ requisiti
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>الطلبيات المخزنية</h3>
+            <div className="glass-pane inventory-requisitions-container">
+                <div className="inventory-requisitions-header">
+                    <h3 className="inventory-requisitions-title">الطلبيات المخزنية</h3>
                     <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
                         <PlusIcon style={{ width: '20px', height: '20px' }} />
                         طلبية جديدة
                     </button>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="inventory-requisitions-table-wrapper">
+                    <table className="inventory-requisitions-table">
                         <thead>
                             <tr>
                                 <th>رقم الطلبية</th>
