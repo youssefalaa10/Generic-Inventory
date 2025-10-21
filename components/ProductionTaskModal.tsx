@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { ProductionTask, ManufacturingOrder, EmployeeData, ProductionTaskStatus, Comment } from '../types';
+import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../App';
+import { Comment, EmployeeData, ManufacturingOrder, ProductionTask, ProductionTaskStatus } from '../types';
 
 interface ProductionTaskModalProps {
     task: Partial<ProductionTask> | null;
@@ -63,46 +63,46 @@ const ProductionTaskModal: React.FC<ProductionTaskModalProps> = ({ task, orders,
 
     return (
         <div className="modal-backdrop" onClick={onClose}>
-            <div className="modal-content glass-pane" onClick={e => e.stopPropagation()} style={{ maxWidth: '45rem' }}>
-                <div className="modal-header">
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>{isCreating ? 'مهمة تصنيع جديدة' : 'تعديل مهمة التصنيع'}</h2>
+            <div className="modal-content glass-pane manufacturing-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '45rem' }}>
+                <div className="modal-header manufacturing-modal-header">
+                    <h2 className="manufacturing-modal-title" style={{ fontSize: '1.5rem', fontWeight: 600 }}>{isCreating ? 'مهمة تصنيع جديدة' : 'تعديل مهمة التصنيع'}</h2>
                 </div>
-                <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div>
-                        <label className="form-label">اسم المهمة</label>
-                        <input type="text" value={editableTask.name || ''} onChange={e => handleChange('name', e.target.value)} className="form-input" />
+                <div className="modal-body manufacturing-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="manufacturing-form-field">
+                        <label className="form-label manufacturing-label">اسم المهمة</label>
+                        <input type="text" value={editableTask.name || ''} onChange={e => handleChange('name', e.target.value)} className="form-input manufacturing-input" />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                            <label className="form-label">أمر التصنيع</label>
-                            <select value={editableTask.productionOrderId || ''} onChange={e => handleChange('productionOrderId', e.target.value)} className="form-select">
+                    <div className="manufacturing-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="manufacturing-form-field">
+                            <label className="form-label manufacturing-label">أمر التصنيع</label>
+                            <select value={editableTask.productionOrderId || ''} onChange={e => handleChange('productionOrderId', e.target.value)} className="form-select manufacturing-select">
                                 <option value="">اختر أمر...</option>
                                 {orders.map(o => <option key={o.id} value={o.id}>Order #{o.id}</option>)}
                             </select>
                         </div>
-                         <div>
-                            <label className="form-label">الحالة</label>
-                            <select value={editableTask.status || ''} onChange={e => handleChange('status', e.target.value)} className="form-select">
+                         <div className="manufacturing-form-field">
+                            <label className="form-label manufacturing-label">الحالة</label>
+                            <select value={editableTask.status || ''} onChange={e => handleChange('status', e.target.value)} className="form-select manufacturing-select">
                                 {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                             </select>
                         </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                            <label className="form-label">مسندة إلى (اختياري)</label>
-                            <select value={editableTask.assignedToEmployeeId || ''} onChange={e => handleChange('assignedToEmployeeId', e.target.value ? parseInt(e.target.value) : undefined)} className="form-select">
+                    <div className="manufacturing-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="manufacturing-form-field">
+                            <label className="form-label manufacturing-label">مسندة إلى (اختياري)</label>
+                            <select value={editableTask.assignedToEmployeeId || ''} onChange={e => handleChange('assignedToEmployeeId', e.target.value ? parseInt(e.target.value) : undefined)} className="form-select manufacturing-select">
                                 <option value="">غير مسندة</option>
                                 {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                             </select>
                         </div>
-                        <div>
-                            <label className="form-label">الموعد النهائي (اختياري)</label>
-                            <input type="date" value={editableTask.deadline || ''} onChange={e => handleChange('deadline', e.target.value)} className="form-input" />
+                        <div className="manufacturing-form-field">
+                            <label className="form-label manufacturing-label">الموعد النهائي (اختياري)</label>
+                            <input type="date" value={editableTask.deadline || ''} onChange={e => handleChange('deadline', e.target.value)} className="form-input manufacturing-input" />
                         </div>
                     </div>
-                     <div>
-                        <label className="form-label">ملاحظات</label>
-                        <textarea value={editableTask.notes || ''} onChange={e => handleChange('notes', e.target.value)} className="form-input" rows={3}></textarea>
+                     <div className="manufacturing-form-field">
+                        <label className="form-label manufacturing-label">ملاحظات</label>
+                        <textarea value={editableTask.notes || ''} onChange={e => handleChange('notes', e.target.value)} className="form-input manufacturing-input" rows={3}></textarea>
                     </div>
                      {/* Comments Section */}
                     <div style={{ borderTop: '1px solid var(--surface-border)', paddingTop: '1rem' }}>
@@ -139,19 +139,19 @@ const ProductionTaskModal: React.FC<ProductionTaskModalProps> = ({ task, orders,
                             <textarea 
                                 value={newComment}
                                 onChange={e => setNewComment(e.target.value)}
-                                className="form-input"
+                                className="form-input manufacturing-input"
                                 placeholder="أضف تعليق..."
                                 rows={2}
                             />
-                            <button type="button" onClick={handleAddComment} className="btn btn-secondary" disabled={!newComment.trim()}>
+                            <button type="button" onClick={handleAddComment} className="btn btn-secondary manufacturing-button" disabled={!newComment.trim()}>
                                 إضافة
                             </button>
                         </div>
                     </div>
                 </div>
-                <div className="modal-footer" style={{ justifyContent: 'flex-end', gap: '1rem' }}>
-                    <button onClick={onClose} className="btn btn-ghost">إلغاء</button>
-                    <button onClick={handleSave} className="btn btn-secondary">{isCreating ? 'إنشاء المهمة' : 'حفظ التعديلات'}</button>
+                <div className="modal-footer manufacturing-modal-footer" style={{ justifyContent: 'flex-end', gap: '1rem' }}>
+                    <button onClick={onClose} className="btn btn-ghost manufacturing-button">إلغاء</button>
+                    <button onClick={handleSave} className="btn btn-secondary manufacturing-button">{isCreating ? 'إنشاء المهمة' : 'حفظ التعديلات'}</button>
                 </div>
             </div>
         </div>

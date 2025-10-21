@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { ProductionOrder_Legacy as ProductionOrder, Branch, Product, InventoryItem } from '../types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Branch, InventoryItem, Product, ProductionOrder_Legacy as ProductionOrder } from '../types';
 import { useToasts } from './Toast';
 
 interface ProductionOrderModalProps {
@@ -85,31 +85,31 @@ const ProductionOrderModal: React.FC<ProductionOrderModalProps> = ({ order, onCl
 
     return (
         <div className="modal-backdrop" onClick={onClose}>
-            <div className="modal-content glass-pane" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2 style={{fontSize: '1.5rem', fontWeight: 600}}>{isCreating ? 'أمر تصنيع جديد' : `أمر تصنيع #${order?.id}`}</h2>
+            <div className="modal-content glass-pane manufacturing-modal" onClick={e => e.stopPropagation()}>
+                <div className="modal-header manufacturing-modal-header">
+                    <h2 className="manufacturing-modal-title" style={{fontSize: '1.5rem', fontWeight: 600}}>{isCreating ? 'أمر تصنيع جديد' : `أمر تصنيع #${order?.id}`}</h2>
                 </div>
-                <div className="modal-body">
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                        <div>
-                            <label className="form-label">المنتج المراد تصنيعه</label>
+                <div className="modal-body manufacturing-modal-body">
+                    <div className="manufacturing-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div className="manufacturing-form-field">
+                            <label className="form-label manufacturing-label">المنتج المراد تصنيعه</label>
                             <select
                                 value={editableOrder.productId || ''}
                                 onChange={e => handleChange('productId', parseInt(e.target.value))}
-                                className="form-select"
+                                className="form-select manufacturing-select"
                                 disabled={!isCreating}
                             >
                                 <option value="">اختر منتج مركب...</option>
                                 {compositeProducts.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                             </select>
                         </div>
-                        <div>
-                            <label className="form-label">الكمية</label>
-                            <input type="number" value={editableOrder.quantity || ''} onChange={e => handleChange('quantity', parseInt(e.target.value))} className="form-input" min="1" disabled={!isCreating} />
+                        <div className="manufacturing-form-field">
+                            <label className="form-label manufacturing-label">الكمية</label>
+                            <input type="number" value={editableOrder.quantity || ''} onChange={e => handleChange('quantity', parseInt(e.target.value))} className="form-input manufacturing-input" min="1" disabled={!isCreating} />
                         </div>
-                        <div>
-                            <label className="form-label">الفرع</label>
-                            <select value={editableOrder.branchId || ''} onChange={e => handleChange('branchId', parseInt(e.target.value))} className="form-select" disabled={!isCreating}>
+                        <div className="manufacturing-form-field">
+                            <label className="form-label manufacturing-label">الفرع</label>
+                            <select value={editableOrder.branchId || ''} onChange={e => handleChange('branchId', parseInt(e.target.value))} className="form-select manufacturing-select" disabled={!isCreating}>
                                 {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                             </select>
                         </div>
@@ -118,8 +118,8 @@ const ProductionOrderModal: React.FC<ProductionOrderModalProps> = ({ order, onCl
                     {selectedProduct && (
                         <div>
                             <h3 style={{fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>المواد الخام المطلوبة</h3>
-                            <div className="table-wrapper">
-                                <table>
+                            <div className="table-wrapper manufacturing-table-wrapper">
+                                <table className="manufacturing-table">
                                     <thead><tr><th>المادة</th><th>المطلوب</th><th>المتاح</th></tr></thead>
                                     <tbody>
                                         {requiredMaterials.map(mat => (
@@ -135,18 +135,18 @@ const ProductionOrderModal: React.FC<ProductionOrderModalProps> = ({ order, onCl
                         </div>
                     )}
                 </div>
-                <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+                <div className="modal-footer manufacturing-modal-footer" style={{ justifyContent: 'space-between' }}>
                     <div>
                         {!isCreating && order?.status === 'Pending' && (
-                             <button onClick={() => handleStatusUpdate('In Progress')} className="btn btn-primary">بدء التنفيذ</button>
+                             <button onClick={() => handleStatusUpdate('In Progress')} className="btn btn-primary manufacturing-button">بدء التنفيذ</button>
                         )}
                         {!isCreating && order?.status === 'In Progress' && (
-                             <button onClick={() => handleStatusUpdate('Completed')} className="btn btn-secondary" disabled={!canComplete}>إتمام التصنيع</button>
+                             <button onClick={() => handleStatusUpdate('Completed')} className="btn btn-secondary manufacturing-button" disabled={!canComplete}>إتمام التصنيع</button>
                         )}
                     </div>
                     <div>
-                        <button onClick={onClose} className="btn btn-ghost">إلغاء</button>
-                        {isCreating && <button onClick={handleSave} className="btn btn-secondary">حفظ الأمر</button>}
+                        <button onClick={onClose} className="btn btn-ghost manufacturing-button">إلغاء</button>
+                        {isCreating && <button onClick={handleSave} className="btn btn-secondary manufacturing-button">حفظ الأمر</button>}
                     </div>
                 </div>
             </div>

@@ -1,15 +1,13 @@
 
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { ManufacturingOrder, Branch, Product, InventoryItem, EmployeeData, FormulaLine, ProcessLoss, QCCheck, PackagingItem } from '../types';
-import { BeakerIcon, ChevronDownIcon, ChevronUpIcon, DocumentTextIcon, UsersIcon, LocationMarkerIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, PrinterIcon, PlusIcon, TrashIcon, CurrencyDollarIcon, CubeIcon, SparklesIcon } from '../components/Icon';
-import { useToasts } from '../components/Toast';
+import React, { useEffect, useMemo, useState } from 'react';
 import AIFormulaModal from '../components/AIFormulaModal';
+import { BeakerIcon, CalendarIcon, CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, CubeIcon, CurrencyDollarIcon, DocumentTextIcon, LocationMarkerIcon, PlusIcon, SparklesIcon, TrashIcon, UsersIcon, XCircleIcon } from '../components/Icon';
+import { useToasts } from '../components/Toast';
+import { Branch, EmployeeData, FormulaLine, InventoryItem, ManufacturingOrder, PackagingItem, ProcessLoss, Product, QCCheck } from '../types';
 
 // Helper: Import jspdf libraries
-import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { amiriFont } from '../services/amiriFont'; // Font for Arabic PDF support
 
 interface ManufacturingOrderPageProps {
     order: ManufacturingOrder; // For now, we work on a single mock order
@@ -78,18 +76,18 @@ const validateOrder = (order: ManufacturingOrder): ValidationErrors => {
 const SectionCard: React.FC<{ title: string; icon: React.FC<any>; children: React.ReactNode; error?: string; rightHeaderContent?: React.ReactNode }> = ({ title, icon: Icon, children, error, rightHeaderContent }) => {
     const [isOpen, setIsOpen] = useState(true);
     return (
-        <div className="glass-pane">
-            <button onClick={() => setIsOpen(!isOpen)} style={{
+        <div className="glass-pane manufacturing-section-card">
+            <button onClick={() => setIsOpen(!isOpen)} className="manufacturing-section-header" style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '1rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer',
                 borderBottom: isOpen ? '1px solid var(--surface-border)' : 'none'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <Icon style={{ width: '24px', height: '24px', color: 'var(--primary-color)' }} />
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)' }}>{title}</h3>
+                    <h3 className="manufacturing-section-title" style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)' }}>{title}</h3>
                      {error && <span style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: 500, marginRight: '1rem' }}>({error})</span>}
                 </div>
-                <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+                <div className="manufacturing-section-actions" style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
                     {rightHeaderContent}
                     {isOpen ? <ChevronUpIcon style={{width: '24px', height: '24px', color: 'var(--text-secondary)'}}/> : <ChevronDownIcon style={{width: '24px', height: '24px', color: 'var(--text-secondary)'}}/>}
                 </div>
@@ -100,14 +98,14 @@ const SectionCard: React.FC<{ title: string; icon: React.FC<any>; children: Reac
 };
 
 const FormRow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+    <div className="manufacturing-form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
         {children}
     </div>
 );
 
 const FormField: React.FC<{ label: string; children: React.ReactNode; required?: boolean; error?: string }> = ({ label, children, required, error }) => (
-    <div>
-        <label className={`form-label ${required ? 'required' : ''}`}>{label}</label>
+    <div className="manufacturing-form-field">
+        <label className={`form-label manufacturing-label ${required ? 'required' : ''}`}>{label}</label>
         {children}
         {error && <p className="error-text">{error}</p>}
     </div>
@@ -144,10 +142,10 @@ const OrderStatusManager: React.FC<{
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="manufacturing-status-manager" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="manufacturing-status-info" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>الحالة الحالية:</span>
-                <span style={{
+                <span className="manufacturing-status-badge" style={{
                     padding: '0.5rem 1rem',
                     borderRadius: '999px',
                     backgroundColor: currentStatusInfo.color,
@@ -160,7 +158,7 @@ const OrderStatusManager: React.FC<{
             </div>
             {nextAction && (
                 <button
-                    className="btn btn-secondary"
+                    className="btn btn-secondary manufacturing-button"
                     onClick={handleNextAction}
                 >
                     {nextAction.label}
@@ -233,7 +231,7 @@ const ManufacturingOrderPage: React.FC<ManufacturingOrderPageProps> = (props) =>
     const rawMaterials = useMemo(() => props.products.filter(p => p.category === 'Raw Material'), [props.products]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="manufacturing-order-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
              <SectionCard title="إدارة الحالة" icon={UsersIcon}>
                 <OrderStatusManager order={order} onStatusChange={handleStatusChange} isValid={Object.keys(errors).length === 0} />
             </SectionCard>
@@ -303,16 +301,16 @@ const BasicInfoSection: React.FC<{order: ManufacturingOrder; setOrder: (o: Manuf
         <SectionCard title="المعلومات الأساسية" icon={DocumentTextIcon}>
             <FormRow>
                 <FormField label="المنتج النهائي" required error={errors.productName}>
-                    <input type="text" value={order.productName} onChange={e => handleChange('productName', e.target.value)} className={`form-input ${errors.productName ? 'input-error' : ''}`}/>
+                    <input type="text" value={order.productName} onChange={e => handleChange('productName', e.target.value)} className={`form-input manufacturing-input ${errors.productName ? 'input-error' : ''}`}/>
                 </FormField>
                  <FormField label="رقم الأمر">
-                    <input type="text" value={order.id} className="form-input" disabled />
+                    <input type="text" value={order.id} className="form-input manufacturing-input" disabled />
                 </FormField>
                 <FormField label="كود الدفعة (Batch)">
-                    <input type="text" value={order.batchCode} className="form-input" disabled />
+                    <input type="text" value={order.batchCode} className="form-input manufacturing-input" disabled />
                 </FormField>
                 <FormField label="نوع التصنيع">
-                    <select value={order.manufacturingType} onChange={e => handleChange('manufacturingType', e.target.value)} className="form-select">
+                    <select value={order.manufacturingType} onChange={e => handleChange('manufacturingType', e.target.value)} className="form-select manufacturing-select">
                         <option value="INTERNAL">لتلبية احتياج الشركة</option>
                         <option value="CONTRACT">تصنيع للغير</option>
                     </select>
@@ -320,7 +318,7 @@ const BasicInfoSection: React.FC<{order: ManufacturingOrder; setOrder: (o: Manuf
             </FormRow>
              <FormRow>
                 <FormField label="التركيز">
-                    <select value={order.concentration} onChange={e => handleChange('concentration', e.target.value)} className="form-select">
+                    <select value={order.concentration} onChange={e => handleChange('concentration', e.target.value)} className="form-select manufacturing-select">
                         <option value="EDT_15">EDT 15%</option>
                         <option value="EDP_20">EDP 20%</option>
                         <option value="EXTRAIT_30">Extrait 30%</option>
@@ -328,30 +326,30 @@ const BasicInfoSection: React.FC<{order: ManufacturingOrder; setOrder: (o: Manuf
                     </select>
                 </FormField>
                  <FormField label="حجم الزجاجة (مل)" required error={errors.bottleSizeMl}>
-                    <input type="number" value={order.bottleSizeMl} onChange={e => handleChange('bottleSizeMl', Number(e.target.value))} className={`form-input ${errors.bottleSizeMl ? 'input-error' : ''}`}/>
+                    <input type="number" value={order.bottleSizeMl} onChange={e => handleChange('bottleSizeMl', Number(e.target.value))} className={`form-input manufacturing-input ${errors.bottleSizeMl ? 'input-error' : ''}`}/>
                 </FormField>
                 <FormField label="الكمية المطلوبة (زجاجة)" required error={errors.unitsRequested}>
-                    <input type="number" value={order.unitsRequested} onChange={e => handleChange('unitsRequested', Number(e.target.value))} className={`form-input ${errors.unitsRequested ? 'input-error' : ''}`}/>
+                    <input type="number" value={order.unitsRequested} onChange={e => handleChange('unitsRequested', Number(e.target.value))} className={`form-input manufacturing-input ${errors.unitsRequested ? 'input-error' : ''}`}/>
                 </FormField>
                  <FormField label="حجم الدفعة (مل)">
-                    <input type="text" value={order.yield.theoreticalMl.toFixed(2)} className="form-input" disabled />
+                    <input type="text" value={order.yield.theoreticalMl.toFixed(2)} className="form-input manufacturing-input" disabled />
                 </FormField>
             </FormRow>
             <FormRow>
                 <FormField label="المسؤول عن التصنيع">
-                    <select value={order.responsibleEmployeeId || ''} onChange={e => handleChange('responsibleEmployeeId', Number(e.target.value))} className="form-select">
+                    <select value={order.responsibleEmployeeId || ''} onChange={e => handleChange('responsibleEmployeeId', Number(e.target.value))} className="form-select manufacturing-select">
                         <option value="">اختر مسؤول...</option>
                         {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                     </select>
                 </FormField>
                 <FormField label="تاريخ التصنيع" required error={errors.manufacturingDate}>
-                    <input type="date" value={order.manufacturingDate?.split('T')[0] || ''} onChange={e => handleChange('manufacturingDate', e.target.value)} className={`form-input ${errors.manufacturingDate ? 'input-error' : ''}`}/>
+                    <input type="date" value={order.manufacturingDate?.split('T')[0] || ''} onChange={e => handleChange('manufacturingDate', e.target.value)} className={`form-input manufacturing-input ${errors.manufacturingDate ? 'input-error' : ''}`}/>
                 </FormField>
                 <FormField label="تاريخ الانتهاء">
-                    <input type="date" value={order.expiryDate?.split('T')[0] || ''} onChange={e => handleChange('expiryDate', e.target.value)} className="form-input"/>
+                    <input type="date" value={order.expiryDate?.split('T')[0] || ''} onChange={e => handleChange('expiryDate', e.target.value)} className="form-input manufacturing-input"/>
                 </FormField>
                  <FormField label="تاريخ التسليم">
-                    <input type="date" value={order.dueAt?.split('T')[0] || ''} onChange={e => handleChange('dueAt', e.target.value)} className="form-input"/>
+                    <input type="date" value={order.dueAt?.split('T')[0] || ''} onChange={e => handleChange('dueAt', e.target.value)} className="form-input manufacturing-input"/>
                 </FormField>
             </FormRow>
         </SectionCard>
@@ -383,8 +381,8 @@ const DistributionBuilder = ({ order, setOrder }: { order: ManufacturingOrder, s
             <p style={{color: 'var(--text-secondary)', marginBottom: '1rem'}}>
                 حدد أماكن وكميات التوزيع للعميل. يجب أن يتطابق المجموع مع الكمية المطلوبة.
             </p>
-            <div className="table-wrapper">
-                <table>
+            <div className="table-wrapper manufacturing-table-wrapper">
+                <table className="manufacturing-table">
                     <thead>
                         <tr>
                             <th>اسم المكان/المحل</th>
@@ -396,10 +394,10 @@ const DistributionBuilder = ({ order, setOrder }: { order: ManufacturingOrder, s
                         {(order.distribution || []).map((line, index) => (
                             <tr key={line.id}>
                                 <td style={{padding: '0.5rem'}}>
-                                    <input type="text" value={line.locationName} onChange={e => handleLineChange(index, 'locationName', e.target.value)} className="form-input"/>
+                                    <input type="text" value={line.locationName} onChange={e => handleLineChange(index, 'locationName', e.target.value)} className="form-input manufacturing-input"/>
                                 </td>
                                 <td style={{padding: '0.5rem'}}>
-                                    <input type="number" value={line.units || ''} onChange={e => handleLineChange(index, 'units', e.target.value)} className="form-input"/>
+                                    <input type="number" value={line.units || ''} onChange={e => handleLineChange(index, 'units', e.target.value)} className="form-input manufacturing-input"/>
                                 </td>
                                 <td>
                                     <button type="button" onClick={() => removeLine(index)} style={{color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}}><TrashIcon style={{width: '20px', height: '20px'}}/></button>
@@ -409,8 +407,8 @@ const DistributionBuilder = ({ order, setOrder }: { order: ManufacturingOrder, s
                     </tbody>
                 </table>
             </div>
-            <div style={{marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <button type="button" onClick={addLine} className="btn btn-ghost"><PlusIcon style={{width:'20px', height:'20px'}}/> إضافة مكان</button>
+            <div className="manufacturing-distribution-summary" style={{marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <button type="button" onClick={addLine} className="btn btn-ghost manufacturing-button"><PlusIcon style={{width:'20px', height:'20px'}}/> إضافة مكان</button>
                 <div style={{fontWeight: 'bold', fontSize: '1.1rem', color: totalDistributed !== order.unitsRequested ? '#ef4444' : 'var(--secondary-color)'}}>
                     الإجمالي الموزع: {totalDistributed} / {order.unitsRequested}
                 </div>
@@ -472,8 +470,8 @@ const FormulaBuilder = ({ order, setOrder, products, errors, onOpenAiModal }: { 
                 </button>
             }
         >
-            <div className="table-wrapper">
-                <table>
+            <div className="table-wrapper manufacturing-table-wrapper">
+                <table className="manufacturing-table">
                     <thead>
                         <tr>
                             <th>المادة</th>
@@ -487,13 +485,13 @@ const FormulaBuilder = ({ order, setOrder, products, errors, onOpenAiModal }: { 
                         {order.formula.map((line: FormulaLine, index: number) => (
                             <tr key={line.id}>
                                 <td style={{padding: '0.5rem'}}>
-                                     <select value={line.materialId} onChange={e => handleLineChange(index, 'materialId', e.target.value)} className="form-select">
+                                     <select value={line.materialId} onChange={e => handleLineChange(index, 'materialId', e.target.value)} className="form-select manufacturing-select">
                                         <option value={0}>اختر مادة</option>
                                         {rawMaterials.map(m => <option key={m.id} value={m.id}>{m.name} ({m.sku})</option>)}
                                     </select>
                                 </td>
                                  <td style={{padding: '0.5rem'}}>
-                                     <select value={line.kind} onChange={e => handleLineChange(index, 'kind', e.target.value)} className="form-select">
+                                     <select value={line.kind} onChange={e => handleLineChange(index, 'kind', e.target.value)} className="form-select manufacturing-select">
                                         <option value="AROMA_OIL">زيت عطري</option>
                                         <option value="ETHANOL">كحول</option>
                                         <option value="DI_WATER">ماء مقطر</option>
@@ -502,16 +500,16 @@ const FormulaBuilder = ({ order, setOrder, products, errors, onOpenAiModal }: { 
                                         <option value="ADDITIVE">إضافات</option>
                                      </select>
                                  </td>
-                                <td style={{padding: '0.5rem'}}><input type="number" step="0.01" value={line.percentage || ''} onChange={e => handleLineChange(index, 'percentage', e.target.value)} className="form-input"/></td>
-                                <td style={{padding: '0.5rem'}}><input type="number" step="0.01" value={line.density || ''} onChange={e => handleLineChange(index, 'density', e.target.value)} className="form-input"/></td>
+                                <td style={{padding: '0.5rem'}}><input type="number" step="0.01" value={line.percentage || ''} onChange={e => handleLineChange(index, 'percentage', e.target.value)} className="form-input manufacturing-input"/></td>
+                                <td style={{padding: '0.5rem'}}><input type="number" step="0.01" value={line.density || ''} onChange={e => handleLineChange(index, 'density', e.target.value)} className="form-input manufacturing-input"/></td>
                                 <td><button type="button" onClick={() => removeLine(index)} style={{color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}}><TrashIcon style={{width: '20px', height: '20px'}}/></button></td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
-            <div style={{marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <button type="button" onClick={addLine} className="btn btn-ghost"><PlusIcon style={{width:'20px', height:'20px'}}/> إضافة مكون</button>
+            <div className="manufacturing-formula-summary" style={{marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <button type="button" onClick={addLine} className="btn btn-ghost manufacturing-button"><PlusIcon style={{width:'20px', height:'20px'}}/> إضافة مكون</button>
                 <div style={{fontWeight: 'bold', fontSize: '1.1rem', color: Math.abs(totalPercentage - 100) > 0.01 ? '#ef4444' : 'var(--secondary-color)'}}>
                     الإجمالي: {totalPercentage.toFixed(2)}%
                 </div>
@@ -545,8 +543,8 @@ const MaterialReservation = ({ order, inventory, products }: { order: Manufactur
 
     return (
         <>
-            <div className="table-wrapper">
-                <table>
+            <div className="table-wrapper manufacturing-table-wrapper">
+                <table className="manufacturing-table">
                     <thead>
                         <tr>
                             <th>المادة</th>
@@ -587,14 +585,14 @@ const ProcessSteps = ({ order, setOrder }: { order: ManufacturingOrder, setOrder
 
     return (
         <FormRow>
-            <FormField label="أيام المكسرة"><input type="number" value={order.macerationDays} onChange={e => setOrder({...order, macerationDays: Number(e.target.value)})} className="form-input" /></FormField>
-            <FormField label="ساعات التبريد"><input type="number" value={order.chilling?.hours || ''} onChange={e => handleChillingChange('hours', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="حرارة التبريد (°C)"><input type="number" value={order.chilling?.temperatureC || ''} onChange={e => handleChillingChange('temperatureC', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="مراحل الفلترة"><input type="number" value={order.filtration?.stages || ''} onChange={e => handleFiltrationChange('stages', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="حجم الفلتر (Micron)"><input type="number" step="0.1" value={order.filtration?.micron || ''} onChange={e => handleFiltrationChange('micron', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="فاقد الخلط (%)"><input type="number" step="0.1" value={order.processLoss.mixingLossPct} onChange={e => handleLossChange('mixingLossPct', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="فاقد الفلترة (%)"><input type="number" step="0.1" value={order.processLoss.filtrationLossPct} onChange={e => handleLossChange('filtrationLossPct', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="فاقد التعبئة (%)"><input type="number" step="0.1" value={order.processLoss.fillingLossPct} onChange={e => handleLossChange('fillingLossPct', Number(e.target.value))} className="form-input" /></FormField>
+            <FormField label="أيام المكسرة"><input type="number" value={order.macerationDays} onChange={e => setOrder({...order, macerationDays: Number(e.target.value)})} className="form-input manufacturing-input" /></FormField>
+            <FormField label="ساعات التبريد"><input type="number" value={order.chilling?.hours || ''} onChange={e => handleChillingChange('hours', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="حرارة التبريد (°C)"><input type="number" value={order.chilling?.temperatureC || ''} onChange={e => handleChillingChange('temperatureC', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="مراحل الفلترة"><input type="number" value={order.filtration?.stages || ''} onChange={e => handleFiltrationChange('stages', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="حجم الفلتر (Micron)"><input type="number" step="0.1" value={order.filtration?.micron || ''} onChange={e => handleFiltrationChange('micron', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="فاقد الخلط (%)"><input type="number" step="0.1" value={order.processLoss.mixingLossPct} onChange={e => handleLossChange('mixingLossPct', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="فاقد الفلترة (%)"><input type="number" step="0.1" value={order.processLoss.filtrationLossPct} onChange={e => handleLossChange('filtrationLossPct', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="فاقد التعبئة (%)"><input type="number" step="0.1" value={order.processLoss.fillingLossPct} onChange={e => handleLossChange('fillingLossPct', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
         </FormRow>
     );
 };
@@ -606,19 +604,19 @@ const QCChecksSection: React.FC<{ qc: QCCheck | undefined; setQc: (qc: QCCheck) 
 
     return (
         <FormRow>
-            <FormField label="المظهر"><input type="text" value={qc?.appearance || ''} onChange={e => handleChange('appearance', e.target.value)} className="form-input" /></FormField>
+            <FormField label="المظهر"><input type="text" value={qc?.appearance || ''} onChange={e => handleChange('appearance', e.target.value)} className="form-input manufacturing-input" /></FormField>
             <FormField label="الشفافية">
-                <select value={qc?.clarity || 'Clear'} onChange={e => handleChange('clarity', e.target.value)} className="form-select">
+                <select value={qc?.clarity || 'Clear'} onChange={e => handleChange('clarity', e.target.value)} className="form-select manufacturing-select">
                     <option value="Clear">Clear</option><option value="Slight Haze">Slight Haze</option><option value="Hazy">Hazy</option>
                 </select>
             </FormField>
             <FormField label="مطابقة الرائحة">
-                <select value={qc?.odorMatch || 'Pass'} onChange={e => handleChange('odorMatch', e.target.value)} className="form-select">
+                <select value={qc?.odorMatch || 'Pass'} onChange={e => handleChange('odorMatch', e.target.value)} className="form-select manufacturing-select">
                     <option value="Pass">Pass</option><option value="Borderline">Borderline</option><option value="Fail">Fail</option>
                 </select>
             </FormField>
             <FormField label="النتيجة النهائية">
-                <select value={qc?.result || 'APPROVED'} onChange={e => handleChange('result', e.target.value)} className="form-select">
+                <select value={qc?.result || 'APPROVED'} onChange={e => handleChange('result', e.target.value)} className="form-select manufacturing-select">
                     <option value="APPROVED">APPROVED</option><option value="REJECTED">REJECTED</option><option value="REWORK">REWORK</option>
                 </select>
             </FormField>
@@ -651,8 +649,8 @@ const PackagingPlanner = ({ order, setOrder, products, inventory }: { order: Man
     const removeLine = (index: number) => setOrder({ ...order, packagingItems: order.packagingItems.filter((_, i) => i !== index) });
 
     return (
-        <div className="table-wrapper">
-            <table>
+        <div className="table-wrapper manufacturing-table-wrapper">
+            <table className="manufacturing-table">
                 <thead><tr><th>مادة التغليف</th><th style={{width: '120px'}}>الكمية/وحدة</th><th style={{width: '120px'}}>المطلوب</th><th>المتاح</th><th></th></tr></thead>
                 <tbody>
                     {requiredPackaging.map((item, index) => {
@@ -660,8 +658,8 @@ const PackagingPlanner = ({ order, setOrder, products, inventory }: { order: Man
                         const product = packagingProducts.find(p => p.id === item.productId);
                         return (
                             <tr key={index} style={{backgroundColor: !hasEnough ? 'var(--highlight-low-stock)' : 'transparent'}}>
-                                <td style={{padding: '0.5rem'}}><select value={item.productId} onChange={e => handleLineChange(index, 'productId', e.target.value)} className="form-select"><option>اختر...</option>{packagingProducts.map(p=><option value={p.id} key={p.id}>{p.name} ({p.sku})</option>)}</select></td>
-                                <td style={{padding: '0.5rem'}}><input type="number" value={item.qtyPerUnit} onChange={e=>handleLineChange(index, 'qtyPerUnit', e.target.value)} className="form-input"/></td>
+                                <td style={{padding: '0.5rem'}}><select value={item.productId} onChange={e => handleLineChange(index, 'productId', e.target.value)} className="form-select manufacturing-select"><option>اختر...</option>{packagingProducts.map(p=><option value={p.id} key={p.id}>{p.name} ({p.sku})</option>)}</select></td>
+                                <td style={{padding: '0.5rem'}}><input type="number" value={item.qtyPerUnit} onChange={e=>handleLineChange(index, 'qtyPerUnit', e.target.value)} className="form-input manufacturing-input"/></td>
                                 <td>{item.required}</td>
                                 <td>{item.available}</td>
                                 <td><button type="button" onClick={() => removeLine(index)} style={{color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}}><TrashIcon style={{width: '20px', height: '20px'}}/></button></td>
@@ -671,7 +669,7 @@ const PackagingPlanner = ({ order, setOrder, products, inventory }: { order: Man
                 </tbody>
             </table>
              <div style={{marginTop: '1rem', textAlign: 'left'}}>
-                <button type="button" onClick={addLine} className="btn btn-ghost"><PlusIcon style={{width:'20px', height:'20px'}}/> إضافة مادة تغليف</button>
+                <button type="button" onClick={addLine} className="btn btn-ghost manufacturing-button"><PlusIcon style={{width:'20px', height:'20px'}}/> إضافة مادة تغليف</button>
             </div>
         </div>
     );
@@ -684,10 +682,10 @@ const CostingSection: React.FC<{ costs: ManufacturingOrder['costs']; setCosts: (
 
     return (
         <FormRow>
-            <FormField label="تكلفة العمالة"><input type="number" value={costs.labor || ''} onChange={e => handleChange('labor', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="تكاليف غير مباشرة"><input type="number" value={costs.overhead || ''} onChange={e => handleChange('overhead', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="تكاليف أخرى"><input type="number" value={costs.other || ''} onChange={e => handleChange('other', Number(e.target.value))} className="form-input" /></FormField>
-            <FormField label="إجمالي التكلفة"><input type="text" value={costs.total.toFixed(3) + ' د.ك'} className="form-input" disabled /></FormField>
+            <FormField label="تكلفة العمالة"><input type="number" value={costs.labor || ''} onChange={e => handleChange('labor', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="تكاليف غير مباشرة"><input type="number" value={costs.overhead || ''} onChange={e => handleChange('overhead', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="تكاليف أخرى"><input type="number" value={costs.other || ''} onChange={e => handleChange('other', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+            <FormField label="إجمالي التكلفة"><input type="text" value={costs.total.toFixed(3) + ' د.ك'} className="form-input manufacturing-input" disabled /></FormField>
         </FormRow>
     );
 };
@@ -698,17 +696,17 @@ const YieldAndSummary = ({ order, setOrder, onSave }: { order: ManufacturingOrde
     return (
         <div>
             <FormRow>
-                <FormField label="الناتج النظري (مل)"><input type="text" value={order.yield.theoreticalMl.toFixed(2)} className="form-input" disabled /></FormField>
-                <FormField label="الناتج المتوقع (مل)"><input type="text" value={order.yield.expectedMl.toFixed(2)} className="form-input" disabled /></FormField>
-                <FormField label="الناتج الفعلي (مل)"><input type="number" value={order.yield.actualMl || ''} onChange={e => handleYieldChange('actualMl', Number(e.target.value))} className="form-input" /></FormField>
+                <FormField label="الناتج النظري (مل)"><input type="text" value={order.yield.theoreticalMl.toFixed(2)} className="form-input manufacturing-input" disabled /></FormField>
+                <FormField label="الناتج المتوقع (مل)"><input type="text" value={order.yield.expectedMl.toFixed(2)} className="form-input manufacturing-input" disabled /></FormField>
+                <FormField label="الناتج الفعلي (مل)"><input type="number" value={order.yield.actualMl || ''} onChange={e => handleYieldChange('actualMl', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
             </FormRow>
             <FormRow>
-                 <FormField label="الوحدات المتوقعة (زجاجة)"><input type="text" value={order.yield.expectedUnits} className="form-input" disabled /></FormField>
-                <FormField label="الوحدات الفعلية (زجاجة)"><input type="number" value={order.yield.actualUnits || ''} onChange={e => handleYieldChange('actualUnits', Number(e.target.value))} className="form-input" /></FormField>
-                 <FormField label="نسبة الإنتاجية (%)"><input type="text" value={order.yield.yieldPercentage?.toFixed(2) + '%' || '0%'} className="form-input" disabled style={{fontWeight: 'bold', color: 'var(--primary-color)'}}/></FormField>
+                 <FormField label="الوحدات المتوقعة (زجاجة)"><input type="text" value={order.yield.expectedUnits} className="form-input manufacturing-input" disabled /></FormField>
+                <FormField label="الوحدات الفعلية (زجاجة)"><input type="number" value={order.yield.actualUnits || ''} onChange={e => handleYieldChange('actualUnits', Number(e.target.value))} className="form-input manufacturing-input" /></FormField>
+                 <FormField label="نسبة الإنتاجية (%)"><input type="text" value={order.yield.yieldPercentage?.toFixed(2) + '%' || '0%'} className="form-input manufacturing-input" disabled style={{fontWeight: 'bold', color: 'var(--primary-color)'}}/></FormField>
             </FormRow>
             <div style={{marginTop: '1.5rem', borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem', textAlign: 'right'}}>
-                <button onClick={onSave} className="btn btn-secondary">
+                <button onClick={onSave} className="btn btn-secondary manufacturing-button">
                     حفظ أمر التصنيع
                 </button>
             </div>
