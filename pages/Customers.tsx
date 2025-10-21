@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { Customer, WhatsAppSettings, Branch } from '../types';
+import React, { useMemo, useState } from 'react';
 import CustomerModal from '../components/CustomerModal';
+import { ChatIcon, PencilIcon } from '../components/Icon';
 import { useToasts } from '../components/Toast';
-import { PencilIcon, ChatIcon } from '../components/Icon';
 import { PROJECTS } from '../services/mockData';
+import { Branch, Customer, WhatsAppSettings } from '../types';
 
 interface CustomersProps {
     customers: Customer[];
@@ -81,34 +81,36 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة العملاء</h3>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="glass-pane customers-container" style={{ padding: '1.5rem' }}>
+                <div className="customers-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 className="customers-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة العملاء</h3>
+                     <div className="customers-filters" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <input
                             type="text"
                             placeholder="ابحث بالاسم أو الهاتف..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            className="form-input"
+                            className="form-input customers-search"
                             style={{ width: '250px' }}
                         />
                         <select
                             value={projectFilter}
                             onChange={e => setProjectFilter(e.target.value)}
-                            className="form-select"
+                            className="form-select customers-filter"
                             style={{ width: '200px' }}
                         >
                             <option value="all">كل المشاريع</option>
                             {PROJECTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
-                        <button onClick={handleAddNew} className="btn btn-primary">
-                            إضافة عميل جديد
-                        </button>
+                        <div className="customers-actions">
+                            <button onClick={handleAddNew} className="btn btn-primary customers-button">
+                                إضافة عميل جديد
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="customers-table-wrapper table-wrapper">
+                    <table className="customers-table">
                         <thead>
                             <tr>
                                 <th>الاسم</th>
@@ -128,7 +130,7 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
                                     <td>{getProjectName(c.projectId)}</td>
                                     <td>{getBranchName(c.branchId)}</td>
                                     <td>{c.addedBy}</td>
-                                    <td>{formatBalance(c.balance)}</td>
+                                    <td className="customers-balance">{formatBalance(c.balance)}</td>
                                     <td>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                                             <button onClick={() => handleEdit(c)} style={{color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="تعديل"><PencilIcon style={{width:'20px', height:'20px'}}/></button>

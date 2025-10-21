@@ -1,12 +1,12 @@
-import React, { useState, useContext, ChangeEvent } from 'react';
+import React, { ChangeEvent, useContext, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { AuthContext } from '../App';
-import { RenewableItem, RenewableData } from '../types';
-import { SparklesIcon, EyeIcon } from '../components/Icon';
-import { useToasts } from '../components/Toast';
-import { scanRenewableWithGemini } from '../services/geminiService';
+import { EyeIcon, SparklesIcon } from '../components/Icon';
 import LicenseModal from '../components/LicenseModal';
 import LicensePrintTemplate from '../components/LicensePrintTemplate';
+import { useToasts } from '../components/Toast';
+import { scanRenewableWithGemini } from '../services/geminiService';
+import { RenewableData, RenewableItem } from '../types';
 
 interface LicensesProps {
     renewables: RenewableItem[];
@@ -117,29 +117,31 @@ const Licenses: React.FC<LicensesProps> = ({ renewables, setRenewables, onCheckR
 
     return (
         <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div className="glass-pane" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="licenses-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="glass-pane licenses-header" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' }}>إدارة التجديدات والانتهاءات</h3>
-                        <p style={{ color: 'var(--text-secondary)' }}>تتبع الرخص، السيارات، الاشتراكات، وأي شيء له تاريخ انتهاء.</p>
+                        <h3 className="licenses-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' }}>إدارة التجديدات والانتهاءات</h3>
+                        <p className="licenses-description" style={{ color: 'var(--text-secondary)' }}>تتبع الرخص، السيارات، الاشتراكات، وأي شيء له تاريخ انتهاء.</p>
                     </div>
-                   <div style={{ display: 'flex', gap: '1rem' }}>
-                        <label className={`btn btn-warning ${isScanning ? 'opacity-50' : ''}`}>
+                   <div className="licenses-actions" style={{ display: 'flex', gap: '1rem' }}>
+                        <label className={`btn btn-warning licenses-button ${isScanning ? 'opacity-50' : ''}`}>
                             <SparklesIcon style={{width: '20px', height: '20px'}}/>
                             <span>{isScanning ? 'جاري المسح...' : 'مسح مستند (AI)'}</span>
                             <input type="file" style={{ display: 'none' }} onChange={handleFileChange} disabled={isScanning} accept="image/png, image/jpeg, application/pdf" />
                         </label>
-                        {hasPermission('create') && <button onClick={() => { setSelectedItem({}); setIsModalOpen(true); }} className="btn btn-primary">إضافة يدوية</button>}
+                        {hasPermission('create') && <button onClick={() => { setSelectedItem({}); setIsModalOpen(true); }} className="btn btn-primary licenses-button">إضافة يدوية</button>}
                    </div>
                 </div>
                 
-                <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>قائمة العناصر</h3>
-                        <button onClick={handleManualCheck} className="btn btn-ghost">التحقق من التذكيرات</button>
+                <div className="glass-pane licenses-section" style={{ padding: '1.5rem' }}>
+                     <div className="licenses-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 className="licenses-section-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>قائمة العناصر</h3>
+                        <div className="licenses-section-actions">
+                            <button onClick={handleManualCheck} className="btn btn-ghost licenses-button">التحقق من التذكيرات</button>
+                        </div>
                     </div>
-                    <div className="table-wrapper">
-                        <table>
+                    <div className="licenses-table-wrapper table-wrapper">
+                        <table className="licenses-table">
                             <thead>
                                 <tr>
                                     <th>الفئة</th>
@@ -166,7 +168,7 @@ const Licenses: React.FC<LicensesProps> = ({ renewables, setRenewables, onCheckR
                                         <td style={{fontWeight: 600}}>{item.name}</td>
                                         <td>{item.identifier}</td>
                                         <td>{item.expiryDate}</td>
-                                        <td>
+                                        <td className="licenses-status">
                                             <span style={{
                                                 padding: '0.25rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, color: 'white', borderRadius: '9999px',
                                                 background: status.color
