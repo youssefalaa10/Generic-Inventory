@@ -1,6 +1,6 @@
 import React from 'react';
-import { CreditNote, Customer } from '../types';
 import { PlusIcon } from '../components/Icon';
+import { CreditNote, Customer } from '../types';
 
 interface CreditNotesProps {
     notes: CreditNote[];
@@ -11,27 +11,37 @@ const CreditNotes: React.FC<CreditNotesProps> = ({ notes, customers }) => {
 
     const getCustomerName = (id: number) => customers.find(c => c.id === id)?.name || 'N/A';
 
-    const getStatusChip = (status: CreditNote['status']) => {
-        const styles: {[key: string]: {bg: string, text: string}} = {
-            'Open': { bg: '#3b82f6', text: '#fff' },
-            'Applied': { bg: '#10b981', text: '#fff' },
-            'Void': { bg: '#5a6472', text: '#fff' },
+    const getStatusChipClass = (status: CreditNote['status']) => {
+        switch (status) {
+            case 'Open': return 'status-chip status-chip-open';
+            case 'Applied': return 'status-chip status-chip-applied';
+            case 'Void': return 'status-chip status-chip-void';
+            default: return 'status-chip status-chip-open';
         }
-        const currentStyle = styles[status];
-        return <span style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderRadius: '9999px', color: currentStyle.text, background: currentStyle.bg }}>{status}</span>
+    };
+
+    const getStatusText = (status: CreditNote['status']) => {
+        switch (status) {
+            case 'Open': return 'مفتوح';
+            case 'Applied': return 'مطبق';
+            case 'Void': return 'ملغي';
+            default: return status;
+        }
     };
 
     return (
-        <div className="glass-pane" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>الإشعارات الدائنة</h3>
-                <button className="btn btn-primary">
-                    <PlusIcon style={{ width: '20px', height: '20px' }} />
-                    إشعار دائن جديد
-                </button>
+        <div className="glass-pane sales-page-container">
+            <div className="sales-page-header">
+                <h3 className="sales-page-title">الإشعارات الدائنة</h3>
+                <div className="sales-page-actions">
+                    <button className="btn btn-primary">
+                        <PlusIcon style={{ width: '20px', height: '20px' }} />
+                        إشعار دائن جديد
+                    </button>
+                </div>
             </div>
-            <div className="table-wrapper">
-                <table>
+            <div className="sales-table-wrapper">
+                <table className="sales-table">
                     <thead>
                         <tr>
                             <th>رقم الإشعار</th>
@@ -49,13 +59,17 @@ const CreditNotes: React.FC<CreditNotesProps> = ({ notes, customers }) => {
                                 <td>{new Date(note.date).toLocaleDateString('ar-EG')}</td>
                                 <td>{getCustomerName(note.customerId)}</td>
                                 <td>{note.salesReturnId ? `#SR-${note.salesReturnId}` : 'N/A'}</td>
-                                <td style={{fontWeight: 600, color: 'var(--secondary-color)'}}>{note.amount.toLocaleString()} د.ك</td>
-                                <td>{getStatusChip(note.status)}</td>
+                                <td className="amount-secondary">{note.amount.toLocaleString()} د.ك</td>
+                                <td>
+                                    <span className={getStatusChipClass(note.status)}>
+                                        {getStatusText(note.status)}
+                                    </span>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-                 {notes.length === 0 && <p style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>لا توجد إشعارات دائنة حالياً.</p>}
+                {notes.length === 0 && <p className="sales-empty-state">لا توجد إشعارات دائنة حالياً.</p>}
             </div>
         </div>
     );

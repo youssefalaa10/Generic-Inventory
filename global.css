@@ -3107,3 +3107,358 @@ tbody tr:hover {
     margin-top: 5mm;
   }
 }
+
+/* ===== SALES PAGES RESPONSIVE STYLES ===== */
+
+/* Sales Page Container */
+.sales-page-container {
+  padding: 1.5rem;
+}
+
+.sales-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sales-page-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sales-page-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Sales Filters */
+.sales-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.sales-filter-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sales-filter-input {
+  flex-basis: 180px;
+  min-width: 150px;
+}
+
+.sales-filter-select {
+  flex-basis: 180px;
+  min-width: 150px;
+}
+
+.sales-filter-select-wide {
+  flex-basis: 220px;
+  min-width: 180px;
+}
+
+.sales-filter-reset {
+  margin-right: auto;
+}
+
+/* Sales Table */
+.sales-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sales-table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+}
+
+.sales-table th,
+.sales-table td {
+  padding: 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.sales-table th {
+  background: var(--surface-bg);
+  font-weight: 600;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.sales-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.sales-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.sales-table tbody tr:active {
+  background: var(--surface-active);
+}
+
+/* Status Chips */
+.status-chip {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.status-chip-paid {
+  color: #fff;
+  background: #10b981;
+}
+
+.status-chip-pending {
+  color: #111;
+  background: #f59e0b;
+}
+
+.status-chip-overdue {
+  color: #fff;
+  background: #ef4444;
+}
+
+.status-chip-draft {
+  color: var(--text-secondary);
+  background: var(--surface-bg);
+}
+
+.status-chip-sent {
+  color: #fff;
+  background: #3b82f6;
+}
+
+.status-chip-accepted {
+  color: #fff;
+  background: #10b981;
+}
+
+.status-chip-rejected {
+  color: #fff;
+  background: #ef4444;
+}
+
+.status-chip-expired {
+  color: #fff;
+  background: #5a6472;
+}
+
+.status-chip-returned {
+  color: #fff;
+  background: #3b82f6;
+}
+
+.status-chip-completed {
+  color: #fff;
+  background: #5a6472;
+}
+
+.status-chip-open {
+  color: #fff;
+  background: #3b82f6;
+}
+
+.status-chip-applied {
+  color: #fff;
+  background: #10b981;
+}
+
+.status-chip-void {
+  color: #fff;
+  background: #5a6472;
+}
+
+.status-chip-active {
+  color: #fff;
+  background: #10b981;
+}
+
+.status-chip-paused {
+  color: #111;
+  background: #f59e0b;
+}
+
+.status-chip-ended {
+  color: #fff;
+  background: #5a6472;
+}
+
+/* Amount Styling */
+.amount-positive {
+  color: #34d399;
+  font-weight: 600;
+}
+
+.amount-negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.amount-secondary {
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+/* Empty State */
+.sales-empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 1024px) {
+  .sales-page-container {
+    padding: 1rem;
+  }
+  
+  .sales-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .sales-filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .sales-filter-input,
+  .sales-filter-select,
+  .sales-filter-select-wide {
+    flex-basis: auto;
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .sales-filter-reset {
+    margin-right: 0;
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .sales-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .sales-page-actions {
+    justify-content: center;
+  }
+  
+  .sales-page-title {
+    text-align: center;
+    font-size: 1.125rem;
+  }
+  
+  .sales-filters {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  .sales-table-wrapper {
+    border-radius: 0.5rem;
+    border: 1px solid var(--surface-border);
+  }
+  
+  .sales-table {
+    min-width: 600px;
+  }
+  
+  .sales-table th,
+  .sales-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sales-page-container {
+    padding: 0.75rem;
+  }
+  
+  .sales-page-title {
+    font-size: 1rem;
+  }
+  
+  .sales-filters {
+    gap: 0.5rem;
+  }
+  
+  .sales-table {
+    min-width: 500px;
+  }
+  
+  .sales-table th,
+  .sales-table td {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+  }
+  
+  .status-chip {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.5rem;
+  }
+  
+  .sales-empty-state {
+    padding: 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Tablet Landscape Optimization */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sales-filters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .sales-filter-reset {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+/* Print Styles for Sales Pages */
+@media print {
+  .sales-page-actions,
+  .sales-filters {
+    display: none !important;
+  }
+  
+  .sales-page-container {
+    padding: 0 !important;
+  }
+  
+  .sales-table {
+    min-width: auto !important;
+  }
+  
+  .sales-table th,
+  .sales-table td {
+    padding: 0.25rem !important;
+    font-size: 0.75rem !important;
+  }
+}

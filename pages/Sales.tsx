@@ -1,9 +1,9 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { AuthContext } from '../App';
-import { Sale, Branch, Product, InventoryItem, Customer } from '../types';
+import { ChevronDownIcon, ChevronUpIcon } from '../components/Icon';
 import SaleDetailModal from '../components/SaleDetailModal';
 import { useToasts } from '../components/Toast';
-import { ChevronUpIcon, ChevronDownIcon } from '../components/Icon';
+import { Branch, Customer, InventoryItem, Product, Sale } from '../types';
 
 interface SalesInvoicesProps {
     sales: Sale[];
@@ -125,40 +125,95 @@ const SalesInvoices: React.FC<SalesInvoicesProps> = ({ sales, onSave, branches, 
         );
     };
 
+    const getStatusChipClass = (status: string) => {
+        switch (status) {
+            case 'Paid': return 'status-chip status-chip-paid';
+            case 'Pending': return 'status-chip status-chip-pending';
+            case 'Overdue': return 'status-chip status-chip-overdue';
+            default: return 'status-chip status-chip-draft';
+        }
+    };
+
+    const getStatusText = (status: string) => {
+        switch (status) {
+            case 'Paid': return 'مدفوع';
+            case 'Pending': return 'قيد الانتظار';
+            case 'Overdue': return 'متأخر';
+            default: return status;
+        }
+    };
+
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>سجل فواتير المبيعات</h3>
-                     {hasPermission('create') && (
-                        <button onClick={handleAddNew} className="btn btn-secondary">
-                            إنشاء فاتورة جديدة
-                        </button>
+            <div className="glass-pane sales-page-container">
+                <div className="sales-page-header">
+                    <h3 className="sales-page-title">سجل فواتير المبيعات</h3>
+                    {hasPermission('create') && (
+                        <div className="sales-page-actions">
+                            <button onClick={handleAddNew} className="btn btn-secondary">
+                                إنشاء فاتورة جديدة
+                            </button>
+                        </div>
                     )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)' }}>
-                    <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="form-input" style={{flexBasis: '180px'}} title="Start Date" />
-                    <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="form-input" style={{flexBasis: '180px'}} title="End Date" />
-                    <select name="paymentStatus" value={filters.paymentStatus} onChange={handleFilterChange} className="form-select" style={{flexBasis: '180px'}}>
-                        <option value="all">كل حالات الدفع</option>
-                        <option value="Paid">مدفوع</option>
-                        <option value="Pending">قيد الانتظار</option>
-                        <option value="Overdue">متأخر</option>
-                    </select>
-                    <select name="customer" value={filters.customer} onChange={handleFilterChange} className="form-select" style={{flexBasis: '220px'}}>
-                        <option value="all">كل العملاء</option>
-                        {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                    <select name="branch" value={filters.branch} onChange={handleFilterChange} className="form-select" style={{flexBasis: '220px'}}>
-                        <option value="all">كل الفروع</option>
-                        {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                    </select>
-                    <button onClick={resetFilters} className="btn btn-ghost" style={{ marginRight: 'auto' }}>إعادة تعيين</button>
+                <div className="sales-filters">
+                    <div className="sales-filter-group">
+                        <input 
+                            type="date" 
+                            name="startDate" 
+                            value={filters.startDate} 
+                            onChange={handleFilterChange} 
+                            className="form-input sales-filter-input" 
+                            title="Start Date" 
+                        />
+                        <input 
+                            type="date" 
+                            name="endDate" 
+                            value={filters.endDate} 
+                            onChange={handleFilterChange} 
+                            className="form-input sales-filter-input" 
+                            title="End Date" 
+                        />
+                        <select 
+                            name="paymentStatus" 
+                            value={filters.paymentStatus} 
+                            onChange={handleFilterChange} 
+                            className="form-select sales-filter-select"
+                        >
+                            <option value="all">كل حالات الدفع</option>
+                            <option value="Paid">مدفوع</option>
+                            <option value="Pending">قيد الانتظار</option>
+                            <option value="Overdue">متأخر</option>
+                        </select>
+                    </div>
+                    <div className="sales-filter-group">
+                        <select 
+                            name="customer" 
+                            value={filters.customer} 
+                            onChange={handleFilterChange} 
+                            className="form-select sales-filter-select-wide"
+                        >
+                            <option value="all">كل العملاء</option>
+                            {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                        <select 
+                            name="branch" 
+                            value={filters.branch} 
+                            onChange={handleFilterChange} 
+                            className="form-select sales-filter-select-wide"
+                        >
+                            <option value="all">كل الفروع</option>
+                            {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                        </select>
+                    </div>
+                    <button onClick={resetFilters} className="btn btn-ghost sales-filter-reset">
+                        إعادة تعيين
+                    </button>
                 </div>
 
-                <div className="table-wrapper">
-                    <table>
+                <div className="sales-table-wrapper">
+                    <table className="sales-table">
                         <thead>
                             <tr>
                                 <SortableHeader sortKey="invoiceNumber">رقم الفاتورة</SortableHeader>
@@ -172,20 +227,16 @@ const SalesInvoices: React.FC<SalesInvoicesProps> = ({ sales, onSave, branches, 
                         </thead>
                         <tbody>
                             {filteredAndSortedSales.map(s => (
-                                <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => { setSelectedSale(s); setIsModalOpen(true)}}>
+                                <tr key={s.id} onClick={() => { setSelectedSale(s); setIsModalOpen(true)}}>
                                     <td>{s.invoiceNumber}</td>
                                     <td>{s.brand}</td>
                                     <td>{branches.find(b => b.id === s.branchId)?.name}</td>
                                     <td>{s.customerName}</td>
                                     <td>{s.date}</td>
-                                    <td style={{ color: '#34d399', fontWeight: 600 }}>{s.totalAmount.toLocaleString()} د.ك</td>
+                                    <td className="amount-positive">{s.totalAmount.toLocaleString()} د.ك</td>
                                     <td>
-                                         <span style={{
-                                            padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderRadius: '9999px',
-                                            color: s.paymentStatus === 'Pending' ? '#111' : '#fff',
-                                            background: s.paymentStatus === 'Paid' ? '#10b981' : s.paymentStatus === 'Pending' ? '#f59e0b' : '#ef4444'
-                                        }}>
-                                                {s.paymentStatus === 'Paid' ? 'مدفوع' : s.paymentStatus === 'Pending' ? 'قيد الانتظار' : 'متأخر'}
+                                        <span className={getStatusChipClass(s.paymentStatus)}>
+                                            {getStatusText(s.paymentStatus)}
                                         </span>
                                     </td>
                                 </tr>

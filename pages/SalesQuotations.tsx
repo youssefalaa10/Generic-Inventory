@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { SalesQuotation, Customer, Product } from '../types';
+import React, { useMemo, useState } from 'react';
 import { PlusIcon } from '../components/Icon';
 import SalesQuotationModal from '../components/SalesQuotationModal';
+import { Customer, Product, SalesQuotation } from '../types';
 
 interface SalesQuotationsProps {
     quotations: SalesQuotation[];
@@ -27,16 +27,26 @@ const SalesQuotations: React.FC<SalesQuotationsProps> = ({ quotations, onSave, o
         setIsModalOpen(true);
     };
 
-    const getStatusChip = (status: SalesQuotation['status']) => {
-        const styles: {[key: string]: {bg: string, text: string}} = {
-            'Draft': { bg: 'var(--surface-bg)', text: 'var(--text-secondary)' },
-            'Sent': { bg: '#3b82f6', text: '#fff' },
-            'Accepted': { bg: '#10b981', text: '#fff' },
-            'Rejected': { bg: '#ef4444', text: '#fff' },
-            'Expired': { bg: '#5a6472', text: '#fff' },
-        };
-        const currentStyle = styles[status] || styles['Draft'];
-        return <span style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderRadius: '9999px', color: currentStyle.text, background: currentStyle.bg }}>{status}</span>;
+    const getStatusChipClass = (status: SalesQuotation['status']) => {
+        switch (status) {
+            case 'Draft': return 'status-chip status-chip-draft';
+            case 'Sent': return 'status-chip status-chip-sent';
+            case 'Accepted': return 'status-chip status-chip-accepted';
+            case 'Rejected': return 'status-chip status-chip-rejected';
+            case 'Expired': return 'status-chip status-chip-expired';
+            default: return 'status-chip status-chip-draft';
+        }
+    };
+
+    const getStatusText = (status: SalesQuotation['status']) => {
+        switch (status) {
+            case 'Draft': return 'مسودة';
+            case 'Sent': return 'مرسل';
+            case 'Accepted': return 'مقبول';
+            case 'Rejected': return 'مرفوض';
+            case 'Expired': return 'منتهي الصلاحية';
+            default: return status;
+        }
     };
     
     const sortedQuotations = useMemo(() => 
@@ -45,16 +55,18 @@ const SalesQuotations: React.FC<SalesQuotationsProps> = ({ quotations, onSave, o
 
     return (
         <>
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>إدارة عروض الأسعار</h3>
-                    <button className="btn btn-primary" onClick={handleAddNew}>
-                        <PlusIcon style={{ width: '20px', height: '20px' }} />
-                        عرض سعر جديد
-                    </button>
+            <div className="glass-pane sales-page-container">
+                <div className="sales-page-header">
+                    <h3 className="sales-page-title">إدارة عروض الأسعار</h3>
+                    <div className="sales-page-actions">
+                        <button className="btn btn-primary" onClick={handleAddNew}>
+                            <PlusIcon style={{ width: '20px', height: '20px' }} />
+                            عرض سعر جديد
+                        </button>
+                    </div>
                 </div>
-                <div className="table-wrapper">
-                    <table>
+                <div className="sales-table-wrapper">
+                    <table className="sales-table">
                         <thead>
                             <tr>
                                 <th>رقم العرض</th>
@@ -67,13 +79,17 @@ const SalesQuotations: React.FC<SalesQuotationsProps> = ({ quotations, onSave, o
                         </thead>
                         <tbody>
                             {sortedQuotations.map(quote => (
-                                <tr key={quote.id} onClick={() => handleEdit(quote)} style={{ cursor: 'pointer' }}>
+                                <tr key={quote.id} onClick={() => handleEdit(quote)}>
                                     <td>{quote.quoteNumber}</td>
                                     <td>{new Date(quote.date).toLocaleDateString('ar-EG')}</td>
                                     <td>{getCustomerName(quote.customerId)}</td>
                                     <td>{new Date(quote.expiryDate).toLocaleDateString('ar-EG')}</td>
-                                    <td style={{fontWeight: 600}}>{quote.totalAmount.toLocaleString()} د.ك</td>
-                                    <td>{getStatusChip(quote.status)}</td>
+                                    <td className="amount-positive">{quote.totalAmount.toLocaleString()} د.ك</td>
+                                    <td>
+                                        <span className={getStatusChipClass(quote.status)}>
+                                            {getStatusText(quote.status)}
+                                        </span>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

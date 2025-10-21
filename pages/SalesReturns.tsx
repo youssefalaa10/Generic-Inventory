@@ -1,6 +1,6 @@
 import React from 'react';
-import { SalesReturn, Sale, Customer } from '../types';
 import { PlusIcon } from '../components/Icon';
+import { Customer, Sale, SalesReturn } from '../types';
 
 interface SalesReturnsProps {
     returns: SalesReturn[];
@@ -12,27 +12,37 @@ const SalesReturns: React.FC<SalesReturnsProps> = ({ returns, sales, customers }
 
     const getCustomerName = (id: number) => customers.find(c => c.id === id)?.name || 'N/A';
     
-    const getStatusChip = (status: SalesReturn['status']) => {
-        const styles: {[key: string]: {bg: string, text: string}} = {
-            'Draft': { bg: 'var(--surface-bg)', text: 'var(--text-secondary)' },
-            'Returned': { bg: '#3b82f6', text: '#fff' },
-            'Completed': { bg: '#5a6472', text: '#fff' },
+    const getStatusChipClass = (status: SalesReturn['status']) => {
+        switch (status) {
+            case 'Draft': return 'status-chip status-chip-draft';
+            case 'Returned': return 'status-chip status-chip-returned';
+            case 'Completed': return 'status-chip status-chip-completed';
+            default: return 'status-chip status-chip-draft';
         }
-        const currentStyle = styles[status] || styles['Draft'];
-        return <span style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 600, borderRadius: '9999px', color: currentStyle.text, background: currentStyle.bg }}>{status}</span>;
+    };
+
+    const getStatusText = (status: SalesReturn['status']) => {
+        switch (status) {
+            case 'Draft': return 'مسودة';
+            case 'Returned': return 'مرتجع';
+            case 'Completed': return 'مكتمل';
+            default: return status;
+        }
     };
 
     return (
-        <div className="glass-pane" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>الفواتير المرتجعة</h3>
-                <button className="btn btn-primary">
-                    <PlusIcon style={{ width: '20px', height: '20px' }} />
-                    إضافة مرتجع جديد
-                </button>
+        <div className="glass-pane sales-page-container">
+            <div className="sales-page-header">
+                <h3 className="sales-page-title">الفواتير المرتجعة</h3>
+                <div className="sales-page-actions">
+                    <button className="btn btn-primary">
+                        <PlusIcon style={{ width: '20px', height: '20px' }} />
+                        إضافة مرتجع جديد
+                    </button>
+                </div>
             </div>
-            <div className="table-wrapper">
-                <table>
+            <div className="sales-table-wrapper">
+                <table className="sales-table">
                     <thead>
                         <tr>
                             <th>رقم المرتجع</th>
@@ -50,13 +60,17 @@ const SalesReturns: React.FC<SalesReturnsProps> = ({ returns, sales, customers }
                                 <td>{new Date(ret.date).toLocaleDateString('ar-EG')}</td>
                                 <td>{getCustomerName(ret.customerId)}</td>
                                 <td>#{sales.find(s => s.id === ret.originalInvoiceId)?.invoiceNumber}</td>
-                                <td style={{fontWeight: 600, color: '#ef4444'}}>{ret.totalReturnedAmount.toLocaleString()} د.ك</td>
-                                <td>{getStatusChip(ret.status)}</td>
+                                <td className="amount-negative">{ret.totalReturnedAmount.toLocaleString()} د.ك</td>
+                                <td>
+                                    <span className={getStatusChipClass(ret.status)}>
+                                        {getStatusText(ret.status)}
+                                    </span>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-                 {returns.length === 0 && <p style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>لا توجد فواتير مرتجعة حالياً.</p>}
+                {returns.length === 0 && <p className="sales-empty-state">لا توجد فواتير مرتجعة حالياً.</p>}
             </div>
         </div>
     );
