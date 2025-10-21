@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { POSSession, Sale, Branch, EmployeeData, PaymentMethod } from '../types';
-import { CalendarIcon, ChevronDownIcon, ChevronUpIcon, CurrencyDollarIcon, CashIcon, CreditCardIcon, DocumentTextIcon } from '../components/Icon';
+import React, { useMemo, useState } from 'react';
+import { CalendarIcon, CashIcon, ChevronDownIcon, ChevronUpIcon, CreditCardIcon, CurrencyDollarIcon, DocumentTextIcon } from '../components/Icon';
+import { Branch, EmployeeData, PaymentMethod, POSSession, Sale } from '../types';
 
 interface POSSessionsProps {
     sessions: POSSession[];
@@ -107,10 +107,10 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="pos-sessions-container">
             {activeSession ? (
                  <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="pos-sessions-header">
                         <div>
                             <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--secondary-color)' }}>جلسة نشطة</h3>
                             <p style={{ color: 'var(--text-secondary)' }}>بدأت في: {formatTime(activeSession.startTime)}</p>
@@ -130,19 +130,19 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
                 </div>
             )}
             
-            <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>الفلاتر</h3>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <select name="branchId" value={filters.branchId} onChange={handleFilterChange} className="form-select" style={{flexBasis: '220px'}} title="حدد الفرع">
+            <div className="glass-pane pos-sessions-filters">
+                <h3 className="pos-sessions-title">الفلاتر</h3>
+                <div className="pos-sessions-filter-group">
+                    <select name="branchId" value={filters.branchId} onChange={handleFilterChange} className="form-select pos-sessions-filter-select" title="حدد الفرع">
                         <option value="all">كل الفروع</option>
                         {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                     </select>
-                    <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="form-input" style={{flexBasis: '180px'}} title="الفترة من"/>
-                    <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="form-input" style={{flexBasis: '180px'}} title="الفترة إلى"/>
+                    <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="form-input pos-sessions-filter-input" title="الفترة من"/>
+                    <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="form-input pos-sessions-filter-input" title="الفترة إلى"/>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+            <div className="pos-sessions-summary-grid">
                 <SummaryCard title="إجمالي مبيعات جميع الجلسات" value={formatCurrency(summaryData.totalSales)} icon={CurrencyDollarIcon} />
                 <SummaryCard title="إجمالي نقدي" value={formatCurrency(summaryData.totalCash)} icon={CashIcon} />
                 <SummaryCard title="إجمالي Knet" value={formatCurrency(summaryData.totalKnet)} icon={CreditCardIcon} />
@@ -150,9 +150,9 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
             </div>
 
             <div className="glass-pane" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>الجلسات</h3>
-                <div className="table-wrapper">
-                    <table>
+                <h3 className="pos-sessions-title">الجلسات</h3>
+                <div className="pos-sessions-table-wrapper">
+                    <table className="pos-sessions-table">
                         <thead>
                             <tr>
                                 <th>الفرع</th>
@@ -180,7 +180,7 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
                                     {expandedRow === session.id && (
                                         <tr>
                                             <td colSpan={5} style={{ padding: 0, background: 'rgba(0,0,0,0.05)' }}>
-                                                <div style={{ padding: '1rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+                                                <div className="pos-sessions-details-grid">
                                                     <DetailItem label="إجمالي المبيعات" value={formatCurrency(session.totalSalesValue)} />
                                                     <DetailItem label="نقدي" value={formatCurrency(session.payments.cash)} />
                                                     <DetailItem label="Knet" value={formatCurrency(session.payments.knet)} />
@@ -208,20 +208,20 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
 };
 
 const SummaryCard: React.FC<{ title: string, value: string, icon: React.FC<any> }> = ({ title, value, icon: Icon }) => (
-    <div className="glass-pane" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <Icon style={{ width: '32px', height: '32px', color: 'var(--primary-color)'}} />
-        <div>
-            <h4 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)' }}>{title}</h4>
-            <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>{value}</p>
+    <div className="pos-sessions-summary-card">
+        <Icon className="pos-sessions-summary-icon" />
+        <div className="pos-sessions-summary-content">
+            <h4 className="pos-sessions-summary-title">{title}</h4>
+            <p className="pos-sessions-summary-value">{value}</p>
         </div>
     </div>
 );
 
 
 const DetailItem = ({ label, value }: { label: string, value: string | number }) => (
-    <div>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{label}</p>
-        <p style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{value}</p>
+    <div className="pos-sessions-detail-item">
+        <p className="pos-sessions-detail-label">{label}</p>
+        <p className="pos-sessions-detail-value">{value}</p>
     </div>
 );
 

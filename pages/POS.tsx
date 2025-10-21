@@ -1,13 +1,13 @@
 
-import React, { useState, useMemo, useContext, useEffect } from 'react';
-import { Product, InventoryItem, Sale, SaleItem, PaymentMethod, IntegrationSettings, Customer, Branch } from '../types';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { AuthContext } from '../App';
-import { useToasts } from '../components/Toast';
-import { PlusIcon, MinusIcon, TrashIcon, ShoppingCartIcon, UserAddIcon, SearchIcon, FolderDownloadIcon, SaveIcon, XIcon } from '../components/Icon';
-import PaymentModal from '../components/PaymentModal';
-import SaleCompleteModal from '../components/SaleCompleteModal';
-import QuantityInputModal from '../components/QuantityInputModal';
 import CustomerModal from '../components/CustomerModal';
+import { FolderDownloadIcon, MinusIcon, PlusIcon, SaveIcon, SearchIcon, ShoppingCartIcon, TrashIcon, UserAddIcon, XIcon } from '../components/Icon';
+import PaymentModal from '../components/PaymentModal';
+import QuantityInputModal from '../components/QuantityInputModal';
+import SaleCompleteModal from '../components/SaleCompleteModal';
+import { useToasts } from '../components/Toast';
+import { Branch, Customer, IntegrationSettings, InventoryItem, PaymentMethod, Product, Sale, SaleItem } from '../types';
 
 
 interface POSProps {
@@ -276,38 +276,87 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
 
     return (
         <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem', height: 'calc(100vh - 110px)' }}>
-                {/* Product Grid */}
-                <div className="glass-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div className="pos-category-bar">
-                        {productCategories.map(cat => (
-                            <button key={cat} onClick={() => setSelectedCategory(cat)} className={`pos-category-btn ${selectedCategory === cat ? 'active' : ''}`}>
-                                {cat === 'all' ? 'الكل' : cat}
-                            </button>
-                        ))}
+            <div className="pos-container">
+                <div className="pos-header">
+                    <h3 className="pos-header-title">نقطة البيع</h3>
+                    <div className="pos-header-actions">
+                        <button onClick={startNewSale} className="btn btn-ghost">
+                            <XIcon style={{width: '20px', height: '20px'}} />
+                            بدء جديد
+                        </button>
                     </div>
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '0 1.5rem 1.5rem 1.5rem' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
+                </div>
+                
+                <div className="pos-main-content">
+                    {/* Products Section */}
+                    <div className="pos-products-section">
+                        <div className="pos-products-header">
+                            <h3 className="pos-products-title">المنتجات</h3>
+                            <div className="pos-category-filter">
+                                {productCategories.map(cat => (
+                                    <button 
+                                        key={cat} 
+                                        onClick={() => setSelectedCategory(cat)} 
+                                        className={`btn ${selectedCategory === cat ? 'btn-primary' : 'btn-ghost'}`}
+                                    >
+                                        {cat === 'all' ? 'الكل' : cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <div className="pos-customer-section">
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem'}}>
+                                <h4 style={{fontSize: '1.1rem', fontWeight: 600}}>العميل: {selectedCustomer?.name}</h4>
+                                <button className="btn btn-ghost" style={{padding: '0.5rem'}} onClick={() => setCustomerModalOpen(true)}>
+                                    <UserAddIcon style={{width: '20px', height: '20px'}} />
+                                </button>
+                            </div>
+                            <div style={{position: 'relative'}}>
+                                <input 
+                                    type="text" 
+                                    placeholder="ابحث عن عميل بالاسم أو الهاتف..." 
+                                    value={customerSearchTerm} 
+                                    onChange={e => setCustomerSearchTerm(e.target.value)} 
+                                    className="form-input pos-search-input" 
+                                />
+                                <SearchIcon style={{position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)', width: '20px', height: '20px', color: 'var(--text-placeholder)'}} />
+                                {customerSearchResults.length > 0 && (
+                                    <div className="glass-pane" style={{ position: 'absolute', top: '110%', left: 0, right: 0, zIndex: 20, maxHeight: '200px', overflowY: 'auto' }}>
+                                        <ul style={{ listStyle: 'none', padding: '0.5rem', margin: 0 }}>
+                                            {customerSearchResults.map(c => (
+                                                <li key={c.id} onClick={() => { setSelectedCustomer(c); setCustomerSearchTerm(''); }} style={{ padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer' }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--highlight-hover)'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                                    <p style={{ fontWeight: 600 }}>{c.name}</p>
+                                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{c.phone}</p>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <div className="pos-products-grid">
                             {filteredProducts.map(p => (
                                 <div
                                     key={p.id}
                                     onClick={() => p.stock > 0 && handleProductClick(p)}
+                                    className="pos-product-card"
                                     style={{
-                                        padding: '1rem', borderRadius: '12px', border: '1px solid var(--surface-border)',
-                                        textAlign: 'center', cursor: p.stock > 0 ? 'pointer' : 'not-allowed',
-                                        opacity: p.stock > 0 ? 1 : 0.5, transition: 'all 0.2s ease', position: 'relative',
-                                        display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+                                        opacity: p.stock > 0 ? 1 : 0.5,
+                                        cursor: p.stock > 0 ? 'pointer' : 'not-allowed'
                                     }}
-                                    onMouseEnter={(e) => { if (p.stock > 0) e.currentTarget.style.boxShadow = '0 0 15px var(--highlight-hover)' }}
-                                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none' }} >
-                                    <span style={{position: 'absolute', top: '8px', right: '8px', background: 'var(--surface-bg)', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: '8px', fontSize: '0.75rem'}}>
+                                >
+                                    <span className="pos-product-category">
                                         المخزون: {(p.baseUnit === 'g' || p.baseUnit === 'ml') ? p.stock.toFixed(3) : p.stock.toLocaleString()} {p.baseUnit !== 'pcs' ? p.baseUnit : ''}
                                     </span>
                                     <div style={{height: '60px', marginBottom: '0.5rem', background: 'var(--highlight-hover)', borderRadius: '8px'}}></div>
                                     <div>
-                                        <p style={{ fontWeight: 600, minHeight: '40px' }}>{p.name}</p>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '-0.25rem' }}>{p.sku}</p>
-                                        <p style={{ color: 'var(--secondary-color)', fontWeight: 'bold' }}>
+                                        <p className="pos-product-name">{p.name}</p>
+                                        <p className="pos-product-stock">{p.sku}</p>
+                                        <p className="pos-product-price">
                                             {p.unitPrice.toFixed(2)} د.ك {p.baseUnit !== 'pcs' ? ` / ${p.baseUnit}`: ''}
                                         </p>
                                     </div>
@@ -315,101 +364,80 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
                             ))}
                         </div>
                     </div>
-                </div>
 
-                {/* Cart */}
-                <div className="glass-pane" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-                     <div className="pos-customer-section">
-                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem'}}>
-                            <h4 style={{fontSize: '1.1rem', fontWeight: 600}}>العميل: {selectedCustomer?.name}</h4>
-                            <button className="btn btn-ghost" style={{padding: '0.5rem'}} onClick={() => setCustomerModalOpen(true)}>
-                                <UserAddIcon style={{width: '20px', height: '20px'}} />
-                            </button>
+                    {/* Cart Section */}
+                    <div className="pos-cart-section">
+                        <div className="pos-cart-header">
+                            <h3 className="pos-cart-title">
+                                <ShoppingCartIcon style={{width: '28px', height: '28px'}} />
+                                السلة ({cart.length} أصناف)
+                            </h3>
                         </div>
-                        <div style={{position: 'relative'}}>
-                            <input type="text" placeholder="ابحث عن عميل بالاسم أو الهاتف..." value={customerSearchTerm} onChange={e => setCustomerSearchTerm(e.target.value)} className="form-input" />
-                            <SearchIcon style={{position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)', width: '20px', height: '20px', color: 'var(--text-placeholder)'}} />
-                            {customerSearchResults.length > 0 && (
-                                <div className="glass-pane" style={{ position: 'absolute', top: '110%', left: 0, right: 0, zIndex: 20, maxHeight: '200px', overflowY: 'auto' }}>
-                                    <ul style={{ listStyle: 'none', padding: '0.5rem', margin: 0 }}>
-                                        {customerSearchResults.map(c => (
-                                            <li key={c.id} onClick={() => { setSelectedCustomer(c); setCustomerSearchTerm(''); }} style={{ padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer' }}
-                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--highlight-hover)'}
-                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                                                <p style={{ fontWeight: 600 }}>{c.name}</p>
-                                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{c.phone}</p>
-                                            </li>
-                                        ))}
-                                    </ul>
+                        
+                        <div className="pos-cart-items">
+                            {cart.length === 0 ? (
+                                <div style={{textAlign: 'center', color: 'var(--text-secondary)', marginTop: '4rem'}}>
+                                    <p>السلة فارغة</p>
                                 </div>
+                            ) : (
+                                cart.map(item => {
+                                    const productInfo = availableProducts.find(p => p.id === item.productId);
+                                    const stock = productInfo ? productInfo.stock : 0;
+                                    const isAtMaxStock = productInfo?.baseUnit === 'pcs' && item.quantity >= stock;
+
+                                    return (
+                                        <div key={item.productId} className="pos-cart-item">
+                                            <div className="pos-cart-item-info">
+                                                <p className="pos-cart-item-name">{item.productName}</p>
+                                                <p className="pos-cart-item-price">
+                                                    SKU: {productInfo?.sku} | {(productInfo?.baseUnit === 'g' || productInfo?.baseUnit === 'ml') ? item.quantity.toFixed(3) : item.quantity} {productInfo?.baseUnit !== 'pcs' ? productInfo?.baseUnit : ''} x {item.unitPrice.toFixed(2)} د.ك
+                                                </p>
+                                            </div>
+                                            <div className="pos-cart-item-controls">
+                                                {productInfo?.baseUnit === 'pcs' ? (
+                                                    <div className="pos-cart-item-quantity">
+                                                        <button onClick={() => updateQuantity(item.productId, -1)} className="btn-ghost" style={{width: '32px', height: '32px', padding: 0, borderRadius: '50%'}}>
+                                                            <MinusIcon style={{width: '16px', height: '16px'}}/>
+                                                        </button>
+                                                        <span style={{width: '2rem', textAlign: 'center', fontWeight: '600'}}>{item.quantity}</span>
+                                                        <button onClick={() => updateQuantity(item.productId, 1)} className="btn-ghost" style={{width: '32px', height: '32px', padding: 0, borderRadius: '50%', opacity: isAtMaxStock ? 0.5 : 1}} disabled={isAtMaxStock}>
+                                                            <PlusIcon style={{width: '16px', height: '16px'}}/>
+                                                        </button>
+                                                    </div>
+                                                ) : <div style={{width: '106px'}}></div>}
+                                                <p className="pos-cart-item-total">{item.total.toFixed(2)} د.ك</p>
+                                                <button onClick={() => removeFromCart(item.productId)} style={{color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}}>
+                                                    <TrashIcon style={{width:'20px', height:'20px'}}/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
                             )}
                         </div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}><ShoppingCartIcon style={{width: '28px', height: '28px'}} /> السلة</h3>
-                        <span style={{color: 'var(--text-secondary)'}}>{cart.length} أصناف</span>
-                    </div>
-
-                    <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1rem' }}>
-                        {cart.length === 0 ? (
-                            <div style={{textAlign: 'center', color: 'var(--text-secondary)', marginTop: '4rem'}}>
-                                <p>السلة فارغة</p>
-                            </div>
-                        ) : (
-                            cart.map(item => {
-                                const productInfo = availableProducts.find(p => p.id === item.productId);
-                                const stock = productInfo ? productInfo.stock : 0;
-                                const isAtMaxStock = productInfo?.baseUnit === 'pcs' && item.quantity >= stock;
-
-                                return (
-                                <div key={item.productId} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '1rem' }}>
-                                    <div style={{flex: 1}}>
-                                        <p style={{ fontWeight: 600 }}>{item.productName}</p>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                            SKU: {productInfo?.sku}
-                                        </p>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                            {(productInfo?.baseUnit === 'g' || productInfo?.baseUnit === 'ml') ? item.quantity.toFixed(3) : item.quantity} {productInfo?.baseUnit !== 'pcs' ? productInfo?.baseUnit : ''} x {item.unitPrice.toFixed(2)} د.ك
-                                        </p>
-                                    </div>
-                                    {productInfo?.baseUnit === 'pcs' ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <button onClick={() => updateQuantity(item.productId, -1)} className="btn-ghost" style={{width: '32px', height: '32px', padding: 0, borderRadius: '50%'}}><MinusIcon style={{width: '16px', height: '16px'}}/></button>
-                                        <span style={{width: '2rem', textAlign: 'center', fontWeight: '600'}}>{item.quantity}</span>
-                                        <button onClick={() => updateQuantity(item.productId, 1)} className="btn-ghost" style={{width: '32px', height: '32px', padding: 0, borderRadius: '50%', opacity: isAtMaxStock ? 0.5 : 1}} disabled={isAtMaxStock}>
-                                            <PlusIcon style={{width: '16px', height: '16px'}}/>
+                        
+                        {cart.length > 0 && (
+                            <div className="pos-cart-footer">
+                                <div className="pos-cart-total">
+                                    <span>الإجمالي</span>
+                                    <span style={{color: 'var(--primary-color)'}}>{formatCurrency(total)} د.ك</span>
+                                </div>
+                                <div className="pos-cart-actions">
+                                    <div style={{display: 'flex', gap: '0.5rem', marginBottom: '0.5rem'}}>
+                                        <button onClick={handleParkSale} className="btn btn-warning pos-cart-action-btn" disabled={cart.length === 0}>
+                                            <SaveIcon style={{width: '20px', height: '20px'}}/> تعليق
+                                        </button>
+                                        <button onClick={() => setParkedSalesModalOpen(true)} className="btn btn-ghost pos-cart-action-btn" disabled={parkedSales.length === 0}>
+                                            <FolderDownloadIcon style={{width: '20px', height: '20px'}}/> استرجاع ({parkedSales.length})
                                         </button>
                                     </div>
-                                    ) : <div style={{width: '106px'}}></div>}
-                                    <p style={{ width: '80px', textAlign: 'right', fontWeight: 'bold' }}>{item.total.toFixed(2)} د.ك</p>
-                                     <button onClick={() => removeFromCart(item.productId)} style={{color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}}><TrashIcon style={{width:'20px', height:'20px'}}/></button>
+                                    <button onClick={() => setPaymentModalOpen(true)} className="btn btn-secondary pos-cart-action-btn" disabled={cart.length === 0}>
+                                        الدفع
+                                    </button>
                                 </div>
-                            )})
+                            </div>
                         )}
                     </div>
-                    {cart.length > 0 && (
-                        <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                                <span>المجموع الفرعي</span>
-                                <span>{formatCurrency(subtotal)} د.ك</span>
-                            </div>
-                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-                                <span>الضريبة (0%)</span>
-                                <span>{formatCurrency(tax)} د.ك</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.5rem', fontWeight: 'bold', padding: '1rem 0', borderTop: '1px solid var(--surface-border)' }}>
-                                <span>الإجمالي</span>
-                                <span style={{color: 'var(--primary-color)'}}>{formatCurrency(total)} د.ك</span>
-                            </div>
-                        </div>
-                    )}
-                     <div style={{display: 'flex', gap: '0.5rem', marginTop: 'auto'}}>
-                        <button onClick={handleParkSale} className="btn btn-warning" style={{flex: 1}} disabled={cart.length === 0}><SaveIcon style={{width: '20px', height: '20px'}}/> تعليق</button>
-                        <button onClick={() => setParkedSalesModalOpen(true)} className="btn btn-ghost" style={{flex: 1}} disabled={parkedSales.length === 0}><FolderDownloadIcon style={{width: '20px', height: '20px'}}/> استرجاع ({parkedSales.length})</button>
-                    </div>
-                    <button onClick={() => setPaymentModalOpen(true)} className="btn btn-secondary" style={{ width: '100%', fontSize: '1.2rem', padding: '1rem', marginTop: '0.5rem' }} disabled={cart.length === 0}>
-                        الدفع
-                    </button>
                 </div>
             </div>
             
