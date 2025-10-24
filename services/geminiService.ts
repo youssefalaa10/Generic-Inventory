@@ -3,7 +3,7 @@ import { InvoiceData, ChatbotDataContext, RenewableData, RenewableCategory, Dail
 
 // IMPORTANT: This key is for demonstration purposes. 
 // In a real application, it must be secured and managed via environment variables.
-const API_KEY = "AIzaSyCbB3GwMrVtIDlWlmuE1wjvuMDoJeSK6r0";
+const API_KEY = process.env.GEMINI_API_KEY;
 
 if (!API_KEY) {
     console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
