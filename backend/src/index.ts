@@ -10,6 +10,7 @@ import { connectDB } from './config/database';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import inventoryRoutes from './routes/inventory';
+import branchInventoryRoutes from './routes/branchInventory';
 import movementRoutes from './routes/movements';
 import scanRoutes from './routes/scans';
 import orderRoutes from './routes/orders';
@@ -38,13 +39,13 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: [
+  origin: ([
     'http://localhost:3000',
     'http://localhost:3001', 
     'http://localhost:3002',
     'http://localhost:5173',
     process.env.CORS_ORIGIN
-  ].filter(Boolean),
+  ].filter((v): v is string => typeof v === 'string')),
   credentials: process.env.CORS_CREDENTIALS === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -83,6 +84,7 @@ app.use('/health', healthRoutes);
 // API routes
 const API_PREFIX = process.env.API_PREFIX || '/api';
 app.use(`${API_PREFIX}/inventory`, inventoryRoutes);
+app.use(`${API_PREFIX}/branch-inventory`, branchInventoryRoutes);
 app.use(`${API_PREFIX}/movements`, movementRoutes);
 app.use(`${API_PREFIX}/scans`, scanRoutes);
 app.use(`${API_PREFIX}/orders`, orderRoutes);
