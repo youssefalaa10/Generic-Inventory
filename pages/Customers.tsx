@@ -1,19 +1,25 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AuthContext } from '../App';
 import CustomerModal from '../components/CustomerModal';
 import { ChatIcon, PencilIcon } from '../components/Icon';
 import { useToasts } from '../components/Toast';
 import { PROJECTS } from '../services/mockData';
+import { AppDispatch, RootState } from '../src/store';
+import { createCustomer, deleteCustomer, fetchCustomers, setParams, updateCustomer } from '../src/store/slices/customersSlice';
 import { Branch, Customer, WhatsAppSettings } from '../types';
 
 interface CustomersProps {
-    customers: Customer[];
-    onSave: (customer: Customer) => void;
     whatsappSettings: WhatsAppSettings;
     branches: Branch[];
 }
 
-const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettings, branches }) => {
+const Customers: React.FC<CustomersProps> = ({ whatsappSettings, branches }) => {
+    const dispatch = useDispatch<AppDispatch>();
     const { addToast } = useToasts();
+    const { user } = useContext(AuthContext);
+    const { items: customers, loading, error, pagination, params } = useSelector((state: RootState) => state.customers);
+    
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isWhatsappModalOpen, setWhatsappModalOpen] = useState(false);
@@ -21,11 +27,41 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
     const [searchTerm, setSearchTerm] = useState('');
     const [projectFilter, setProjectFilter] = useState<string>('all');
 
-    const handleSave = (customer: Customer) => {
-        onSave(customer);
-        setIsModalOpen(false);
-        setSelectedCustomer(null);
-        addToast(`Customer ${customer.id ? 'updated' : 'added'} successfully!`, 'success');
+    // Load customers on mount and when params change
+    useEffect(() => {
+        dispatch(fetchCustomers({
+            q: searchTerm || undefined,
+            projectId: projectFilter !== 'all' ? parseInt(projectFilter, 10) : undefined,
+            page: params.page,
+            limit: params.limit
+        }));
+    }, [dispatch, searchTerm, projectFilter, params.page, params.limit]);
+
+    const handleSave = async (customer: Customer) => {
+        try {
+            if (customer.id) {
+                await dispatch(updateCustomer({ id: customer.id, data: customer })).unwrap();
+                addToast('تم تحديث العميل بنجاح!', 'success');
+            } else {
+                await dispatch(createCustomer(customer)).unwrap();
+                addToast('تم إضافة العميل بنجاح!', 'success');
+            }
+            setIsModalOpen(false);
+            setSelectedCustomer(null);
+        } catch (error: any) {
+            addToast(error.message || 'حدث خطأ في حفظ العميل', 'error');
+        }
+    };
+
+    const handleDelete = async (customer: Customer) => {
+        if (window.confirm(`هل أنت متأكد من حذف العميل "${customer.name}"؟`)) {
+            try {
+                await dispatch(deleteCustomer(customer.id)).unwrap();
+                addToast('تم حذف العميل بنجاح!', 'success');
+            } catch (error: any) {
+                addToast(error.message || 'حدث خطأ في حذف العميل', 'error');
+            }
+        }
     };
 
     const handleAddNew = () => {
@@ -50,7 +86,15 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
 
     const getBranchName = (branchId?: number) => {
         if (!branchId) return 'N/A';
-        return branches.find(b => b.id === branchId)?.name || 'غير معروف';
+        
+        // Try both string and number comparison to handle type mismatches
+        const branch = branches.find(b => 
+            b.id === String(branchId) || 
+            b.id === branchId.toString() ||
+            Number(b.id) === branchId
+        );
+        
+        return branch?.name || 'غير معروف';
     };
 
     const formatBalance = (balance: number) => {
@@ -59,25 +103,19 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
         return <span style={{ color, fontWeight: 600 }}>{text}</span>;
     };
 
-    const filteredCustomers = useMemo(() => {
-        let filtered = customers;
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        dispatch(setParams({ page: 1 })); // Reset to first page on search
+    };
 
-        // Apply project filter
-        if (projectFilter !== 'all') {
-            filtered = filtered.filter(customer => customer.projectId === parseInt(projectFilter, 10));
-        }
+    const handleProjectFilterChange = (value: string) => {
+        setProjectFilter(value);
+        dispatch(setParams({ page: 1 })); // Reset to first page on filter change
+    };
 
-        // Apply search filter on top of project filter
-        if (searchTerm) {
-            const lowercasedFilter = searchTerm.toLowerCase();
-            filtered = filtered.filter(customer =>
-                customer.name.toLowerCase().includes(lowercasedFilter) ||
-                customer.phone.toLowerCase().includes(lowercasedFilter)
-            );
-        }
-        
-        return filtered;
-    }, [searchTerm, customers, projectFilter]);
+    const handlePageChange = (newPage: number) => {
+        dispatch(setParams({ page: newPage }));
+    };
 
     return (
         <>
@@ -89,13 +127,13 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
                             type="text"
                             placeholder="ابحث بالاسم أو الهاتف..."
                             value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
+                            onChange={e => handleSearchChange(e.target.value)}
                             className="form-input customers-search"
                             style={{ width: '250px' }}
                         />
                         <select
                             value={projectFilter}
-                            onChange={e => setProjectFilter(e.target.value)}
+                            onChange={e => handleProjectFilterChange(e.target.value)}
                             className="form-select customers-filter"
                             style={{ width: '200px' }}
                         >
@@ -123,27 +161,74 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredCustomers.map(c => (
-                                <tr key={c.id}>
-                                    <td>{c.name}</td>
-                                    <td>{c.phone}</td>
-                                    <td>{getProjectName(c.projectId)}</td>
-                                    <td>{getBranchName(c.branchId)}</td>
-                                    <td>{c.addedBy}</td>
-                                    <td className="customers-balance">{formatBalance(c.balance)}</td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <button onClick={() => handleEdit(c)} style={{color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="تعديل"><PencilIcon style={{width:'20px', height:'20px'}}/></button>
-                                            {whatsappSettings.isEnabled && c.id !== 4 && (
-                                                <button onClick={() => handleOpenWhatsappModal(c)} style={{color: '#10b981', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="إرسال رسالة واتساب"><ChatIcon style={{width:'20px', height:'20px'}}/></button>
-                                            )}
-                                        </div>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
+                                        جاري التحميل...
                                     </td>
                                 </tr>
-                            ))}
+                            ) : error ? (
+                                <tr>
+                                    <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#ef4444' }}>
+                                        خطأ في تحميل العملاء: {error}
+                                    </td>
+                                </tr>
+                            ) : customers.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
+                                        لا توجد عملاء
+                                    </td>
+                                </tr>
+                            ) : (
+                                customers.map((c, index) => (
+                                    <tr key={c.id || `customer-${index}`}>
+                                        <td>{c.name}</td>
+                                        <td>{c.phone}</td>
+                                        <td>{getProjectName(c.projectId)}</td>
+                                        <td>{getBranchName(c.branchId)}</td>
+                                        <td>{c.addedBy}</td>
+                                        <td className="customers-balance">{formatBalance(c.balance)}</td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button onClick={() => handleEdit(c)} style={{color: '#f59e0b', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="تعديل"><PencilIcon style={{width:'20px', height:'20px'}}/></button>
+                                                <button onClick={() => handleDelete(c)} style={{color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="حذف">🗑️</button>
+                                                {whatsappSettings.isEnabled && c.id !== 4 && (
+                                                    <button onClick={() => handleOpenWhatsappModal(c)} style={{color: '#10b981', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem'}} title="إرسال رسالة واتساب"><ChatIcon style={{width:'20px', height:'20px'}}/></button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
+                
+                {/* Pagination */}
+                {pagination && pagination.totalPages > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
+                        <button 
+                            onClick={() => handlePageChange(pagination.currentPage - 1)}
+                            disabled={!pagination.hasPrevPage}
+                            className="btn btn-ghost"
+                            style={{ opacity: pagination.hasPrevPage ? 1 : 0.5 }}
+                        >
+                            السابق
+                        </button>
+                        <span>
+                            صفحة {pagination.currentPage} من {pagination.totalPages} 
+                            ({pagination.totalItems} عميل)
+                        </span>
+                        <button 
+                            onClick={() => handlePageChange(pagination.currentPage + 1)}
+                            disabled={!pagination.hasNextPage}
+                            className="btn btn-ghost"
+                            style={{ opacity: pagination.hasNextPage ? 1 : 0.5 }}
+                        >
+                            التالي
+                        </button>
+                    </div>
+                )}
             </div>
             {isModalOpen && (
                 <CustomerModal 
@@ -152,6 +237,7 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
                     onSave={handleSave}
                     branches={branches}
                     existingCustomers={customers}
+                    currentUser={user}
                 />
             )}
              {isWhatsappModalOpen && customerForWhatsapp && (

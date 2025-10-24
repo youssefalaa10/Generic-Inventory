@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { PROJECTS } from '../services/mockData';
-import { Branch, Customer } from '../types';
+import { Branch, Customer, User } from '../types';
 import { useToasts } from './Toast';
 
 interface CustomerModalProps {
     customer: Customer | null;
     onClose: () => void;
-    onSave: (customer: Customer) => void;
+    onSave: (customer: Customer) => Promise<void>;
     branches: Branch[];
     existingCustomers?: Customer[]; // For duplicate checking
+    currentUser?: User | null; // Current logged-in user
 }
 
 interface ValidationErrors {
@@ -18,22 +19,51 @@ interface ValidationErrors {
     address?: string;
 }
 
-const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave, branches, existingCustomers = [] }) => {
+interface FieldState {
+    value: string;
+    isValid: boolean;
+    isTouched: boolean;
+    error?: string;
+}
+
+const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave, branches, existingCustomers = [], currentUser }) => {
     const { addToast } = useToasts();
-    const isCreating = !customer?.id;
+    const isCreating = !customer || (customer.id === undefined && customer._id === undefined);
     const [editableCustomer, setEditableCustomer] = useState<Partial<Customer>>({});
     const [errors, setErrors] = useState<ValidationErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fieldStates, setFieldStates] = useState<Record<string, FieldState>>({});
 
     useEffect(() => {
-        setEditableCustomer(isCreating ? { 
+        const initialCustomer = isCreating ? { 
             name: '', 
             email: '', 
             phone: '', 
             address: '', 
             balance: 0,
             projectId: 2, // Default to Arabiva
-        } : customer);
-    }, [customer, isCreating]);
+            addedBy: currentUser?.name || 'System', // Use current user's name
+        } : {
+            name: customer?.name || '',
+            email: customer?.email || '',
+            phone: customer?.phone || '',
+            address: customer?.address || '',
+            balance: customer?.balance || 0,
+            projectId: customer?.projectId || 2,
+            branchId: customer?.branchId,
+            addedBy: customer?.addedBy || currentUser?.name || 'System',
+            id: customer?.id || customer?._id, // Handle both id and _id
+        };
+        
+        console.log('CustomerModal - customer.addedBy:', customer?.addedBy);
+        console.log('CustomerModal - currentUser.name:', currentUser?.name);
+        console.log('CustomerModal - initialCustomer.addedBy:', initialCustomer.addedBy);
+        
+        setEditableCustomer(initialCustomer);
+        
+        // Clear errors when initializing
+        setErrors({});
+    }, [customer, isCreating, currentUser]);
 
     // Validation functions
     const validateName = (name: string): string | undefined => {
@@ -62,9 +92,19 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
         if (!phone || phone.trim().length === 0) {
             return 'رقم الهاتف مطلوب';
         }
-        const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,15}$/;
-        if (!phoneRegex.test(phone.trim())) {
-            return 'رقم الهاتف غير صحيح (يجب أن يكون بين 8-15 رقم)';
+        // Enhanced phone validation for Kuwait numbers
+        const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+        
+        // Remove leading zeros and normalize
+        const normalizedPhone = cleanPhone.replace(/^0+/, '');
+        
+        // Kuwait mobile numbers: 2, 5, 6, 9 followed by 7 digits
+        // Kuwait landline: 1, 2, 3, 4, 5, 6, 7, 8, 9 followed by 6 digits
+        const mobileRegex = /^(\+965|965)?[2569]\d{7}$/;
+        const landlineRegex = /^(\+965|965)?[1-9]\d{6}$/;
+        
+        if (!mobileRegex.test(normalizedPhone) && !landlineRegex.test(normalizedPhone)) {
+            return 'رقم الهاتف غير صحيح (يجب أن يكون رقم كويتي صحيح)';
         }
         return undefined;
     };
@@ -90,6 +130,50 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
         }
         return undefined;
     };
+
+    // Smart validation with debouncing
+    const validateField = useCallback((field: string, value: string): FieldState => {
+        let error: string | undefined;
+        let isValid = true;
+
+        switch (field) {
+            case 'name':
+                error = validateName(value);
+                break;
+            case 'email':
+                error = validateEmail(value);
+                break;
+            case 'phone':
+                error = validatePhone(value);
+                break;
+            case 'address':
+                error = validateAddress(value);
+                break;
+        }
+
+        if (error) {
+            isValid = false;
+        }
+
+        return {
+            value,
+            isValid,
+            isTouched: true,
+            error
+        };
+    }, []);
+
+    // Debounced validation
+    const debouncedValidate = useCallback((() => {
+        let timeoutId: NodeJS.Timeout;
+        return (field: string, value: string) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                const fieldState = validateField(field, value);
+                setFieldStates(prev => ({ ...prev, [field]: fieldState }));
+            }, 300);
+        };
+    })(), [validateField]);
 
     const validateCustomer = (customer: Partial<Customer>): ValidationErrors => {
         const errors: ValidationErrors = {};
@@ -126,29 +210,52 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
         }
         setEditableCustomer(newCustomer);
         
-        // Real-time validation
+        // Real-time validation with debouncing
+        if (typeof value === 'string') {
+            debouncedValidate(field, value);
+        }
+        
+        // Immediate validation for non-string fields
         const newErrors = validateCustomer(newCustomer);
-        setErrors(prev => ({ ...prev, [field]: newErrors[field as keyof ValidationErrors] }));
+        setErrors(prev => {
+            const updated = { ...prev };
+            const fieldError = newErrors[field as keyof ValidationErrors];
+            if (fieldError) {
+                updated[field] = fieldError;
+            } else {
+                delete updated[field];
+            }
+            return updated;
+        });
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const validationErrors = validateCustomer(editableCustomer);
-        setErrors(validationErrors);
         
-        if (Object.keys(validationErrors).length > 0) {
+        // Filter out undefined errors
+        const actualErrors = Object.fromEntries(
+            Object.entries(validationErrors).filter(([_, value]) => value !== undefined)
+        );
+        setErrors(actualErrors);
+        
+        if (Object.keys(actualErrors).length > 0) {
             addToast('يرجى إصلاح الأخطاء قبل الحفظ', 'error');
             return;
         }
         
+        setIsSubmitting(true);
         try {
-            onSave(editableCustomer as Customer);
-            addToast(`تم ${isCreating ? 'إضافة' : 'تحديث'} العميل بنجاح!`, 'success');
-        } catch (error) {
+            await onSave(editableCustomer as Customer);
+        } catch (error: any) {
             console.error('Save customer error:', error);
-            addToast('خطأ في حفظ العميل', 'error');
+            addToast(error.message || 'خطأ في حفظ العميل', 'error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
+    const actualErrors = Object.values(errors).filter(e => e !== undefined);
+    
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content glass-pane" style={{ maxWidth: '40rem' }} onClick={e => e.stopPropagation()}>
@@ -164,13 +271,18 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
                             type="text"
                             value={editableCustomer.name || ''}
                             onChange={(e) => handleChange('name', e.target.value)}
-                            className={`form-input ${errors.name ? 'input-error' : ''}`}
+                            className={`form-input ${errors.name ? 'input-error' : fieldStates.name?.isValid ? 'input-success' : ''}`}
                             placeholder="أدخل اسم العميل"
                             required
                         />
                         {errors.name && (
                             <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                                 {errors.name}
+                            </div>
+                        )}
+                        {fieldStates.name?.isValid && !errors.name && (
+                            <div style={{ color: '#10b981', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                                ✓ اسم صحيح
                             </div>
                         )}
                     </div>
@@ -197,13 +309,18 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
                             type="tel"
                             value={editableCustomer.phone || ''}
                             onChange={(e) => handleChange('phone', e.target.value)}
-                            className={`form-input ${errors.phone ? 'input-error' : ''}`}
-                            placeholder="12345678"
+                            className={`form-input ${errors.phone ? 'input-error' : fieldStates.phone?.isValid ? 'input-success' : ''}`}
+                            placeholder=" 965xxxxxxxx :مثال"
                             required
                         />
                         {errors.phone && (
                             <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                                 {errors.phone}
+                            </div>
+                        )}
+                        {fieldStates.phone?.isValid && !errors.phone && (
+                            <div style={{ color: '#10b981', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                                ✓ رقم هاتف صحيح
                             </div>
                         )}
                     </div>
@@ -228,7 +345,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
                             disabled={!editableCustomer.projectId}
                         >
                             <option value="">-- بلا فرع --</option>
-                            {branches.filter(b => b.projectId === editableCustomer.projectId).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            {branches.filter(b => b.projectId === editableCustomer.projectId).map((b, index) => <option key={b.id || `branch-${index}`} value={b.id}>{b.name}</option>)}
                         </select>
                     </div>
                     
@@ -251,16 +368,27 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
                         <label className="form-label">أضيف بواسطة</label>
                         <input
                             type="text"
-                            value={isCreating ? 'سيتم تسجيله تلقائياً' : editableCustomer.addedBy || ''}
+                            value={(() => {
+                                const displayValue = isCreating ? (currentUser?.name || 'سيتم تسجيله تلقائياً') : (editableCustomer.addedBy || 'غير محدد');
+                                console.log('CustomerModal - display value for أضيف بواسطة:', displayValue);
+                                console.log('CustomerModal - isCreating:', isCreating);
+                                console.log('CustomerModal - editableCustomer.addedBy:', editableCustomer.addedBy);
+                                return displayValue;
+                            })()}
                             className="form-input"
                             disabled
                         />
                     </div>
                 </div>
                 <div className="modal-footer" style={{ justifyContent: 'flex-end', gap: '1rem' }}>
-                    <button onClick={onClose} className="btn btn-ghost">إلغاء</button>
-                    <button onClick={handleSave} className="btn btn-secondary">
-                        {isCreating ? 'حفظ العميل' : 'حفظ التعديلات'}
+                    <button onClick={onClose} className="btn btn-ghost" disabled={isSubmitting}>إلغاء</button>
+                    <button 
+                        onClick={handleSave} 
+                        className="btn btn-secondary"
+                        disabled={isSubmitting || Object.values(errors).some(error => error !== undefined)}
+                        title={`Errors: ${Object.values(errors).filter(e => e !== undefined).length}, Submitting: ${isSubmitting}`}
+                    >
+                        {isSubmitting ? 'جاري الحفظ...' : (isCreating ? 'حفظ العميل' : 'حفظ التعديلات')}
                     </button>
                 </div>
             </div>

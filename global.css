@@ -358,6 +358,16 @@ body::after {
   border-color: #ef4444 !important;
   box-shadow: 0 0 0 2px color-mix(in srgb, #ef4444 30%, transparent) !important;
 }
+
+.input-success {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #10b981 20%, transparent) !important;
+}
+
+.input-success:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #10b981 30%, transparent) !important;
+}
 .form-label {
   display: block;
   font-size: 0.875rem;

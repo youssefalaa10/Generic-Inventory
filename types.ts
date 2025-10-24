@@ -597,7 +597,8 @@ export interface JournalEntry {
 }
 
 export interface Customer {
-  id: number;
+  id?: number | string; // Can be either number or string (MongoDB _id)
+  _id?: string; // MongoDB _id field
   name: string;
   email: string;
   phone: string;

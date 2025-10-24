@@ -1,25 +1,26 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import 'dotenv/config';
+import express from 'express';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import { connectDB } from './config/database';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
-import inventoryRoutes from './routes/inventory';
-import branchInventoryRoutes from './routes/branchInventory';
-import movementRoutes from './routes/movements';
-import scanRoutes from './routes/scans';
-import orderRoutes from './routes/orders';
-import supplyChainRoutes from './routes/supplyChain';
 import branchRoutes from './routes/branches';
+import branchInventoryRoutes from './routes/branchInventory';
+import customerRoutes from './routes/customers';
 import healthRoutes from './routes/health';
-import requisitionRoutes from './routes/requisitions';
-import voucherRoutes from './routes/vouchers';
+import inventoryRoutes from './routes/inventory';
+import movementRoutes from './routes/movements';
+import orderRoutes from './routes/orders';
 import productRoutes from './routes/products';
+import requisitionRoutes from './routes/requisitions';
+import scanRoutes from './routes/scans';
+import supplyChainRoutes from './routes/supplyChain';
+import voucherRoutes from './routes/vouchers';
 
 const app = express();
 const PORT = Number(process.env.PORT || 4100);
@@ -93,6 +94,7 @@ app.use(`${API_PREFIX}/branches`, branchRoutes);
 app.use(`${API_PREFIX}/requisitions`, requisitionRoutes);
 app.use(`${API_PREFIX}/vouchers`, voucherRoutes);
 app.use(`${API_PREFIX}/products`, productRoutes);
+app.use(`${API_PREFIX}/customers`, customerRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -112,6 +114,7 @@ app.get('/', (req, res) => {
       requisitions: '/api/requisitions',
       vouchers: '/api/vouchers',
       products: '/api/products'
+      , customers: '/api/customers'
     },
     note: 'MongoDB connection required for full functionality'
   });
