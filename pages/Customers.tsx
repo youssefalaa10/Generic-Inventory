@@ -151,6 +151,7 @@ const Customers: React.FC<CustomersProps> = ({ customers, onSave, whatsappSettin
                     onClose={() => { setIsModalOpen(false); setSelectedCustomer(null); }}
                     onSave={handleSave}
                     branches={branches}
+                    existingCustomers={customers}
                 />
             )}
              {isWhatsappModalOpen && customerForWhatsapp && (

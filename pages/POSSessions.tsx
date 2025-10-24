@@ -41,7 +41,7 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
                 return acc;
             }, {} as Record<PaymentMethod, number>);
 
-            const branch = branches.find(b => b.id === session.branchId);
+            const branch = branches.find(b => parseInt(b.id) === session.branchId);
             const employee = employees.find(e => e.branchId === session.branchId); // Simplified logic for demo
 
             return {
@@ -64,7 +64,7 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
     const filteredSessionDetails = useMemo(() => {
         return sessionDetails.filter(session => {
             const sessionDate = new Date(session.startTime);
-            const branchMatch = filters.branchId === 'all' || session.branchId === parseInt(filters.branchId);
+            const branchMatch = filters.branchId === 'all' || session.branchId === Number(filters.branchId);
             const startDateMatch = !filters.startDate || sessionDate >= new Date(filters.startDate);
             let endDateMatch = true;
             if (filters.endDate) {
@@ -130,15 +130,94 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
                 </div>
             )}
             
-            <div className="glass-pane pos-sessions-filters">
-                <h3 className="pos-sessions-title">الفلاتر</h3>
-                <div className="pos-sessions-filter-group">
-                    <select name="branchId" value={filters.branchId} onChange={handleFilterChange} className="form-select pos-sessions-filter-select" title="حدد الفرع">
-                        <option value="all">كل الفروع</option>
-                        {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            <div className="glass-pane pos-sessions-filters-enhanced">
+                <div className="pos-sessions-filters-header">
+                    <h3 className="pos-sessions-title">
+                        <CalendarIcon style={{ width: '24px', height: '24px', marginLeft: '0.5rem' }} />
+                        فلاتر البحث
+                    </h3>
+                    <div className="pos-sessions-filter-actions">
+                        <button 
+                            onClick={() => setFilters({ branchId: 'all', startDate: '', endDate: '' })}
+                            className="btn btn-ghost btn-sm"
+                            style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                        >
+                            مسح الفلاتر
+                        </button>
+                    </div>
+                </div>
+                
+                <div className="pos-sessions-filter-grid">
+                    <div className="pos-sessions-filter-item">
+                        <label className="pos-sessions-filter-label">
+                            <span className="filter-label-text">الفرع</span>
+                            <span className="filter-label-required">*</span>
+                        </label>
+                        <select 
+                            name="branchId" 
+                            value={filters.branchId} 
+                            onChange={handleFilterChange} 
+                            className="form-select pos-sessions-filter-select-enhanced"
+                        >
+                            <option value="all">🏢 كل الفروع</option>
+                            {branches.map(b => <option key={b.id} value={b.id}>🏪 {b.name}</option>)}
                     </select>
-                    <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="form-input pos-sessions-filter-input" title="الفترة من"/>
-                    <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="form-input pos-sessions-filter-input" title="الفترة إلى"/>
+                    </div>
+                    
+                    <div className="pos-sessions-filter-item">
+                        <label className="pos-sessions-filter-label">
+                            <span className="filter-label-text">من تاريخ</span>
+                        </label>
+                        <input 
+                            type="date" 
+                            name="startDate" 
+                            value={filters.startDate} 
+                            onChange={handleFilterChange} 
+                            className="form-input pos-sessions-filter-input-enhanced"
+                            placeholder="اختر تاريخ البداية"
+                        />
+                    </div>
+                    
+                    <div className="pos-sessions-filter-item">
+                        <label className="pos-sessions-filter-label">
+                            <span className="filter-label-text">إلى تاريخ</span>
+                        </label>
+                        <input 
+                            type="date" 
+                            name="endDate" 
+                            value={filters.endDate} 
+                            onChange={handleFilterChange} 
+                            className="form-input pos-sessions-filter-input-enhanced"
+                            placeholder="اختر تاريخ النهاية"
+                        />
+                    </div>
+                </div>
+                
+                {/* Filter Status */}
+                <div className="pos-sessions-filter-status">
+                    <div className="filter-status-indicators">
+                        {filters.branchId !== 'all' && (
+                            <span className="filter-status-badge">
+                                <span className="filter-status-icon">🏪</span>
+                                {branches.find(b => b.id === String(filters.branchId))?.name || 'فرع محدد'}
+                            </span>
+                        )}
+                        {filters.startDate && (
+                            <span className="filter-status-badge">
+                                <span className="filter-status-icon">📅</span>
+                                من: {new Date(filters.startDate).toLocaleDateString('ar-EG')}
+                            </span>
+                        )}
+                        {filters.endDate && (
+                            <span className="filter-status-badge">
+                                <span className="filter-status-icon">📅</span>
+                                إلى: {new Date(filters.endDate).toLocaleDateString('ar-EG')}
+                            </span>
+                        )}
+                    </div>
+                    <div className="filter-results-count">
+                        عرض {filteredSessionDetails.length} من {sessionDetails.length} جلسة
+                    </div>
                 </div>
             </div>
 

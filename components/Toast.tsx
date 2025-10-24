@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -26,7 +26,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((message: string, type: ToastType) => {
-    const id = Date.now();
+    const id = Date.now() + Math.random() * 1000; // Add randomness to prevent duplicates
     setToasts((prevToasts) => [...prevToasts, { id, message, type }]);
     setTimeout(() => {
       setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));

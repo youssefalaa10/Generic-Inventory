@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { API_BASE_URL } from '../../config/api';
 
 export interface POSProduct {
@@ -63,8 +63,17 @@ export const posLookupProduct = createAsyncThunk(
     if (params.sku) qp.append('sku', params.sku);
     if (params.barcode) qp.append('barcode', params.barcode);
     const res = await fetch(`${API_BASE_URL}/products/pos/lookup?${qp.toString()}`);
-    if (res.status === 404) return { data: null as POSProduct | null };
-    if (!res.ok) throw new Error('Failed to lookup product');
+    
+    // Handle 404 as a normal case (product not found)
+    if (res.status === 404) {
+      return { data: null as POSProduct | null };
+    }
+    
+    // Handle other errors
+    if (!res.ok) {
+      throw new Error(`Failed to lookup product: ${res.status} ${res.statusText}`);
+    }
+    
     const json = await res.json();
     return { data: json.data as POSProduct };
   }
@@ -75,13 +84,26 @@ const slice = createSlice({
   initialState,
   reducers: {
     clearPosLookup(state) { state.lookupResult = null; },
+    clearPosProducts(state) { 
+      state.items = []; 
+      state.pagination = null; 
+      state.error = null; 
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(posSearchProducts.pending, (s) => { s.loading = true; s.error = null; })
       .addCase(posSearchProducts.fulfilled, (s, a: PayloadAction<{ data: POSProduct[]; pagination: Pagination }>) => {
         s.loading = false;
-        s.items = a.payload.data;
+        // If it's the first page, replace items, otherwise append
+        if (a.payload.pagination.currentPage === 1) {
+          s.items = a.payload.data;
+        } else {
+          // Append new items, avoiding duplicates
+          const existingIds = new Set(s.items.map(item => item._id));
+          const newItems = a.payload.data.filter(item => !existingIds.has(item._id));
+          s.items = [...s.items, ...newItems];
+        }
         s.pagination = a.payload.pagination;
       })
       .addCase(posSearchProducts.rejected, (s, a) => { s.loading = false; s.error = a.error.message || 'Search failed'; })
@@ -91,5 +113,5 @@ const slice = createSlice({
   }
 });
 
-export const { clearPosLookup } = slice.actions;
+export const { clearPosLookup, clearPosProducts } = slice.actions;
 export default slice.reducer;

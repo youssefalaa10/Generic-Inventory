@@ -1,4 +1,3 @@
-import { Blob } from "@google/genai";
 
 export enum Role {
   SuperAdmin = 'Super Admin',
@@ -435,6 +434,7 @@ export interface RenewableData {
 
 export interface Product {
   id: number;
+  _id?: string; // For Redux products from API
   name: string;
   sku: string;
   category: string;
