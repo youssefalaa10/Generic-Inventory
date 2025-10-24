@@ -134,6 +134,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, allProducts, onClo
                         </div>
                     </div>
                 </div>
+                <div className="modal-footer" style={{justifyContent: 'space-between'}}>
+                    <button type="button" onClick={onClose} className="btn btn-ghost">إلغاء</button>
+                    <button type="button" onClick={handleSave} className="btn btn-primary">{isCreating ? 'حفظ' : 'حفظ التعديلات'}</button>
+                </div>
             </div>
         </div>
     );

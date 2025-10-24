@@ -40,9 +40,50 @@ export interface Project {
 }
 
 export interface Branch {
-  id: number;
+  id: string;
   projectId: number;
   name: string;
+  project: string;
+  code?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
+  contact?: {
+    phone?: string;
+    email?: string;
+    manager?: string;
+  };
+  status?: 'active' | 'inactive' | 'suspended';
+  openingDate?: string;
+  closingDate?: string;
+  description?: string;
+  businessType?: 'retail' | 'wholesale' | 'warehouse' | 'office' | 'factory' | 'lab';
+  capacity?: {
+    maxEmployees?: number;
+    maxInventory?: number;
+    maxCustomers?: number;
+  };
+  budget?: {
+    monthly?: number;
+    annual?: number;
+  };
+  operatingHours?: {
+    monday?: { open: string; close: string; isOpen: boolean };
+    tuesday?: { open: string; close: string; isOpen: boolean };
+    wednesday?: { open: string; close: string; isOpen: boolean };
+    thursday?: { open: string; close: string; isOpen: boolean };
+    friday?: { open: string; close: string; isOpen: boolean };
+    saturday?: { open: string; close: string; isOpen: boolean };
+    sunday?: { open: string; close: string; isOpen: boolean };
+  };
+  createdBy?: string;
+  lastUpdatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface PurchaseInvoiceItem {
@@ -478,7 +519,7 @@ export interface InventoryRequisition {
     id: string;
     date: string;
     type: 'Purchase' | 'Transfer';
-    warehouseId: number;
+    warehouseId: string;
     items: InventoryRequisitionItem[];
     notes?: string;
     attachments?: any[];
