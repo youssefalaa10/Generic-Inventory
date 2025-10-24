@@ -25,6 +25,7 @@ import Expenses from './pages/Expenses';
 import FinancialAccounts from './pages/FinancialAccounts';
 import GeneralRequestsPage from './pages/GeneralRequestsPage';
 import IntegrationsPage from './pages/IntegrationsPage';
+import InventoryTracking from './pages/InventoryTracking';
 import InventoryRequisitions from './pages/InventoryRequisitions';
 import InventoryVouchers from './pages/InventoryVouchers';
 import JournalEntriesPage from './pages/JournalEntriesPage';
@@ -59,6 +60,8 @@ import UsersPage from './pages/UsersPage';
 import { getDailyBriefing } from './services/geminiService';
 
 import { ToastProvider, useToasts } from './components/Toast';
+import { useAppDispatch, useAppSelector } from './src/store/hooks';
+import { createProduct, updateProduct, fetchProducts, deleteProduct } from './src/store/slices/productsSlice';
 import { INVENTORY_ADJUSTMENT_LOGS as MOCK_ADJUSTMENT_LOGS, MOCK_ADVANCE_REQUESTS, ATTENDANCE_RECORDS as MOCK_ATTENDANCE, BRANCHES as MOCK_BRANCHES, CHART_OF_ACCOUNTS as MOCK_CHART_OF_ACCOUNTS, MOCK_CREDIT_NOTES, MOCK_CUSTOMER_PAYMENTS, CUSTOMERS as MOCK_CUSTOMERS, MOCK_DEBIT_NOTES, EMPLOYEES as MOCK_EMPLOYEES, EXPENSES as MOCK_EXPENSES, FINANCIAL_ACCOUNTS as MOCK_FINANCIAL_ACCOUNTS, MOCK_GENERAL_REQUESTS, MOCK_INTEGRATION_SETTINGS, INVENTORY as MOCK_INVENTORY, MOCK_INVENTORY_REQUISITIONS, MOCK_INVENTORY_VOUCHERS, MOCK_JOURNAL_VOUCHERS, LEAVE_REQUESTS as MOCK_LEAVE_REQUESTS, MANUFACTURING_ORDERS_MOCK as MOCK_PRODUCTION_ORDERS, PRODUCTION_TASKS as MOCK_PRODUCTION_TASKS, PRODUCTS as MOCK_PRODUCTS, MOCK_PURCHASE_INVOICES, MOCK_PURCHASE_ORDERS, MOCK_PURCHASE_REQUESTS, MOCK_PURCHASE_RETURNS, MOCK_PURCHASE_SETTINGS, MOCK_QUOTATIONS, MOCK_RECURRING_INVOICES, MOCK_RENEWABLES, MOCK_RFQS, SALES as MOCK_SALES, MOCK_SALES_QUOTATIONS, MOCK_SALES_RETURNS, SESSIONS as MOCK_SESSIONS, MOCK_SUPPLIER_PAYMENTS, MOCK_SUPPLIERS, USERS as MOCK_USERS } from './services/mockData';
 import { Account, AdjustmentReason, AdvanceRequest, AttendanceRecord, Branch, ChatbotDataContext, CreditNote, Customer, CustomerPayment, DailyBriefingContext, DebitNote, EmployeeData, Expense, FinancialAccount, GeneralRequest, IntegrationSettings, InventoryAdjustmentLog, InventoryItem, InventoryRequisition, InventoryVoucher, JournalVoucher, LeaveRequest, ManufacturingOrder, POSSession, Product, ProductionTask, PurchaseInvoice, PurchaseOrder, PurchaseQuotation, PurchaseRequest, PurchaseReturn, PurchaseSettings, RecurringInvoice, RenewableItem, RequestForQuotation, RequestStatus, Role, SalaryPayment, Sale, SalesQuotation, SalesReturn, Supplier, SupplierPayment, User } from './types';
 
@@ -72,6 +75,8 @@ type Theme = 'light' | 'dark';
 
 const AppContent: React.FC = () => {
     const { addToast } = useToasts();
+    const dispatch = useAppDispatch();
+    const productsFromStore = useAppSelector(s => s.products.items);
     const [user, setUser] = useState<User | null>(null);
     const [activeView, setActiveView] = useState('Dashboard');
     const [theme, setTheme] = useState<Theme>('dark');
@@ -140,6 +145,11 @@ const AppContent: React.FC = () => {
      useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
+
+    useEffect(() => {
+        // Ensure products are loaded from API when the app mounts
+        dispatch(fetchProducts());
+    }, [dispatch]);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -340,9 +350,29 @@ const AppContent: React.FC = () => {
     };
 
     const handleSaveAndCloseProductModal = (productToSave: Product) => {
-        handleSaveProduct(productToSave);
-        addToast(`تم ${productToSave.id ? 'تحديث' : 'إضافة'} المنتج بنجاح!`, 'success');
-        handleCloseProductModal();
+        const hasId = (productToSave as any)._id || productToSave.id;
+        const idForApi = String((productToSave as any)._id || productToSave.id || '');
+        const payload: Partial<Product> = { ...productToSave };
+        if ((payload as any)._id) delete (payload as any)._id;
+        if (hasId) {
+            dispatch(updateProduct({ id: idForApi, data: payload }))
+                .unwrap()
+                .then(() => {
+                    addToast('تم تحديث المنتج بنجاح!', 'success');
+                    handleCloseProductModal();
+                    dispatch(fetchProducts());
+                })
+                .catch(() => addToast('فشل تحديث المنتج', 'error'));
+        } else {
+            dispatch(createProduct(payload))
+                .unwrap()
+                .then(() => {
+                    addToast('تم إضافة المنتج بنجاح!', 'success');
+                    handleCloseProductModal();
+                    dispatch(fetchProducts());
+                })
+                .catch(() => addToast('فشل إضافة المنتج', 'error'));
+        }
     };
 
     const handleSavePurchaseInvoice = (invoice: PurchaseInvoice) => {
@@ -532,12 +562,6 @@ const AppContent: React.FC = () => {
         setEmployees(prev => prev.filter(e => e.id !== employeeId));
     }
 
-    const handleSaveBranch = (branch: Branch) => {
-         setBranches(prev => {
-            const exists = prev.some(b => b.id === branch.id);
-            return exists ? prev.map(b => b.id === branch.id ? branch : b) : [...prev, { ...branch, id: Date.now() }];
-        })
-    }
     
     const handleSaveSupplier = (supplier: Supplier) => {
          setSuppliers(prev => {
@@ -1022,41 +1046,51 @@ const AppContent: React.FC = () => {
         if (activeView.startsWith('Purchases/Payments')) return <SupplierPayments payments={supplierPayments} suppliers={suppliers} />;
         
         // Inventory Module
-        if (activeView === 'Inventory/Vouchers') return <InventoryVouchers vouchers={inventoryVouchers} />;
-        if (activeView === 'Inventory/Requisitions') return <InventoryRequisitions requisitions={inventoryRequisitions} onSave={handleSaveInventoryRequisition} products={products} branches={branches} />;
+        if (activeView === 'Inventory/Vouchers') return <InventoryVouchers />;
+        if (activeView === 'Inventory/Requisitions') return <InventoryRequisitions />;
+        if (activeView === 'Inventory/Tracking') return <InventoryTracking />;
+        if (activeView === 'Inventory/Products') {
+            return (
+                <ProductsPage
+                    products={productsFromStore}
+                    onAddNew={() => handleOpenProductModal({})}
+                    onProductSelect={(product) => {
+                        const idStr = String((product as any)._id ?? product.id);
+                        setActiveView(`Inventory/Products/${idStr}`)
+                    }}
+                />
+            );
+        }
         if (activeView.startsWith('Inventory/Products/')) {
-            const productId = parseInt(activeView.split('/')[2], 10);
-            const product = products.find(p => p.id === productId);
+            const key = activeView.split('/')[2];
+            const product = productsFromStore.find(p => String((p as any).id) === key || String((p as any)._id) === key);
             if (product) {
                 return <ProductDetailPage
-                    key={productId}
+                    key={key}
                     product={product}
                     inventory={inventory}
                     sales={sales}
                     purchaseInvoices={purchaseInvoices}
                     users={users}
                     branches={branches}
-                    products={products}
+                    products={productsFromStore}
                     inventoryAdjustmentLogs={inventoryAdjustmentLogs}
                     onBack={() => setActiveView('Inventory/Products')}
                     onEditProduct={handleOpenProductModal}
                     onTransferInventory={handleTransferInventory}
                     onAdjustInventory={handleAdjustInventory}
-                />;
+                    onDelete={(p) => {
+                        const id = String(((p as any)._id) ?? (p as any).id);
+                        if (!id) return;
+                        if (!window.confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+                        dispatch(deleteProduct(id))
+                          .unwrap()
+                          .then(() => { setActiveView('Inventory/Products'); dispatch(fetchProducts()); })
+                          .catch(() => {});
+                    }}
+                />
             }
         }
-        if (activeView === 'Inventory/Products' || activeView === 'Inventory') {
-            return <ProductsPage 
-                products={products}
-                onProductSelect={(product) => setActiveView(`Inventory/Products/${product.id}`)}
-                onAddNew={() => handleOpenProductModal({})}
-            />;
-        }
-        if (['Inventory/Stocktakes', 'Inventory/Transfers', 'Inventory/Tracking', 'Inventory/Pricelists'].includes(activeView)) {
-             return <div className="glass-pane" style={{padding: '2rem', textAlign: 'center'}}>Coming Soon: {activeView.split('/')[1]}</div>
-        }
-        
-        // Other Modules
         if (activeView.startsWith('POS/Start')) return <POS products={products} inventory={inventory} customers={customers} onSaveCustomer={handleSaveCustomer} onSave={handleSaveSale} integrationSettings={integrationSettings} branches={branches} />;
         if (activeView.startsWith('POS/Sessions')) return <POSSessions sessions={sessionsForView} activeSession={activeSession} sales={sales} branches={branches} employees={employees} onStartSession={handleStartSession} onCloseSession={handleCloseSession} setActiveView={setActiveView} />;
         if (activeView.startsWith('Customers')) return <Customers customers={customers} onSave={handleSaveCustomer} whatsappSettings={integrationSettings.whatsapp} branches={branches} />;
@@ -1072,7 +1106,7 @@ const AppContent: React.FC = () => {
         if (activeView.startsWith('HR/AdvanceRequests')) return <AdvanceRequestsPage requests={advanceRequests} employees={employees} onSaveRequest={handleSaveAdvanceRequest} />;
         if (activeView.startsWith('HR/GeneralRequests')) return <GeneralRequestsPage requests={generalRequests} employees={employees} onSaveRequest={handleSaveGeneralRequest} />;
         if (activeView.startsWith('HR/Salaries')) return <Salaries employees={employeesForView} payments={salaryPayments} onRunPayroll={handleRunPayroll} />;
-        if (activeView.startsWith('Branches')) return <Branches branches={branches} onSave={handleSaveBranch} />;
+        if (activeView.startsWith('Branches')) return <Branches />;
         if (activeView.startsWith('Renewals')) return <Licenses renewables={renewables} setRenewables={setRenewables} onCheckReminders={checkAndSendRenewalReminders} />;
         if (activeView.startsWith('Reports')) return <Reports sales={salesForView} purchases={purchaseInvoicesForView} products={products} branches={branches} expenses={expensesForView} customers={customers} financialAccounts={financialAccounts} activeReport={activeView} suppliers={suppliers} />;
         
@@ -1118,7 +1152,7 @@ const AppContent: React.FC = () => {
                         viewTitle={activeView} 
                         theme={theme} 
                         toggleTheme={() => setTheme(t => t === 'light' ? 'dark' : 'light')} 
-                        products={products}
+                        products={productsFromStore}
                         onProductSelect={handleOpenProductModal}
                         onViewMyPermissions={() => setViewingPermissionsFor(user)}
                         onToggleDrawer={handleToggleDrawer}
@@ -1132,7 +1166,7 @@ const AppContent: React.FC = () => {
                 {editingProduct && (
                     <ProductModal
                         product={editingProduct}
-                        allProducts={products}
+                        allProducts={productsFromStore}
                         onClose={handleCloseProductModal}
                         onSave={handleSaveAndCloseProductModal}
                     />

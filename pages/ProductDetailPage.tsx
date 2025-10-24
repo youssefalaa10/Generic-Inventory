@@ -15,6 +15,7 @@ interface ProductDetailPageProps {
     onEditProduct: (product: Partial<Product>) => void;
     onTransferInventory: (data: any) => void;
     onAdjustInventory: (data: any) => void;
+    onDelete?: (product: Product) => void;
 }
 
 const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
@@ -28,7 +29,8 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     onBack,
     onEditProduct,
     onTransferInventory,
-    onAdjustInventory
+    onAdjustInventory,
+    onDelete
 }) => {
     const [activeTab, setActiveTab] = useState('info');
 
@@ -67,9 +69,9 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             case 'movements':
                 return <MovementsTab product={product} sales={sales} purchaseInvoices={purchaseInvoices} inventoryAdjustmentLogs={inventoryAdjustmentLogs} users={users} branches={branches} />;
             case 'timeline':
-                return <TimelineTab product={product} sales={sales} purchaseInvoices={purchaseInvoices} />;
+                return <TimelineTab />;
             case 'activity':
-                return <ActivityLogTab product={product} />;
+                return <ActivityLogTab />;
             default:
                 return null;
         }
@@ -86,6 +88,9 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     <button className="btn btn-ghost" onClick={() => onTransferInventory({productId: product.id})}><SwitchHorizontalIcon/> نقل المخزون</button>
                     <button className="btn btn-ghost" onClick={() => onAdjustInventory({productId: product.id})}><AdjustmentsIcon/> تعديل يدوي</button>
                     <button className="btn btn-primary" onClick={() => onEditProduct(product)}><PencilIcon/> تعديل</button>
+                    {onDelete && (
+                        <button className="btn btn-warning" onClick={() => onDelete(product)}>حذف</button>
+                    )}
                 </div>
             </div>
 
@@ -134,7 +139,7 @@ const InfoTab = ({ product, totalStock, soldLast7Days, soldLast28Days, inventory
                         <tbody>
                             {inventoryByBranch.map((item: InventoryItem) => (
                                 <tr key={item.branchId}>
-                                    <td>{branches.find((b:Branch) => b.id === item.branchId)?.name}</td>
+                                    <td>{branches.find((b:Branch) => String(b.id) === String(item.branchId))?.name}</td>
                                     <td style={{fontWeight: 'bold'}}>{item.quantity}</td>
                                     <td>{item.expiryDate || 'N/A'}</td>
                                 </tr>
@@ -208,7 +213,7 @@ const MovementsTab = ({ product, sales, purchaseInvoices, inventoryAdjustmentLog
                             <td>
                                 <p style={{fontWeight: 600}}>{m.relatedDoc}</p>
                                 <p style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>
-                                    {new Date(m.date).toLocaleString('ar-EG')} بواسطة {m.user} في {branches.find((b:Branch) => b.id === m.branchId)?.name}
+                                    {new Date(m.date).toLocaleString('ar-EG')} بواسطة {m.user} في {branches.find((b:Branch) => String(b.id) === String(m.branchId))?.name}
                                 </p>
                             </td>
                             <td style={{fontWeight: 'bold', color: m.quantityChange > 0 ? 'var(--secondary-color)' : '#ef4444'}}>
