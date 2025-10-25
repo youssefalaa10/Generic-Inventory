@@ -52,12 +52,12 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ products, onProductSelect, 
                         </thead>
                         <tbody>
                             {filteredProducts.map(product => (
-                                <tr key={product.id} onClick={() => onProductSelect(product)} style={{ cursor: 'pointer' }}>
+                                <tr key={String((product as any)._id ?? product.id ?? product.sku)} onClick={() => onProductSelect(product)} style={{ cursor: 'pointer' }}>
                                     <td>{product.sku}</td>
                                     <td style={{fontWeight: 600}}>{product.name}</td>
                                     <td>{product.category}</td>
                                     <td>{product.baseUnit}</td>
-                                    <td style={{color: 'var(--secondary-color)'}}>{product.unitPrice.toFixed(3)} د.ك</td>
+                                    <td style={{color: 'var(--secondary-color)'}}>{Number(product.unitPrice ?? 0).toFixed(3)} د.ك</td>
                                 </tr>
                             ))}
                         </tbody>

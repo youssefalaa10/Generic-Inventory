@@ -10,17 +10,20 @@ interface ProductModalProps {
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({ product, allProducts, onClose, onSave }) => {
-    const isCreating = !product?.id;
+    const isCreating = !((product as any)?.id || (product as any)?._id);
     const [editableProduct, setEditableProduct] = useState<Partial<Product>>({});
 
     useEffect(() => {
-        setEditableProduct(isCreating ? {
-            name: '', sku: '', category: 'Finished Good', baseUnit: 'pcs', unitPrice: 0,
+        const defaults: Partial<Product> = {
+            category: 'Finished Good', baseUnit: 'pcs', unitPrice: 0,
             components: [], fragranceNotes: { top: '', middle: '', base: ''},
-            trackInventory: true, status: 'Active',
+            trackInventory: true, trackingType: 'Quantity', status: 'Active',
             purchasePrice: 0, isTaxable: false, lowestSellingPrice: 0, discountPercent: 0,
             hasExpiryDate: false, alertQuantity: 0,
-        } : product);
+        };
+        setEditableProduct(isCreating ? {
+            name: '', sku: '', ...defaults,
+        } : { ...defaults, ...(product || {}) });
     }, [product, isCreating]);
 
     const handleChange = (field: keyof Product, value: any) => {
@@ -95,24 +98,24 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, allProducts, onClo
                                             <input type="text" value={editableProduct.sku || ''} onChange={e => handleChange('sku', e.target.value)} className="form-input" />
                                         </FormField>
                                          <FormField label="سعر الشراء">
-                                            <input type="number" value={editableProduct.purchasePrice || ''} onChange={e => handleChange('purchasePrice', Number(e.target.value))} className="form-input" />
+                                            <input type="number" value={editableProduct.purchasePrice ?? ''} onChange={e => handleChange('purchasePrice', Number(e.target.value))} className="form-input" />
                                         </FormField>
                                         <FormField label="سعر البيع">
-                                            <input type="number" value={editableProduct.unitPrice || ''} onChange={e => handleChange('unitPrice', Number(e.target.value))} className="form-input" />
+                                            <input type="number" value={editableProduct.unitPrice ?? ''} onChange={e => handleChange('unitPrice', Number(e.target.value))} className="form-input" />
                                         </FormField>
                                         <FormField label="الضريبة 1">
                                             <select className="form-select"><option>اختر ضريبة</option></select>
                                         </FormField>
                                         <FormField label="أقل سعر بيع">
-                                            <input type="number" value={editableProduct.lowestSellingPrice || ''} onChange={e => handleChange('lowestSellingPrice', Number(e.target.value))} className="form-input" />
+                                            <input type="number" value={editableProduct.lowestSellingPrice ?? ''} onChange={e => handleChange('lowestSellingPrice', Number(e.target.value))} className="form-input" />
                                         </FormField>
                                         <FormField label="الخصم %">
-                                            <input type="number" value={editableProduct.discountPercent || ''} onChange={e => handleChange('discountPercent', Number(e.target.value))} className="form-input" />
+                                            <input type="number" value={editableProduct.discountPercent ?? ''} onChange={e => handleChange('discountPercent', Number(e.target.value))} className="form-input" />
                                         </FormField>
                                     </div>
                                     <div style={{display: 'flex', gap: '1rem', marginTop: '1rem'}}>
-                                        <label className="form-label" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}><input type="checkbox" checked={editableProduct.isTaxable} onChange={e => handleChange('isTaxable', e.target.checked)} /> خاضع للضريبة</label>
-                                        <label className="form-label" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}><input type="checkbox" checked={editableProduct.hasExpiryDate} onChange={e => handleChange('hasExpiryDate', e.target.checked)} /> هل السلعة بتاريخ صلاحية</label>
+                                        <label className="form-label" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}><input type="checkbox" checked={!!editableProduct.isTaxable} onChange={e => handleChange('isTaxable', e.target.checked)} /> خاضع للضريبة</label>
+                                        <label className="form-label" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}><input type="checkbox" checked={!!editableProduct.hasExpiryDate} onChange={e => handleChange('hasExpiryDate', e.target.checked)} /> هل السلعة بتاريخ صلاحية</label>
                                     </div>
                                 </div>
                             </div>
@@ -120,13 +123,22 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, allProducts, onClo
                              <div className="form-section">
                                 <div className="form-section-header">إدارة المخزون</div>
                                 <div className="form-section-body">
-                                    <label className="form-label" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem'}}><input type="checkbox" checked={editableProduct.trackInventory} onChange={e => handleChange('trackInventory', e.target.checked)} /> تتبع المخزون</label>
+                                    <label className="form-label" style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem'}}><input type="checkbox" checked={!!editableProduct.trackInventory} onChange={e => handleChange('trackInventory', e.target.checked)} /> تتبع المخزون</label>
                                     {editableProduct.trackInventory && (
                                         <div className="form-grid-cols-2">
-                                             <FormField label="نوع التتبع"><select className="form-select"><option>حسب الكمية</option></select></FormField>
+                                             <FormField label="نوع التتبع">
+                                                <select
+                                                    className="form-select"
+                                                    value={editableProduct.trackingType || 'Quantity'}
+                                                    onChange={e => handleChange('trackingType', e.target.value as any)}
+                                                >
+                                                    <option value="Quantity">حسب الكمية</option>
+                                                    <option value="None">بدون</option>
+                                                </select>
+                                             </FormField>
                                              <FormField label="المخزون"><select className="form-select"><option>Primary Warehouse</option></select></FormField>
                                              <FormField label="الكمية المبدئية"><input type="number" className="form-input" /></FormField>
-                                             <FormField label="كمية التنبيه"><input type="number" value={editableProduct.alertQuantity || ''} onChange={e => handleChange('alertQuantity', Number(e.target.value))} className="form-input" /></FormField>
+                                             <FormField label="كمية التنبيه"><input type="number" value={editableProduct.alertQuantity ?? ''} onChange={e => handleChange('alertQuantity', Number(e.target.value))} className="form-input" /></FormField>
                                         </div>
                                     )}
                                 </div>

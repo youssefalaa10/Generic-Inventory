@@ -113,7 +113,7 @@ const InfoTab = ({ product, totalStock, soldLast7Days, soldLast28Days, inventory
     <div>
         <div className="product-stats-grid">
             <StatCard label="إجمالي المخزون" value={totalStock} />
-            <StatCard label="إجمالي القطع المباعة" value="4" helpText="آخر 28 يوم" />
+            <StatCard label="إجمالي القطع المباعة" value={soldLast28Days} helpText="آخر 28 يوم" />
             <StatCard label="آخر 7 أيام" value={soldLast7Days} change="+1" comparisonText="مقارنة بـ 7 أيام سابقة" />
             <StatCard label="آخر 28 أيام" value={soldLast28Days} change="+1" comparisonText="مقارنة بـ 28 أيام سابقة" />
         </div>
@@ -122,13 +122,30 @@ const InfoTab = ({ product, totalStock, soldLast7Days, soldLast28Days, inventory
                 <h4 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>تفاصيل المنتج</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                     <DetailItem label="كود المنتج (SKU)" value={product.sku} />
-                    <DetailItem label="سعر البيع" value={`${product.unitPrice.toFixed(3)} د.ك`} />
-                    <DetailItem label="الماركة" value="Arabiva" />
-                    <DetailItem label="نوع التتبع" value="الكمية فقط" />
+                    <DetailItem label="الاسم" value={product.name} />
+                    <DetailItem label="الوصف" value={product.description || '-'} />
+                    <DetailItem label="الماركة" value={product.brand || '-'} />
+                    <DetailItem label="الحالة" value={product.status === 'Inactive' ? 'غير نشط' : 'نشط'} />
+                    <DetailItem label="وسوم" value={product.tags || '-'} />
+                    <DetailItem label="ملاحظات داخلية" value={product.internalNotes || '-'} />
+                    <DetailItem label="سعر الشراء" value={typeof product.purchasePrice === 'number' ? `${product.purchasePrice.toFixed(3)} د.ك` : '-'} />
+                    <DetailItem label="سعر البيع" value={typeof product.unitPrice === 'number' ? `${product.unitPrice.toFixed(3)} د.ك` : '-'} />
+                    <DetailItem label="أقل سعر بيع" value={typeof product.lowestSellingPrice === 'number' ? `${product.lowestSellingPrice.toFixed(3)} د.ك` : '-'} />
+                    <DetailItem label="الخصم %" value={typeof product.discountPercent === 'number' ? product.discountPercent : '-'} />
+                    <DetailItem label="خاضع للضريبة" value={product.isTaxable ? 'نعم' : 'لا'} />
+                    <DetailItem label="هل السلعة بتاريخ صلاحية" value={product.hasExpiryDate ? 'نعم' : 'لا'} />
+                    <DetailItem label="تتبع المخزون" value={product.trackInventory ? 'نعم' : 'لا'} />
+                    <DetailItem label="نوع التتبع" value={product.trackingType === 'Quantity' ? 'حسب الكمية' : 'بدون'} />
+                    <DetailItem label="كمية التنبيه" value={typeof product.alertQuantity === 'number' ? product.alertQuantity : '-'} />
                 </div>
-                 <div style={{ float: 'left', width: '200px', height: '200px', background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', margin: '1rem 0 0 1rem', cursor: 'pointer', flexDirection: 'column' }}>
-                    <span>Click here to upload</span>
-                    <span>product photos</span>
+                 <div style={{ float: 'left', width: '200px', height: '200px', background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', margin: '1rem 0 0 1rem', overflow: 'hidden' }}>
+                    {product.image ? (
+                        <img src={product.image} alt={product.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                    ) : (
+                        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                            <span>لا توجد صورة</span>
+                        </div>
+                    )}
                 </div>
             </div>
             <div>

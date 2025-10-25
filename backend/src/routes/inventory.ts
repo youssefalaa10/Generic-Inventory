@@ -103,7 +103,16 @@ router.get('/', [
         hasPrevPage: page > 1,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error && (error.code === 11000 || error.name === 'MongoServerError') && error.keyPattern) {
+      const field = Object.keys(error.keyPattern)[0] || 'field';
+      res.status(409).json({
+        success: false,
+        error: `Duplicate value for ${field}`,
+        details: [{ msg: `An item with this ${field} already exists`, param: field, location: 'body' }],
+      });
+      return;
+    }
     next(error);
   }
 });
@@ -130,16 +139,30 @@ router.get('/:id', [
 
 // POST /api/inventory - Create new inventory item
 router.post('/', [
-  body('name').notEmpty().withMessage('Name is required'),
+  body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 200 }).withMessage('Name too long'),
   body('type').optional().isIn(['packaging', 'supplies', 'fixtures', 'maintenance', 'security', 'marketing']).withMessage('Invalid type'),
-  body('currentStock').optional().isNumeric().withMessage('Current stock must be a number'),
-  body('minimumStock').optional().isNumeric().withMessage('Minimum stock must be a number'),
-  body('unit').notEmpty().withMessage('Unit is required'),
-  body('costPerUnit').optional().isNumeric().withMessage('Cost per unit must be a number'),
-  body('barcode').optional().isString().withMessage('Barcode must be a string'),
-  body('sku').optional().isString().withMessage('SKU must be a string'),
+  body('currentStock').optional().toInt().isInt({ min: 0 }).withMessage('Current stock must be a non-negative integer'),
+  body('minimumStock').optional().toInt().isInt({ min: 0 }).withMessage('Minimum stock must be a non-negative integer'),
+  body('unit').trim().notEmpty().withMessage('Unit is required').isLength({ max: 100 }).withMessage('Unit too long'),
+  body('costPerUnit').optional().toFloat().isFloat({ min: 0 }).withMessage('Cost per unit must be a non-negative number'),
+  body('barcode').optional().isString().trim().isLength({ max: 50 }).withMessage('Barcode too long'),
+  body('sku').optional().isString().trim().isLength({ max: 50 }).withMessage('SKU too long'),
 ], validateRequest, async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Business logic validation
+    if (
+      typeof req.body.minimumStock !== 'undefined' &&
+      typeof req.body.currentStock !== 'undefined' &&
+      Number(req.body.minimumStock) > Number(req.body.currentStock)
+    ) {
+      res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: [{ msg: 'Minimum stock cannot exceed current stock', param: 'minimumStock', location: 'body' }],
+      });
+      return;
+    }
+
     const itemData = {
       ...req.body,
       createdBy: req.headers['x-user-id'] as string || 'system',
@@ -153,7 +176,17 @@ router.post('/', [
       data: item,
       message: 'Inventory item created successfully',
     });
-  } catch (error) {
+  } catch (error: any) {
+    // Handle duplicate key errors (e.g., barcode, sku)
+    if (error && (error.code === 11000 || error.name === 'MongoServerError') && error.keyPattern) {
+      const field = Object.keys(error.keyPattern)[0] || 'field';
+      res.status(409).json({
+        success: false,
+        error: `Duplicate value for ${field}`,
+        details: [{ msg: `An item with this ${field} already exists`, param: field, location: 'body' }],
+      });
+      return;
+    }
     next(error);
   }
 });
@@ -161,14 +194,30 @@ router.post('/', [
 // PUT /api/inventory/:id - Update inventory item
 router.put('/:id', [
   param('id').isMongoId().withMessage('Invalid item ID'),
-  body('name').optional().notEmpty().withMessage('Name cannot be empty'),
+  body('name').optional().trim().notEmpty().withMessage('Name cannot be empty').isLength({ max: 200 }).withMessage('Name too long'),
   body('type').optional().isIn(['packaging', 'supplies', 'fixtures', 'maintenance', 'security', 'marketing']).withMessage('Invalid type'),
-  body('currentStock').optional().isNumeric().withMessage('Current stock must be a number'),
-  body('minimumStock').optional().isNumeric().withMessage('Minimum stock must be a number'),
-  body('unit').optional().notEmpty().withMessage('Unit cannot be empty'),
-  body('costPerUnit').optional().isNumeric().withMessage('Cost per unit must be a number'),
+  body('currentStock').optional().toInt().isInt({ min: 0 }).withMessage('Current stock must be a non-negative integer'),
+  body('minimumStock').optional().toInt().isInt({ min: 0 }).withMessage('Minimum stock must be a non-negative integer'),
+  body('unit').optional().trim().notEmpty().withMessage('Unit cannot be empty').isLength({ max: 100 }).withMessage('Unit too long'),
+  body('costPerUnit').optional().toFloat().isFloat({ min: 0 }).withMessage('Cost per unit must be a non-negative number'),
+  body('barcode').optional().isString().trim().isLength({ max: 50 }).withMessage('Barcode too long'),
+  body('sku').optional().isString().trim().isLength({ max: 50 }).withMessage('SKU too long'),
 ], validateRequest, async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Business logic validation when both values provided in update
+    if (
+      typeof req.body.minimumStock !== 'undefined' &&
+      typeof req.body.currentStock !== 'undefined' &&
+      Number(req.body.minimumStock) > Number(req.body.currentStock)
+    ) {
+      res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: [{ msg: 'Minimum stock cannot exceed current stock', param: 'minimumStock', location: 'body' }],
+      });
+      return;
+    }
+
     const updateData = {
       ...req.body,
       lastUpdatedBy: req.headers['x-user-id'] as string || 'system',

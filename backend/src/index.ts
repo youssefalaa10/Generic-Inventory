@@ -1,24 +1,26 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import 'dotenv/config';
+import express from 'express';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import { connectDB } from './config/database';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
+import branchRoutes from './routes/branches';
+import branchInventoryRoutes from './routes/branchInventory';
+import customerRoutes from './routes/customers';
+import healthRoutes from './routes/health';
 import inventoryRoutes from './routes/inventory';
 import movementRoutes from './routes/movements';
-import scanRoutes from './routes/scans';
 import orderRoutes from './routes/orders';
-import supplyChainRoutes from './routes/supplyChain';
-import branchRoutes from './routes/branches';
-import healthRoutes from './routes/health';
-import requisitionRoutes from './routes/requisitions';
-import voucherRoutes from './routes/vouchers';
 import productRoutes from './routes/products';
+import requisitionRoutes from './routes/requisitions';
+import scanRoutes from './routes/scans';
+import supplyChainRoutes from './routes/supplyChain';
+import voucherRoutes from './routes/vouchers';
 
 const app = express();
 const PORT = Number(process.env.PORT || 4100);
@@ -38,13 +40,13 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: [
+  origin: ([
     'http://localhost:3000',
     'http://localhost:3001', 
     'http://localhost:3002',
     'http://localhost:5173',
     process.env.CORS_ORIGIN
-  ].filter(Boolean),
+  ].filter((v): v is string => typeof v === 'string')),
   credentials: process.env.CORS_CREDENTIALS === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -83,6 +85,7 @@ app.use('/health', healthRoutes);
 // API routes
 const API_PREFIX = process.env.API_PREFIX || '/api';
 app.use(`${API_PREFIX}/inventory`, inventoryRoutes);
+app.use(`${API_PREFIX}/branch-inventory`, branchInventoryRoutes);
 app.use(`${API_PREFIX}/movements`, movementRoutes);
 app.use(`${API_PREFIX}/scans`, scanRoutes);
 app.use(`${API_PREFIX}/orders`, orderRoutes);
@@ -91,6 +94,7 @@ app.use(`${API_PREFIX}/branches`, branchRoutes);
 app.use(`${API_PREFIX}/requisitions`, requisitionRoutes);
 app.use(`${API_PREFIX}/vouchers`, voucherRoutes);
 app.use(`${API_PREFIX}/products`, productRoutes);
+app.use(`${API_PREFIX}/customers`, customerRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -110,6 +114,7 @@ app.get('/', (req, res) => {
       requisitions: '/api/requisitions',
       vouchers: '/api/vouchers',
       products: '/api/products'
+      , customers: '/api/customers'
     },
     note: 'MongoDB connection required for full functionality'
   });
