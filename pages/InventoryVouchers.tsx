@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { AdjustmentsIcon, CalendarIcon, ChevronDownIcon, ChevronUpIcon, DocumentTextIcon, LocationMarkerIcon, PlusIcon, SearchIcon, TrashIcon, UserIcon, XIcon } from '../components/Icon';
 import { useToasts } from '../components/Toast';
-import { useAppDispatch, useAppSelector } from '../src/store/hooks';
-import { fetchBranches } from '../src/store/slices/branchSlice';
-import { createVoucher, deleteVoucher, fetchVouchers } from '../src/store/slices/vouchersSlice';
+import { useAppDispatch, useAppSelector, slices } from '../redux-store/src';
 
 const InventoryVouchers: React.FC = () => {
     const dispatch = useAppDispatch();
     const { addToast } = useToasts();
-    const vouchers = useAppSelector(s => s.vouchers.items);
-    const branches = useAppSelector(s => s.branches.branches);
+    const vouchersState = useAppSelector(s => (s as any).inventoryvouchers || {});
+    const vouchers = ((vouchersState.allIds || []) as string[]).map(id => (vouchersState.byId || {})[id]).filter(Boolean) as any[];
+    const branchesState = useAppSelector(s => (s as any).branchinventories || {});
+    const branches = ((branchesState.allIds || []) as string[]).map(id => (branchesState.byId || {})[id]).filter(Boolean) as any[];
     const [filters, setFilters] = useState({
         search: '',
         branch: 'all',
@@ -30,8 +30,8 @@ const InventoryVouchers: React.FC = () => {
     const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
 
     useEffect(() => {
-        dispatch(fetchVouchers());
-        if (!branches?.length) dispatch(fetchBranches({ page: 1, limit: 100 }));
+        dispatch(slices.inventoryvouchers.thunks.list(undefined));
+        if (!branches?.length) dispatch(slices.branchinventories.thunks.list({ params: { page: 1, limit: 100 } }));
     }, [dispatch]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -78,31 +78,31 @@ const InventoryVouchers: React.FC = () => {
         
         if (Object.keys(errors).length > 0) {
             addToast('يرجى تصحيح الأخطاء قبل المتابعة', 'error');
-                                    return;
-                                }
+            return;
+        }
         
-                                dispatch(createVoucher({
-                                    date: newVoucher.date,
-                                    type: newVoucher.type,
-                                    branchId: newVoucher.branchId,
-                                    description: newVoucher.description,
-                                    details: newVoucher.details,
-                                } as any))
-                                  .unwrap()
-          .then(() => { 
-              addToast('تم إنشاء إذن مخزني بنجاح', 'success'); 
-              setNewVoucher({
-                  date: new Date().toISOString(),
-                  type: 'up',
-                  branchId: '',
-                  description: '',
-                  details: ''
-              });
-              setValidationErrors({});
-              setIsCreateModalOpen(false);
-              dispatch(fetchVouchers()); 
-          })
-          .catch(() => addToast('فشل في إنشاء الإذن', 'error'));
+        dispatch(slices.inventoryvouchers.thunks.createOne({
+            date: newVoucher.date,
+            type: newVoucher.type,
+            branchId: newVoucher.branchId,
+            description: newVoucher.description,
+            details: newVoucher.details,
+        } as any))
+        .unwrap()
+        .then(() => { 
+            addToast('تم إنشاء إذن مخزني بنجاح', 'success'); 
+            setNewVoucher({
+                date: new Date().toISOString(),
+                type: 'up',
+                branchId: '',
+                description: '',
+                details: ''
+            });
+            setValidationErrors({});
+            setIsCreateModalOpen(false);
+            dispatch(slices.inventoryvouchers.thunks.list(undefined)); 
+        })
+        .catch(() => addToast('فشل في إنشاء الإذن', 'error'));
     };
 
     const handleCloseModal = () => {
@@ -325,11 +325,11 @@ const InventoryVouchers: React.FC = () => {
                                     className="btn btn-ghost btn-sm voucher-delete-btn"
                                     onClick={() => {
                                         const id = String(voucher._id || voucher.id);
-                                        dispatch(deleteVoucher(id))
+                                        dispatch(slices.inventoryvouchers.thunks.removeOne(id))
                                           .unwrap()
                                           .then(() => { 
                                               addToast('تم حذف الإذن بنجاح', 'success'); 
-                                              dispatch(fetchVouchers()); 
+                                              dispatch(slices.inventoryvouchers.thunks.list(undefined)); 
                                           })
                                           .catch(() => addToast('فشل في حذف الإذن', 'error'));
                                     }}

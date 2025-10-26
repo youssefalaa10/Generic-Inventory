@@ -33,16 +33,18 @@ const AIFormulaModal: React.FC<AIFormulaModalProps> = ({ isOpen, onClose, onAppl
 
         const branchInventory = inventory.filter(i => i.branchId === branchId);
 
-        const materialContext = rawMaterials.map(m => {
-            const stockItem = branchInventory.find(i => i.productId === m.id);
-            return {
-                id: m.id,
-                name: m.name,
-                sku: m.sku,
-                baseUnit: m.baseUnit,
-                availableQuantity: stockItem?.quantity || 0,
-            };
-        });
+        const materialContext = rawMaterials
+            .filter(m => m.baseUnit === 'g' || m.baseUnit === 'ml')
+            .map(m => {
+                const stockItem = branchInventory.find(i => i.productId === m.id);
+                return {
+                    id: m.id,
+                    name: m.name,
+                    sku: m.sku,
+                    baseUnit: m.baseUnit as 'g' | 'ml',
+                    availableQuantity: stockItem?.quantity || 0,
+                };
+            });
 
         try {
             if (activeTab === 'formula') {

@@ -8,7 +8,7 @@ interface POSSessionsProps {
     sales: Sale[];
     branches: Branch[];
     employees: EmployeeData[];
-    onStartSession: (openingBalance: number) => void;
+    onStartSession: (openingBalance: number, branchId: number) => void;
     onCloseSession: (closingBalance: number) => void;
     setActiveView: (view: string) => void;
 }
@@ -41,7 +41,7 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
                 return acc;
             }, {} as Record<PaymentMethod, number>);
 
-            const branch = branches.find(b => parseInt(b.id) === session.branchId);
+            const branch = branches.find(b => b.id === session.branchId);
             const employee = employees.find(e => e.branchId === session.branchId); // Simplified logic for demo
 
             return {
@@ -199,7 +199,7 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
                         {filters.branchId !== 'all' && (
                             <span className="filter-status-badge">
                                 <span className="filter-status-icon">🏪</span>
-                                {branches.find(b => b.id === String(filters.branchId))?.name || 'فرع محدد'}
+                                {branches.find(b => b.id === Number(filters.branchId))?.name || 'فرع محدد'}
                             </span>
                         )}
                         {filters.startDate && (
@@ -280,7 +280,7 @@ const POSSessions: React.FC<POSSessionsProps> = ({ sessions, activeSession, sale
                 </div>
             </div>
 
-            {isStartModalOpen && <StartSessionModal onStart={onStartSession} onClose={() => setStartModalOpen(false)} />}
+            {isStartModalOpen && <StartSessionModal branches={branches} onStart={onStartSession} onClose={() => setStartModalOpen(false)} />}
             {isCloseModalOpen && activeSession && <CloseSessionModal session={activeSession} sessionTotals={activeSessionTotals} onCloseSession={onCloseSession} onClose={() => setCloseModalOpen(false)} />}
         </div>
     );
@@ -304,13 +304,15 @@ const DetailItem = ({ label, value }: { label: string, value: string | number })
     </div>
 );
 
-const StartSessionModal: React.FC<{ onStart: (balance: number) => void, onClose: () => void }> = ({ onStart, onClose }) => {
+const StartSessionModal: React.FC<{ branches: Branch[]; onStart: (balance: number, branchId: number) => void, onClose: () => void }> = ({ branches, onStart, onClose }) => {
     const [balance, setBalance] = useState('');
+    const [branchId, setBranchId] = useState<string>('');
 
     const handleStart = () => {
         const numBalance = parseFloat(balance);
-        if (!isNaN(numBalance) && numBalance >= 0) {
-            onStart(numBalance);
+        const numBranchId = Number(branchId);
+        if (!isNaN(numBalance) && numBalance >= 0 && Number.isFinite(numBranchId)) {
+            onStart(numBalance, numBranchId);
             onClose();
         }
     }
@@ -320,6 +322,13 @@ const StartSessionModal: React.FC<{ onStart: (balance: number) => void, onClose:
             <div className="modal-content glass-pane" onClick={e => e.stopPropagation()} style={{ maxWidth: '32rem' }}>
                 <div className="modal-header"><h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>بدء جلسة جديدة</h2></div>
                 <div className="modal-body">
+                    <label className="form-label">الفرع</label>
+                    <select className="form-select" value={branchId} onChange={e => setBranchId(e.target.value)}>
+                        <option value="">اختر الفرع</option>
+                        {branches.map(b => (
+                            <option key={b.id} value={b.id}>{b.name}</option>
+                        ))}
+                    </select>
                     <label className="form-label">الرصيد النقدي الافتتاحي</label>
                     <input type="number" value={balance} onChange={e => setBalance(e.target.value)} className="form-input" placeholder="0.000" autoFocus />
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.5rem' }}>أدخل المبلغ النقدي الموجود في الدرج في بداية اليوم.</p>

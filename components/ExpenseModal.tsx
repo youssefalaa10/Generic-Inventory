@@ -32,7 +32,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ expense, onClose, onSave, b
         ? { 
             date: new Date().toISOString().split('T')[0],
             branchId: branches[0]?.id || 0,
-            category: 'Other',
+            category: ExpenseCategory.Other,
             amount: 0,
             description: '',
             paidFromAccountId: financialAccounts[0]?.id || 0
@@ -44,7 +44,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({ expense, onClose, onSave, b
         setEditableExpense(isCreating ? { 
             date: new Date().toISOString().split('T')[0],
             branchId: branches[0]?.id || 0,
-            category: 'Other',
+            category: ExpenseCategory.Other,
             amount: 0,
             description: '',
             paidFromAccountId: financialAccounts[0]?.id || 0

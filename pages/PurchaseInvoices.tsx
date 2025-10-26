@@ -5,22 +5,27 @@ import AIPurchaseOrderModal from '../components/AIPurchaseOrderModal';
 import { SparklesIcon } from '../components/Icon';
 import PurchaseDetailModal from '../components/PurchaseDetailModal';
 import { useToasts } from '../components/Toast';
+import { useAppSelector, useAppDispatch, selectAll, slices } from '../src/store';
 import { getPurchaseOrderSuggestion, scanInvoiceWithGemini } from '../services/geminiService';
 import { Branch, InventoryItem, InvoiceData, Product, PurchaseInvoice, PurchaseInvoiceItem, PurchaseOrderSuggestionContext, Sale, SuggestedPurchaseOrderItem, Supplier } from '../types';
 
 interface PurchaseInvoicesProps {
-    invoices: PurchaseInvoice[];
-    onSave: (invoice: PurchaseInvoice) => void;
-    branches: Branch[];
-    products: Product[];
-    sales: Sale[];
-    inventory: InventoryItem[];
-    suppliers: Supplier[];
+    // Props removed - now using Redux
 }
 
-const PurchaseInvoices: React.FC<PurchaseInvoicesProps> = ({ invoices, onSave, branches, products, sales, inventory, suppliers }) => {
+const PurchaseInvoices: React.FC<PurchaseInvoicesProps> = () => {
     const { user } = useContext(AuthContext);
     const { addToast } = useToasts();
+    const dispatch = useAppDispatch();
+    
+    // Get data from Redux store
+    const invoices = useAppSelector(s => selectAll(s, 'purchaseinvoices')) as PurchaseInvoice[];
+    const branches = useAppSelector(s => selectAll(s, 'branchinventories')) as Branch[];
+    const products = useAppSelector(s => selectAll(s, 'products')) as Product[];
+    const sales = useAppSelector(s => selectAll(s, 'sales')) as Sale[];
+    const inventory = useAppSelector(s => selectAll(s, 'inventoryitems')) as InventoryItem[];
+    const suppliers = useAppSelector(s => selectAll(s, 'suppliers')) as Supplier[];
+    
     const [isScanning, setIsScanning] = useState(false);
     const [scanError, setScanError] = useState<string | null>(null);
     const [selectedInvoice, setSelectedInvoice] = useState<PurchaseInvoice | null>(null);
@@ -83,9 +88,28 @@ const PurchaseInvoices: React.FC<PurchaseInvoicesProps> = ({ invoices, onSave, b
     };
     
     const handleSave = (invoice: PurchaseInvoice) => {
-        onSave(invoice);
-        handleCloseModal();
-        addToast('تم حفظ فاتورة الشراء بنجاح!', 'success');
+        const hasId = (invoice as any)._id || invoice.id;
+        const idForApi = String((invoice as any)._id || invoice.id || '');
+        const payload: Partial<PurchaseInvoice> = { ...invoice };
+        if ((payload as any)._id) delete (payload as any)._id;
+        
+        if (hasId) {
+            dispatch(slices.purchaseinvoices.thunks.updateOne({ id: idForApi, body: payload }))
+                .unwrap()
+                .then(() => {
+                    addToast('تم تحديث فاتورة الشراء بنجاح!', 'success');
+                    handleCloseModal();
+                })
+                .catch(() => addToast('فشل تحديث فاتورة الشراء', 'error'));
+        } else {
+            dispatch(slices.purchaseinvoices.thunks.createOne(payload))
+                .unwrap()
+                .then(() => {
+                    addToast('تم إضافة فاتورة الشراء بنجاح!', 'success');
+                    handleCloseModal();
+                })
+                .catch(() => addToast('فشل إضافة فاتورة الشراء', 'error'));
+        }
     };
 
     const handleAddNew = () => {

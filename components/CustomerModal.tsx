@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { PROJECTS } from '../services/mockData';
+import { useAppSelector, selectAll } from '../src/store';
 import { Branch, Customer, User } from '../types';
 import { useToasts } from './Toast';
 
@@ -33,6 +33,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
     const [errors, setErrors] = useState<ValidationErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fieldStates, setFieldStates] = useState<Record<string, FieldState>>({});
+
+    const projects = useAppSelector(s => selectAll(s as any, 'projects'));
 
     useEffect(() => {
         const initialCustomer = isCreating ? { 
@@ -333,7 +335,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ customer, onClose, onSave
                             className="form-select"
                         >
                             <option value="">-- بلا مشروع --</option>
-                            {PROJECTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
                     </div>
                     <div>

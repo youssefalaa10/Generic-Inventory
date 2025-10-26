@@ -5,23 +5,11 @@ import { CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, Responsive
 import { ChartBarIcon, CubeIcon, CurrencyDollarIcon, ExclamationIcon, Icon, ShoppingCartIcon, TruckIcon, UsersIcon } from '../components/Icon';
 import StatCard from '../components/StatCard';
 import TargetStatCard from '../components/TargetStatCard';
+import { useAppSelector, selectAll } from '../src/store';
 import { Account, AdvanceRequest, Branch, EmployeeData, Expense, ExpenseCategory, GeneralRequest, InventoryItem, LeaveRequest, Product, PurchaseInvoice, RenewableItem, Sale, Supplier } from '../types';
 
 interface DashboardProps {
-    sales: Sale[];
-    purchases: PurchaseInvoice[];
-    employees: EmployeeData[];
-    inventory: InventoryItem[];
-    products: Product[];
-    branches: Branch[];
     settings: { salesTarget: number };
-    accounts: Account[];
-    expenses: Expense[];
-    renewables: RenewableItem[];
-    leaveRequests: LeaveRequest[];
-    advanceRequests: AdvanceRequest[];
-    generalRequests: GeneralRequest[];
-    suppliers: Supplier[];
 }
 
 type ActivityItem = {
@@ -48,7 +36,6 @@ function timeAgo(date: Date): string {
   return `الآن`;
 }
 
-
 const COLORS = ['#4f46e5', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#ef4444', '#6366f1'];
 const categoryTranslations: { [key in ExpenseCategory]: string } = {
     'Rent': 'إيجار',
@@ -65,7 +52,23 @@ const categoryTranslations: { [key in ExpenseCategory]: string } = {
     'Other': 'أخرى'
 };
 
-const Dashboard: React.FC<DashboardProps> = ({ sales, purchases, employees, inventory, products, branches, settings, accounts, expenses, renewables, leaveRequests, advanceRequests, generalRequests, suppliers }) => {
+const Dashboard: React.FC<DashboardProps> = ({ settings }) => {
+    // Get data from Redux store
+    const sales = useAppSelector(s => selectAll(s, 'sales')) as Sale[];
+    const purchases = useAppSelector(s => selectAll(s, 'purchaseinvoices')) as PurchaseInvoice[];
+    const employees = useAppSelector(s => selectAll(s, 'employees')) as EmployeeData[];
+    const inventory = useAppSelector(s => selectAll(s, 'inventoryitems')) as InventoryItem[];
+    const products = useAppSelector(s => selectAll(s, 'products')) as Product[];
+    const branches = useAppSelector(s => selectAll(s, 'branchinventories')) as Branch[];
+    const accounts = useAppSelector(s => selectAll(s, 'financialaccounts')) as Account[];
+    const expenses = useAppSelector(s => selectAll(s, 'expenses')) as Expense[];
+    const suppliers = useAppSelector(s => selectAll(s, 'suppliers')) as Supplier[];
+    
+    // For now, we'll use mock data for these until they're added to Redux
+    const renewables: RenewableItem[] = [];
+    const leaveRequests: LeaveRequest[] = [];
+    const advanceRequests: AdvanceRequest[] = [];
+    const generalRequests: GeneralRequest[] = [];
     
     const totalSales = sales.reduce((acc, sale) => acc + sale.totalAmount, 0);
     const totalPurchases = purchases.reduce((acc, p) => acc + p.amount, 0);

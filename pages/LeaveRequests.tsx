@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useState } from 'react';
 import { AuthContext } from '../App';
-import { EmployeeData, LeaveRequest, LeaveType, RequestStatus } from '../types';
+import { EmployeeData, LeaveRequest, LeaveType, RequestStatus, Role } from '../types';
 
 interface LeaveRequestsProps {
     employees: EmployeeData[];
@@ -13,7 +13,7 @@ const LeaveRequests: React.FC<LeaveRequestsProps> = ({ employees, leaveRequests,
     const [activeTab, setActiveTab] = useState('myRequests');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const isManager = user?.role === 'Super Admin' || user?.role === 'Financial Manager';
+    const isManager = user?.role === Role.SuperAdmin || user?.role === Role.Accountant;
     
     const calculateLeaveBalance = (employee: EmployeeData) => {
         const hireDate = new Date(employee.hireDate);

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { PlusIcon } from '../components/Icon';
+import { useAppSelector, selectAll } from '../src/store';
 import { Product } from '../types';
 
 interface ProductsPageProps {
-    products: Product[];
     onProductSelect: (product: Product) => void;
     onAddNew: () => void;
 }
 
-const ProductsPage: React.FC<ProductsPageProps> = ({ products, onProductSelect, onAddNew }) => {
+const ProductsPage: React.FC<ProductsPageProps> = ({ onProductSelect, onAddNew }) => {
+    // Get products from Redux store
+    const products = useAppSelector(s => selectAll(s, 'products')) as Product[];
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredProducts = products.filter(p => 
@@ -51,8 +53,10 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ products, onProductSelect, 
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredProducts.map(product => (
-                                <tr key={String((product as any)._id ?? product.id ?? product.sku)} onClick={() => onProductSelect(product)} style={{ cursor: 'pointer' }}>
+                            {filteredProducts.map((product, index) => (
+                                <tr key={String((product as any)._id ?? product.id) || `${product.sku}-${index}`}
+                                    onClick={() => onProductSelect(product)}
+                                    style={{ cursor: 'pointer' }}>
                                     <td>{product.sku}</td>
                                     <td style={{fontWeight: 600}}>{product.name}</td>
                                     <td>{product.category}</td>

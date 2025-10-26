@@ -3,8 +3,7 @@ import { AuthContext } from '../App';
 import { Branch } from '../types';
 import { useToasts } from '../components/Toast';
 import { PencilIcon } from '../components/Icon';
-import { useAppDispatch, useAppSelector } from '../src/store/hooks';
-import { fetchBranches, createBranch, updateBranch, deleteBranch } from '../src/store/slices/branchSlice';
+import { useAppDispatch, useAppSelector, slices } from '../redux-store/src';
 
 interface BranchesProps {
     branches?: Branch[];
@@ -15,14 +14,19 @@ const Branches: React.FC<BranchesProps> = ({ branches, onSave }) => {
     const { user } = useContext(AuthContext);
     const { addToast } = useToasts();
     const dispatch = useAppDispatch();
-    const { branches: reduxItems, loading, error } = useAppSelector(s => s.branches);
+    // Use branchinventories slice to match backend entity name
+    const branchesState = useAppSelector(s => (s as any).branchinventories || {});
+    const reduxItems = ((branchesState.allIds || []) as string[]).map(id => (branchesState.byId || {})[id]).filter(Boolean) as Branch[];
+    const loading = !!branchesState.loading?.list;
+    const error = branchesState.error?.list as string | undefined;
     
     const [newBranch, setNewBranch] = useState<Partial<Branch>>({ name: '', project: '', code: '' });
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<Branch>>({ name: '', project: '', code: '' });
 
     useEffect(() => {
-        dispatch(fetchBranches({ page: 1, limit: 50 }));
+        // Fetch branches using branchinventories slice
+        dispatch(slices.branchinventories.thunks.list({ params: { page: 1, limit: 50 } }));
     }, [dispatch]);
 
     useEffect(() => {
@@ -67,13 +71,13 @@ const Branches: React.FC<BranchesProps> = ({ branches, onSave }) => {
                                             addToast('يرجى إدخال اسم الفرع والمشروع', 'error');
                                             return;
                                         }
-                                        const payload = { name: newBranch.name!, project: newBranch.project!, code: newBranch.code };
-                                        dispatch(createBranch(payload))
+                                        const payload = { name: newBranch.name!, project: newBranch.project!, code: newBranch.code } as any;
+                                        dispatch(slices.branchinventories.thunks.createOne(payload))
                                             .unwrap()
                                             .then(() => {
                                                 addToast('تمت إضافة الفرع', 'success');
                                                 setNewBranch({ name: '', project: '', code: '' });
-                                                dispatch(fetchBranches({ page: 1, limit: 50 }));
+                                                dispatch(slices.branchinventories.thunks.list({ params: { page: 1, limit: 50 } }));
                                             })
                                             .catch(() => addToast('فشل إنشاء الفرع', 'error'));
                                     }}
@@ -126,12 +130,12 @@ const Branches: React.FC<BranchesProps> = ({ branches, onSave }) => {
                                                             const payload = { name: editForm.name, project: editForm.project, code: editForm.code ?? (b as any)?.code } as Partial<Branch>;
                                                             const idForApi = (b as any)?._id ?? (b as any)?.id;
                                                             if (idForApi) {
-                                                                dispatch(updateBranch({ id: String(idForApi), branchData: payload }))
+                                                                dispatch(slices.branchinventories.thunks.updateOne({ id: String(idForApi), body: payload as any }))
                                                                     .unwrap()
                                                                     .then(() => {
                                                                         setEditingId(null);
                                                                         addToast('تم تحديث الفرع', 'success');
-                                                                        dispatch(fetchBranches({ page: 1, limit: 50 }));
+                                                                        dispatch(slices.branchinventories.thunks.list({ params: { page: 1, limit: 50 } }));
                                                                     })
                                                                     .catch(() => addToast('فشل تحديث الفرع', 'error'));
                                                             } else {
@@ -157,11 +161,11 @@ const Branches: React.FC<BranchesProps> = ({ branches, onSave }) => {
                                                             if (!window.confirm('هل أنت متأكد من حذف هذا الفرع؟')) return;
                                                             const idForApi = (b as any)?._id ?? (b as any)?.id;
                                                             if (idForApi) {
-                                                                dispatch(deleteBranch(String(idForApi)))
+                                                                dispatch(slices.branchinventories.thunks.removeOne(String(idForApi)))
                                                                     .unwrap()
                                                                     .then(() => {
                                                                         addToast('تم حذف الفرع', 'success');
-                                                                        dispatch(fetchBranches({ page: 1, limit: 50 }));
+                                                                        dispatch(slices.branchinventories.thunks.list({ params: { page: 1, limit: 50 } }));
                                                                     })
                                                                     .catch(() => addToast('فشل حذف الفرع', 'error'));
                                                             } else {

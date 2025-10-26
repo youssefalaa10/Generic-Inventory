@@ -25,7 +25,7 @@ const InventoryRequisitionModal: React.FC<InventoryRequisitionModalProps> = ({ o
                 id: String(initialRequisition.id ?? ''),
                 date: String(initialRequisition.date ?? new Date().toISOString().split('T')[0]),
                 type: (initialRequisition.type as any) ?? 'Transfer',
-                warehouseId: String((initialRequisition as any).warehouseId ?? (initialRequisition as any).branchId ?? ''),
+                warehouseId: Number((initialRequisition as any).warehouseId ?? (initialRequisition as any).branchId ?? 0),
                 items: (initialRequisition.items || []).map(i => ({ productId: Number((i as any).productId), quantity: Number((i as any).quantity) })),
                 notes: initialRequisition.notes ?? ''
             };
@@ -35,7 +35,7 @@ const InventoryRequisitionModal: React.FC<InventoryRequisitionModalProps> = ({ o
             id: String(Math.floor(Math.random() * 90000) + 10000),
             date: new Date().toISOString().split('T')[0],
             type: 'Transfer',
-            warehouseId: (branches && branches.length > 0) ? String(((branches[0] as any)._id ?? branches[0].id) || '') : '',
+            warehouseId: (branches && branches.length > 0) ? Number(((branches[0] as any)._id ?? branches[0].id) || 0) : 0,
             items: [{ productId: 0, quantity: 1 }],
             notes: '',
         };
@@ -47,7 +47,7 @@ const InventoryRequisitionModal: React.FC<InventoryRequisitionModalProps> = ({ o
             id: String(initialRequisition.id ?? ''),
             date: String(initialRequisition.date ?? new Date().toISOString().split('T')[0]),
             type: (initialRequisition.type as any) ?? 'Transfer',
-            warehouseId: String((initialRequisition as any).warehouseId ?? (initialRequisition as any).branchId ?? ''),
+            warehouseId: Number((initialRequisition as any).warehouseId ?? (initialRequisition as any).branchId ?? 0),
             items: (initialRequisition.items || []).map(i => ({ productId: Number((i as any).productId), quantity: Number((i as any).quantity) })),
             notes: initialRequisition.notes ?? ''
         });
@@ -106,7 +106,7 @@ const InventoryRequisitionModal: React.FC<InventoryRequisitionModalProps> = ({ o
             id: String(requisition.id || ''),
             date: String(requisition.date || new Date().toISOString().split('T')[0]),
             type: (requisition.type as any) || 'Transfer',
-            warehouseId: String(requisition.warehouseId),
+            warehouseId: Number(requisition.warehouseId),
             items,
             notes: requisition.notes || '',
             attachments: requisition.attachments || []

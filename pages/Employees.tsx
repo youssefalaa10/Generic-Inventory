@@ -4,18 +4,22 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import EmployeeModal from '../components/EmployeeModal';
 import { PencilIcon, TrashIcon } from '../components/Icon';
 import { useToasts } from '../components/Toast';
+import { useAppSelector, useAppDispatch, selectAll, slices } from '../src/store';
 import { Branch, EmployeeData } from '../types';
 
 interface EmployeesProps {
-    employees: EmployeeData[];
-    onSave: (employee: EmployeeData) => void;
-    onDelete: (employeeId: number) => void;
-    branches: Branch[];
+    // Props removed - now using Redux
 }
 
-const Employees: React.FC<EmployeesProps> = ({ employees, onSave, onDelete, branches }) => {
+const Employees: React.FC<EmployeesProps> = () => {
     const { user } = useContext(AuthContext);
     const { addToast } = useToasts();
+    const dispatch = useAppDispatch();
+    
+    // Get data from Redux store
+    const employees = useAppSelector(s => selectAll(s, 'employees')) as EmployeeData[];
+    const branches = useAppSelector(s => selectAll(s, 'branchinventories')) as Branch[];
+    
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState<EmployeeData | null>(null);
     const [filterBranch, setFilterBranch] = useState<string>('all');
@@ -27,10 +31,30 @@ const Employees: React.FC<EmployeesProps> = ({ employees, onSave, onDelete, bran
     };
 
     const handleSave = (employee: EmployeeData) => {
-        onSave(employee);
-        setIsModalOpen(false);
-        setSelectedEmployee(null);
-        addToast(`Employee ${employee.id ? 'updated' : 'added'} successfully!`, 'success');
+        const hasId = (employee as any)._id || employee.id;
+        const idForApi = String((employee as any)._id || employee.id || '');
+        const payload: Partial<EmployeeData> = { ...employee };
+        if ((payload as any)._id) delete (payload as any)._id;
+        
+        if (hasId) {
+            dispatch(slices.employees.thunks.updateOne({ id: idForApi, body: payload }))
+                .unwrap()
+                .then(() => {
+                    addToast('تم تحديث بيانات الموظف بنجاح!', 'success');
+                    setIsModalOpen(false);
+                    setSelectedEmployee(null);
+                })
+                .catch(() => addToast('فشل تحديث بيانات الموظف', 'error'));
+        } else {
+            dispatch(slices.employees.thunks.createOne(payload))
+                .unwrap()
+                .then(() => {
+                    addToast('تم إضافة الموظف بنجاح!', 'success');
+                    setIsModalOpen(false);
+                    setSelectedEmployee(null);
+                })
+                .catch(() => addToast('فشل إضافة الموظف', 'error'));
+        }
     };
     
     const handleDeleteClick = (employee: EmployeeData) => {
@@ -39,9 +63,14 @@ const Employees: React.FC<EmployeesProps> = ({ employees, onSave, onDelete, bran
 
     const confirmDelete = () => {
         if (employeeToDelete) {
-            onDelete(employeeToDelete.id);
-            addToast('Employee deleted successfully!', 'success');
-            setEmployeeToDelete(null);
+            const idForApi = String(employeeToDelete.id);
+            dispatch(slices.employees.thunks.removeOne(idForApi))
+                .unwrap()
+                .then(() => {
+                    addToast('تم حذف الموظف بنجاح!', 'success');
+                    setEmployeeToDelete(null);
+                })
+                .catch(() => addToast('فشل حذف الموظف', 'error'));
         }
     };
 

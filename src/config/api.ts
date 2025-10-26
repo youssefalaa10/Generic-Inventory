@@ -1,5 +1,5 @@
 // API Configuration
-export const API_BASE_URL = (import.meta as any)?.env?.VITE_API_URL || 'http://localhost:4100/api';
+export const API_BASE_URL = (import.meta as any)?.env?.VITE_API_URL || 'http://localhost:4000/api';
 
 // API Endpoints
 export const API_ENDPOINTS = {

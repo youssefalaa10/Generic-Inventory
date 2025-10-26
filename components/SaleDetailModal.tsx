@@ -58,7 +58,7 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ sale, onClose, onSave
         if (selectedCustomer) {
             setEditableSale(prev => ({ 
                 ...prev, 
-                customerId: selectedCustomer.id,
+                customerId: Number(selectedCustomer.id),
                 customerName: selectedCustomer.name 
             }));
         }

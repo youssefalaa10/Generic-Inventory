@@ -7,8 +7,8 @@ import PaymentModal from '../components/PaymentModal';
 import QuantityInputModal from '../components/QuantityInputModal';
 import SaleCompleteModal from '../components/SaleCompleteModal';
 import { useToasts } from '../components/Toast';
-import { useAppDispatch, useAppSelector } from '../src/store/hooks';
-import { clearPosLookup, clearPosProducts, posLookupProduct, posSearchProducts } from '../src/store/slices/posProductsSlice';
+import { useAppDispatch, useAppSelector, slices } from '../redux-store/src';
+import { selectAll } from '../src/store/selectors.ts';
 import { Branch, Customer, IntegrationSettings, InventoryItem, PaymentMethod, Product, Sale, SaleItem } from '../types';
 
 
@@ -35,8 +35,10 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
     const { addToast } = useToasts();
     const dispatch = useAppDispatch();
     
-    // Redux state
-    const { items: posProducts, loading: posLoading, error: posError, pagination, lookupResult } = useAppSelector(state => state.posProducts);
+    // Redux state (use centralized products slice when searching)
+    const posProducts = useAppSelector(s => selectAll(s as any, 'products')) as Product[];
+    const posLoading = useAppSelector(s => !!(s as any)?.products?.loading?.list);
+    const posError = useAppSelector(s => (s as any)?.products?.error?.list as string | null);
     
     const [cart, setCart] = useState<SaleItem[]>([]);
     const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -76,12 +78,7 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
                 clearTimeout(timeoutId);
                 timeoutId = setTimeout(() => {
                     if (searchTerm.trim()) {
-                        dispatch(posSearchProducts({ 
-                            q: searchTerm, 
-                            status: 'Active', 
-                            page: 1, 
-                            limit: 20 
-                        }))
+                        dispatch(slices.products.thunks.list({ params: { q: searchTerm, status: 'Active', page: 1, limit: 20 } }))
                         .unwrap()
                         .then((result) => {
                             setUseReduxProducts(true);
@@ -93,7 +90,7 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
                         });
                     } else {
                         setUseReduxProducts(false);
-                        dispatch(clearPosProducts());
+                        // keep existing products list; user is not in search mode
                     }
                 }, 300);
             };
@@ -106,121 +103,56 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
         debouncedSearch(productSearchTerm);
     }, [productSearchTerm, debouncedSearch]);
 
-    // Handle barcode scanner input
+    // Handle barcode scanner input (local search, or ensure products loaded with search)
     const handleBarcodeInput = useCallback((value: string) => {
         // Validation: Check for valid barcode format
         if (!value || value.trim().length < 3) {
             return;
         }
         
-        // Clear any previous lookup result
-        dispatch(clearPosLookup());
-        
-        dispatch(posLookupProduct({ barcode: value.trim() }))
-            .unwrap()
-            .then(({ data }) => {
-                if (data) {
-                    // Convert Redux product to local product format
-                    const localProduct = {
-                        id: parseInt(data._id) || 0, // Convert to number for compatibility
-                        _id: data._id, // Keep string version for Redux compatibility
-                        name: data.name,
-                        sku: data.sku,
-                        category: data.category,
-                        unitPrice: data.unitPrice,
-                        baseUnit: data.baseUnit,
-                        stock: 0 // Will be calculated from inventory
-                    };
-
-                    // Find stock for this product
-                    let stock = 0;
-                    if (user?.branchId) {
-                        // Branch-specific users: only check their branch inventory
-                        const branchInventory = inventory.filter(i => i.branchId === user.branchId);
-                        const inventoryItem = branchInventory.find(i => i.productId === localProduct.id);
-                        stock = inventoryItem ? inventoryItem.quantity : 0;
-                    } else {
-                        // Non-branch users: sum inventory across all branches
-                        const inventoryItems = inventory.filter(i => i.productId === localProduct.id);
-                        stock = inventoryItems.reduce((total, item) => total + item.quantity, 0);
-                    }
-                    
-                    if (stock <= 0) {
-                        addToast('هذا المنتج غير متوفر في المخزون', 'error');
-                        return;
-                    }
-
-                    const productWithStock = { ...localProduct, stock };
-                    handleProductClick(productWithStock);
-                    setBarcodeInput('');
-                } else {
-                    // Try local search as fallback
-                    const localProduct = products.find(p => 
-                        p.sku === value.trim() || 
-                        p.name.toLowerCase().includes(value.trim().toLowerCase())
-                    );
-                    
-                    if (localProduct) {
-                        addToast('تم العثور على المنتج محلياً', 'info');
-                        // Find stock for local product
-                        let stock = 0;
-                        if (user?.branchId) {
-                            const branchInventory = inventory.filter(i => i.branchId === user.branchId);
-                            const inventoryItem = branchInventory.find(i => i.productId === localProduct.id);
-                            stock = inventoryItem ? inventoryItem.quantity : 0;
-                        } else {
-                            // Non-branch users: sum inventory across all branches
-                            const inventoryItems = inventory.filter(i => i.productId === localProduct.id);
-                            stock = inventoryItems.reduce((total, item) => total + item.quantity, 0);
-                        }
-                        
-                        if (stock <= 0) {
-                            addToast('هذا المنتج غير متوفر في المخزون', 'error');
-                            return;
-                        }
-
-                        const productWithStock = { ...localProduct, stock };
-                        handleProductClick(productWithStock);
-                        setBarcodeInput('');
-                    } else {
-                        addToast('المنتج غير موجود', 'error');
-                    }
-                }
-            })
-            .catch((error) => {
-                console.error('Barcode lookup error:', error);
-                // Try local search as fallback
-                const localProduct = products.find(p => 
-                    p.sku === value.trim() || 
-                    p.name.toLowerCase().includes(value.trim().toLowerCase())
-                );
-                
-                if (localProduct) {
-                    addToast('تم العثور على المنتج محلياً', 'info');
-                    // Find stock for local product
-                    let stock = 0;
-                    if (user?.branchId) {
-                        const branchInventory = inventory.filter(i => i.branchId === user.branchId);
-                        const inventoryItem = branchInventory.find(i => i.productId === localProduct.id);
-                        stock = inventoryItem ? inventoryItem.quantity : 0;
-                    } else {
-                        // Non-branch users: sum inventory across all branches
-                        const inventoryItems = inventory.filter(i => i.productId === localProduct.id);
-                        stock = inventoryItems.reduce((total, item) => total + item.quantity, 0);
-                    }
-                    
-                    if (stock <= 0) {
-                        addToast('هذا المنتج غير متوفر في المخزون', 'error');
-                        return;
-                    }
-
-                    const productWithStock = { ...localProduct, stock };
-                    handleProductClick(productWithStock);
-                    setBarcodeInput('');
-                } else {
-                    addToast('المنتج غير موجود', 'error');
-                }
-            });
+        // Try local search first (props products)
+        const trimmed = value.trim();
+        const localProduct = products.find(p => p.sku === trimmed || p.name.toLowerCase().includes(trimmed.toLowerCase()));
+        if (localProduct) {
+            addToast('تم العثور على المنتج محلياً', 'info');
+            let stock = 0;
+            if (user?.branchId) {
+                const branchInventory = inventory.filter(i => i.branchId === user.branchId);
+                const inventoryItem = branchInventory.find(i => i.productId === localProduct.id);
+                stock = inventoryItem ? inventoryItem.quantity : 0;
+            } else {
+                const inventoryItems = inventory.filter(i => i.productId === localProduct.id);
+                stock = inventoryItems.reduce((total, item) => total + item.quantity, 0);
+            }
+            if (stock <= 0) { addToast('هذا المنتج غير متوفر في المخزون', 'error'); return; }
+            const productWithStock = { ...localProduct, stock } as any;
+            handleProductClick(productWithStock);
+            setBarcodeInput('');
+            return;
+        }
+        // If not found, trigger a redux-store search to load candidates
+        dispatch(slices.products.thunks.list({ params: { q: trimmed, page: 1, limit: 20 } }))
+          .unwrap()
+          .then(() => {
+            const candidate = (selectAll({ products: ( (window as any).__APP_STORE__?.getState?.()?.products ) } as any, 'products') || posProducts).find(p => p.sku === trimmed || (p as any).name?.toLowerCase?.().includes(trimmed.toLowerCase()));
+            if (!candidate) { addToast('المنتج غير موجود', 'error'); return; }
+            // Compute stock similarly to above
+            let stock = 0;
+            const id = (candidate as any)._id || (candidate as any).id;
+            if (user?.branchId) {
+              const branchInventory = inventory.filter(i => i.branchId === user.branchId);
+              const inventoryItem = branchInventory.find(i => i.productId === id);
+              stock = inventoryItem ? inventoryItem.quantity : 0;
+            } else {
+              const inventoryItems = inventory.filter(i => i.productId === id);
+              stock = inventoryItems.reduce((total, item) => total + item.quantity, 0);
+            }
+            if (stock <= 0) { addToast('هذا المنتج غير متوفر في المخزون', 'error'); return; }
+            const productWithStock = { ...(candidate as any), stock };
+            handleProductClick(productWithStock as any);
+            setBarcodeInput('');
+          })
+          .catch(() => addToast('المنتج غير موجود', 'error'));
     }, [dispatch, addToast, inventory, user, products]);
 
     // Handle product lookup result
@@ -265,9 +197,9 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
     }, [barcodeInput, handleBarcodeInput]);
 
     const availableProducts = useMemo(() => {
-        // Use Redux products if search is active, otherwise use local products
-        const sourceProducts = useReduxProducts ? posProducts : products;
-        
+        // Always use Products Management data to keep POS in sync
+        const sourceProducts = products;
+
         return sourceProducts.map(product => {
             let stock = 0;
             const productId = (product as any)._id || product.id;
@@ -335,30 +267,18 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
 
     // Pagination handlers
     const handleLoadMore = useCallback(() => {
-        if (pagination?.hasNextPage && productSearchTerm.trim()) {
-            dispatch(posSearchProducts({ 
-                q: productSearchTerm, 
-                status: 'Active', 
-                page: pagination.currentPage + 1, 
-                limit: pagination.itemsPerPage 
-            }))
-            .unwrap()
-            .then(() => {
-                // Products are automatically added to the Redux state
-            })
-            .catch((error) => {
-                console.error('Load more products error:', error);
-                addToast('خطأ في تحميل المزيد من المنتجات', 'error');
-            });
+        // Optional: implement pagination by tracking page state locally and calling thunks.list with next page
+        if (productSearchTerm.trim()) {
+          // Example next-page call could go here
         }
-    }, [dispatch, pagination, productSearchTerm, addToast]);
+    }, [productSearchTerm]);
 
     // Clear search when category changes
     useEffect(() => {
         if (selectedCategory !== 'all' && useReduxProducts) {
             setUseReduxProducts(false);
             setProductSearchTerm('');
-            dispatch(clearPosProducts());
+            // no-op for centralized products slice
         }
     }, [selectedCategory, useReduxProducts, dispatch]);
 
@@ -489,9 +409,10 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
     };
     
     const handleFinalizeSale = (paymentMethod: PaymentMethod) => {
-        // Validation: Check if user has branch access
-        if (!user?.branchId) {
-            addToast('خطأ في بيانات المستخدم', 'error');
+        // Determine effective branch: use user's branch if available, else fallback to first branch
+        const effectiveBranchId = user?.branchId ?? branches[0]?.id;
+        if (!effectiveBranchId) {
+            addToast('يرجى تحديد فرع صالح قبل إتمام الدفع', 'error');
             return;
         }
 
@@ -514,13 +435,13 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
             return;
         }
 
-        const brand: 'Arabiva' | 'Generic' = [1, 2, 3].includes(user.branchId) ? 'Arabiva' : 'Generic';
+        const brand: 'Arabiva' | 'Generic' = [1, 2, 3].includes(effectiveBranchId as number) ? 'Arabiva' : 'Generic';
 
         const newSale: Omit<Sale, 'id' | 'invoiceNumber'> = {
             brand,
-            branchId: user.branchId,
+            branchId: effectiveBranchId as number,
             customerName: selectedCustomer?.name || 'زبون نقدي عام',
-            customerId: selectedCustomer?.id || 4, 
+            customerId: (typeof selectedCustomer?.id === 'number' && Number.isFinite(selectedCustomer?.id as number)) ? (selectedCustomer?.id as number) : 4,
             date: new Date().toISOString().split('T')[0],
             paymentMethod: paymentMethod,
             paymentStatus: 'Paid',
@@ -574,7 +495,7 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
                 id: Date.now(),
                 timestamp: new Date(),
                 items: cart,
-                customerId: selectedCustomer?.id,
+                customerId: (typeof selectedCustomer?.id === 'number' && Number.isFinite(selectedCustomer?.id as number)) ? (selectedCustomer?.id as number) : undefined,
                 customerName: selectedCustomer?.name || 'زبون نقدي عام'
             };
             setParkedSales(prev => [...prev, newParkedSale]);
@@ -643,7 +564,7 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
         }
     };
 
-    const handleSaveNewCustomer = (customer: Customer) => {
+    const handleSaveNewCustomer = async (customer: Customer) => {
         // Validation: Check if customer has required fields
         if (!customer.name || customer.name.trim().length === 0) {
             addToast('اسم العميل مطلوب', 'error');
@@ -1112,31 +1033,7 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
                             ))}
                         </div>
                         
-                        {/* Pagination Controls */}
-                        {pagination && useReduxProducts && (
-                            <div style={{ 
-                                display: 'flex', 
-                                justifyContent: 'center', 
-                                alignItems: 'center', 
-                                gap: '1rem', 
-                                marginTop: '1rem',
-                                padding: '1rem',
-                                borderTop: '1px solid var(--surface-border)'
-                            }}>
-                                <span style={{ color: 'var(--text-secondary)' }}>
-                                    صفحة {pagination.currentPage} من {pagination.totalPages}
-                                </span>
-                                {pagination.hasNextPage && (
-                                    <button 
-                                        onClick={handleLoadMore}
-                                        className="btn btn-ghost"
-                                        disabled={posLoading}
-                                    >
-                                        {posLoading ? 'جاري التحميل...' : 'تحميل المزيد'}
-                                    </button>
-                                )}
-                            </div>
-                        )}
+                        {/* Pagination Controls removed - implement later if backend supports paginated search */}
                     </div>
 
                     {/* Cart Section */}
@@ -1315,13 +1212,24 @@ const MyFatoorahQRModal: React.FC<MyFatoorahQRModalProps> = ({ totalAmount, onCl
     const qrCanvasRef = React.useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        if (qrCanvasRef.current) {
-            const qrData = `https://www.myfatoorah.com/pg/invoice?id=${Date.now()}&amount=${totalAmount}`;
-            // FIX: QRCode is loaded from a CDN and exists on the window object.
-            (window as any).QRCode.toCanvas(qrCanvasRef.current, qrData, { width: 256, margin: 2 }, (error: any) => {
-                if (error) console.error(error);
-            });
-        }
+        const renderQR = async () => {
+            if (!qrCanvasRef.current) return;
+            try {
+                const lib: any = await import('qrcode');
+                const toCanvas = lib?.toCanvas || lib?.default?.toCanvas;
+                if (typeof toCanvas === 'function') {
+                    const qrData = `https://www.myfatoorah.com/pg/invoice?id=${Date.now()}&amount=${totalAmount}`;
+                    toCanvas(qrCanvasRef.current, qrData, { width: 256, margin: 2 }, (error: any) => {
+                        if (error) console.error(error);
+                    });
+                } else {
+                    console.error('QRCode library not available.');
+                }
+            } catch (e) {
+                console.error('Failed to load QRCode library:', e);
+            }
+        };
+        renderQR();
     }, [totalAmount]);
 
     return (

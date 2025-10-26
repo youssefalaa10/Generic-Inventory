@@ -162,11 +162,15 @@ const DrawerNavGroup: React.FC<{
 }> = ({ item, activeView, setActiveView, userPermissions, notificationCount, onNavigate }) => {
     const [isOpen, setIsOpen] = useState(activeView.startsWith(item.view));
     
-    if (item.permission && !userPermissions.includes(item.permission)) {
+    // Check if user has permission - SuperAdmin with "all" permission can see everything
+    const hasPermission = !item.permission || userPermissions.includes(item.permission) || userPermissions.includes('all');
+    if (!hasPermission) {
         return null;
     }
 
-    const filteredChildren = item.children?.filter(child => !child.permission || userPermissions.includes(child.permission));
+    const filteredChildren = item.children?.filter(child => 
+        !child.permission || userPermissions.includes(child.permission) || userPermissions.includes('all')
+    );
     const isParentActive = activeView.startsWith(item.view);
     const hasChildren = filteredChildren && filteredChildren.length > 0;
 

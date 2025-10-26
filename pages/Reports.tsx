@@ -111,7 +111,7 @@ const BrandPerformanceReport: React.FC<{sales: Sale[], filters: any}> = ({ sales
             <div className="glass-pane reports-chart-container" style={{ padding: '1.5rem', height: '400px' }}>
                  <h3 className="reports-chart-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>مقارنة المبيعات بين العلامات التجارية</h3>
                  <div className="reports-chart-wrapper">
-                     <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                     <ResponsiveContainer width="100%" height="90%">
                         <BarChart data={brandData.chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
                             <XAxis dataKey="name" stroke="var(--text-secondary)" />
@@ -183,7 +183,7 @@ const SalesReport: React.FC<{sales: Sale[], branches: Branch[], filters: any}> =
             {filters.branch === 'all' && salesByBranch.length > 1 && (
                 <div className="glass-pane" style={{ padding: '1.5rem', height: '400px' }}>
                      <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>المبيعات حسب الفرع</h3>
-                     <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                     <ResponsiveContainer width="100%" height="90%">
                         <BarChart data={salesByBranch}>
                             <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
                             <XAxis dataKey="name" stroke="var(--text-secondary)" />
@@ -288,7 +288,7 @@ const BranchSalesReport: React.FC<{sales: Sale[], branches: Branch[], products: 
         <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
             <div className="glass-pane" style={{ padding: '1.5rem', height: '400px' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>إجمالي المبيعات حسب الفرع</h3>
-                <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                <ResponsiveContainer width="100%" height="90%">
                     <BarChart data={branchSalesData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
                         <XAxis dataKey="branchName" stroke="var(--text-secondary)" />
@@ -452,7 +452,7 @@ const ExpensesReport: React.FC<{expenses: Expense[], branches: Branch[], filters
             <StatCard title="إجمالي المصروفات للفترة المحددة" value={formatCurrency(totalExpenses)} icon={ChartBarIcon} iconBg="linear-gradient(135deg, #ef4444, #f87171)" />
              <div className="glass-pane" style={{ padding: '1.5rem', height: '400px' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>المصروفات حسب الفئة</h3>
-                <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                <ResponsiveContainer width="100%" height="90%">
                     <PieChart>
                         <Pie data={expensesByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label>
                             {expensesByCategory.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
@@ -573,7 +573,7 @@ const SummaryReport: React.FC<Omit<ReportsProps, 'activeReport' | 'expenses' | '
             <div className="glass-pane reports-chart-container" style={{ padding: '1.5rem', height: '400px' }}>
                 <h3 className="reports-chart-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>الأداء الشهري</h3>
                 <div className="reports-chart-wrapper">
-                    <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                    <ResponsiveContainer width="100%" height="90%">
                         <LineChart data={monthlyPerformance} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
                             <XAxis dataKey="month" stroke="var(--text-secondary)" />
@@ -669,7 +669,7 @@ const ForecastReport: React.FC<{sales: Sale[]}> = ({ sales }) => {
                     <div className="glass-pane reports-forecast-chart-container" style={{ padding: '1.5rem', height: '400px' }}>
                         <h3 className="reports-forecast-chart-title" style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>مخطط المبيعات التاريخية والمتوقعة</h3>
                         <div className="reports-forecast-chart-wrapper">
-                            <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+                            <ResponsiveContainer width="100%" height="90%">
                                 <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
                                     <XAxis dataKey="month" stroke="var(--text-secondary)" />

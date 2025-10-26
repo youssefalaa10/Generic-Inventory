@@ -1,15 +1,16 @@
 
 export enum Role {
-  SuperAdmin = 'Super Admin',
+  SuperAdmin = 'SuperAdmin',
   Perfumer = 'Perfumer',
   Accountant = 'Accountant',
-  BranchManager = 'Branch Manager',
-  ShopAssistant = 'Shop Assistant',
-  EcommerceManager = 'E-commerce Manager',
+  BranchManager = 'BranchManager',
+  ShopAssistant = 'ShopAssistant',
+  EcommerceManager = 'EcommerceManager',
   Employee = 'Employee',
 }
 
 export type Permission = 
+  | 'all'
   | 'purchases:create' | 'purchases:read' | 'purchases:update' | 'purchases:delete'
   | 'sales:create' | 'sales:read' | 'sales:update' | 'sales:delete'
   | 'products:create' | 'products:read' | 'products:update' | 'products:delete'
@@ -23,7 +24,8 @@ export type Permission =
   | 'manufacturing:create' | 'manufacturing:read' | 'manufacturing:tasks:manage'
   | 'integrations:manage'
   | 'advances:request' | 'advances:manage'
-  | 'general_requests:request' | 'general_requests:manage';
+  | 'general_requests:request' | 'general_requests:manage'
+  | 'supplychain:read' | 'supplychain:write';
 
 export interface User {
   id: number;
@@ -39,10 +41,10 @@ export interface Project {
 }
 
 export interface Branch {
-  id: string;
+  id: number;
   projectId: number;
   name: string;
-  project: string;
+  project?: string;
   code?: string;
   address?: {
     street?: string;
@@ -99,6 +101,7 @@ export interface PurchaseInvoiceItem {
 
 export interface Supplier {
     id: number;
+    code?: string;
     name: string;
     contactPerson: string;
     email: string;
@@ -296,6 +299,7 @@ export interface Sale {
   items: SaleItem[];
   sessionId?: number;
   quotationId?: number;
+  source?: 'In-Store' | 'Website' | string;
 }
 
 export interface SalesQuotationItem {
@@ -442,9 +446,11 @@ export interface Product {
   baseUnit: 'pcs' | 'g' | 'ml';
   productLine?: string;
   fragranceNotes?: { top: string; middle: string; base: string; };
-  components?: { productId: number; quantity: number }[];
+  components?: { productId: number; quantity: number; note?: string }[];
+  variants?: { name: string; type: 'single' | 'multi'; options: string[] }[];
   barcode?: string;
   density?: number; // g/ml
+  supplierId?: number;
   
   // New detailed fields
   description?: string;
@@ -519,7 +525,7 @@ export interface InventoryRequisition {
     id: string;
     date: string;
     type: 'Purchase' | 'Transfer';
-    warehouseId: string;
+    warehouseId: number;
     items: InventoryRequisitionItem[];
     notes?: string;
     attachments?: any[];
@@ -922,6 +928,16 @@ export interface IntegrationSettings {
     myFatoorah: PaymentGatewaySettings;
     whatsapp: WhatsAppSettings;
     n8n: N8nSettings;
+    ai?: { isEnabled: boolean; provider: string };
+}
+
+// WhatsApp logs
+export interface WhatsappLog {
+  id: number;
+  customerId: number;
+  date: string;
+  message: string;
+  status: 'Sent' | 'Delivered' | 'Read';
 }
 
 export interface PurchaseApprovalTier {

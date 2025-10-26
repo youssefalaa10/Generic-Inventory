@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { InvItem } from '../src/store/slices/inventorySlice';
+
+interface InvItem {
+  id?: string | number;
+  name: string;
+  unit: string;
+  type?: string;
+  currentStock?: number;
+  minimumStock?: number;
+  costPerUnit?: number;
+  location?: string;
+  barcode?: string;
+  sku?: string;
+  category?: string;
+  supplier?: string;
+  description?: string;
+}
 
 interface Props {
   isOpen: boolean;

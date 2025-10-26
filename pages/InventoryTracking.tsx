@@ -2,20 +2,31 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { AuthContext } from '../App';
 import { AdjustmentsIcon, BarcodeIcon, PrinterIcon, SwitchHorizontalIcon } from '../components/Icon';
 import { useToasts } from '../components/Toast';
-import { useAppDispatch, useAppSelector } from '../src/store/hooks';
-import { fetchInventory, updateInventoryItem, deleteInventoryItem, createInventoryItem, InvItem } from '../src/store/slices/inventorySlice';
+import { useAppDispatch, useAppSelector, slices, selectAll } from '../src/store';
+type InvItem = {
+    id: string;
+    name: string;
+    unit: string;
+    category?: string;
+    location?: string;
+    sku?: string;
+    costPerUnit?: number;
+    currentStock?: number;
+    minimumStock?: number;
+    description?: string;
+};
 import { InventoryMovement } from '../types';
-import { fetchMovements } from '../src/store/slices/movementsSlice';
-import { fetchBranches } from '../src/store/slices/branchSlice';
+
 
 
 const Inventory: React.FC = () => {
     const { user } = useContext(AuthContext);
     const { addToast } = useToasts();
     const dispatch = useAppDispatch();
-    const { items, loading, error } = useAppSelector(s => s.inventory);
-    const branchState = useAppSelector(s => s.branches);
-    const branchOptions = (branchState.branches || []).map((b: any) => b.name).filter(Boolean);
+    const invState = useAppSelector(s => (s as any).inventoryitems || {});
+    const items = ((invState.allIds || []) as string[]).map(id => (invState.byId || {})[id]).filter(Boolean) as InvItem[];
+    const branchState = useAppSelector(s => (s as any).branchinventories || {});
+    const branchOptions = (((branchState.allIds || []) as string[]).map(id => (branchState.byId || {})[id]).filter(Boolean) as any[]).map((b: any) => b.name).filter(Boolean);
     const [filterBranch, setFilterBranch] = useState<string>('all');
     const [filterCategory, setFilterCategory] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<'all' | 'low' | 'movements'>('all');
@@ -41,20 +52,25 @@ const Inventory: React.FC = () => {
         location: '',
         sku: ''
     });
-    const movementsState = useAppSelector(s => s.movements);
+    const movementsState = useAppSelector(s => (s as any).stockmovements || { items: [] });
+
+    // Use Redux-backed lists instead of mock fallbacks
+    const sales = useAppSelector(s => selectAll(s as any, 'sales')) as any[];
+    const purchaseInvoices = useAppSelector(s => selectAll(s as any, 'purchaseinvoices')) as any[];
+    const branches = useAppSelector(s => selectAll(s as any, 'branchinventories')) as any[];
 
     useEffect(() => {
-        dispatch(fetchInventory({ page: 1, limit: 50 }));
+        dispatch(slices.inventoryitems.thunks.list({ params: { page: 1, limit: 50 } }));
     }, [dispatch]);
 
     useEffect(() => {
         if (activeTab === 'movements') {
-            dispatch(fetchMovements({ page: 1, limit: 50 }));
+            dispatch(slices.stockmovements.thunks.list({ params: { page: 1, limit: 50 } }));
         }
     }, [activeTab, dispatch]);
 
     useEffect(() => {
-        dispatch(fetchBranches({ page: 1, limit: 100 }));
+        dispatch(slices.branchinventories.thunks.list({ params: { page: 1, limit: 100 } }));
     }, [dispatch]);
     
     const hasPermission = (permission: 'update' | 'transfer' | 'adjust') => {
@@ -63,7 +79,7 @@ const Inventory: React.FC = () => {
     };
 
     const handleMinStockChange = (item: InvItem, newMinStock: number) => {
-        dispatch(updateInventoryItem({ id: item.id, data: { minimumStock: newMinStock } }))
+        dispatch(slices.inventoryitems.thunks.updateOne({ id: String(item.id), body: { minimumStock: newMinStock } }))
             .unwrap()
             .then(() => addToast('Minimum stock updated!', 'success'))
             .catch(() => addToast('Failed to update minimum stock', 'error'));
@@ -87,7 +103,7 @@ const Inventory: React.FC = () => {
         });
     };
 
-    const inventoryWithProductInfo = items;
+    const inventoryWithProductInfo = items as InvItem[];
 
     const filteredInventory = useMemo(() => {
         return inventoryWithProductInfo.filter(item => {
@@ -115,6 +131,47 @@ const Inventory: React.FC = () => {
         const data = movementsState.items || [];
         return data.slice().sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }, [movementsState.items]);
+
+    // Fallback derived movements from mock data when backend list is empty
+    const derivedMovements = useMemo(() => {
+        if ((filteredMovements || []).length > 0) return [] as any[];
+        const rows: any[] = [];
+        try {
+            // Sales -> out
+            (sales || []).forEach((sale: any) => {
+                sale.items.forEach((it: any) => {
+                    const branchName = (branches || []).find(b => b.id === sale.branchId)?.name || '';
+                    const createdAt = new Date(`${sale.date}T03:00:00.000Z`).toISOString();
+                    rows.push({
+                        _id: `sale-${sale.id}-${it.id}`,
+                        item_name: it.productName,
+                        movement_type: 'out',
+                        quantity: it.quantity,
+                        reference_type: 'manual',
+                        notes: `${branchName} · فاتورة #${sale.invoiceNumber} · ${sale.customerName}`,
+                        created_at: createdAt,
+                    });
+                });
+            });
+            // Purchases -> in
+            (purchaseInvoices || []).forEach((pi: any) => {
+                (pi.items || []).forEach((it: any) => {
+                    const branchName = (branches || []).find(b => b.id === pi.branchId)?.name || '';
+                    const createdAt = new Date(`${pi.date}T02:00:00.000Z`).toISOString();
+                    rows.push({
+                        _id: `purchase-${pi.id}-${it.id}`,
+                        item_name: it.productName,
+                        movement_type: 'in',
+                        quantity: it.quantity,
+                        reference_type: 'purchase_order',
+                        notes: `${branchName} · فاتورة شراء #${pi.id} · System` ,
+                        created_at: createdAt,
+                    });
+                });
+            });
+        } catch {}
+        return rows.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }, [filteredMovements]);
     
     const productCategories = useMemo(() => [...new Set(items.map(p => p.category).filter(Boolean))] as string[], [items]);
 
@@ -234,10 +291,10 @@ const Inventory: React.FC = () => {
                                             <button onClick={() => { setEditItem(item); setIsEditOpen(true); }} className="btn btn-ghost" style={{marginInlineStart: '0.5rem'}}>
                                                 تعديل
                                             </button>
-                                            <button onClick={() => { setMovementForm({ inventory_item_id: item.id, movement_type: 'in', quantity: 0, reference_type: 'manual', notes: '' }); setIsMovementOpen(true); }} className="btn btn-warning" style={{marginInlineStart: '0.5rem'}}>
+                                            <button onClick={() => { setMovementForm({ inventory_item_id: String(item.id), movement_type: 'in', quantity: 0, reference_type: 'manual', notes: '' }); setIsMovementOpen(true); }} className="btn btn-warning" style={{marginInlineStart: '0.5rem'}}>
                                                 تسجيل حركة
                                             </button>
-                                            <button onClick={() => dispatch(deleteInventoryItem(item.id)).then(() => addToast('Deleted', 'success')).catch(() => addToast('Delete failed', 'error'))} className="btn btn-ghost" style={{marginInlineStart: '0.5rem'}}>
+                                            <button onClick={() => dispatch(slices.inventoryitems.thunks.removeOne(String(item.id))).then(() => addToast('Deleted', 'success')).catch(() => addToast('Delete failed', 'error'))} className="btn btn-ghost" style={{marginInlineStart: '0.5rem'}}>
                                                 حذف
                                             </button>
                                         </td>
@@ -247,7 +304,7 @@ const Inventory: React.FC = () => {
                         </tbody>
                     </table>
                     ) : (
-                        filteredMovements.length > 0 ? (
+                        (filteredMovements.length > 0 || derivedMovements.length > 0) ? (
                             <table className="inventory-table">
                                 <thead>
                                     <tr>
@@ -260,7 +317,7 @@ const Inventory: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredMovements.map((m: any) => {
+                                    {(filteredMovements.length > 0 ? filteredMovements : derivedMovements).map((m: any) => {
                                         const itemName = m.item_name || m.inventory_item_id?.name || '-';
                                         const typeLabel = m.movement_type === 'in' ? 'إضافة' : m.movement_type === 'out' ? 'إزالة' : 'تعديل';
                                         const signedQty = m.movement_type === 'out' ? -Math.abs(m.quantity) : Math.abs(m.quantity);
@@ -372,13 +429,13 @@ const Inventory: React.FC = () => {
                                         addToast('الاسم والوحدة مطلوبة', 'error');
                                         return;
                                     }
-                                    dispatch(createInventoryItem(newItem))
+                                    dispatch(slices.inventoryitems.thunks.createOne(newItem))
                                         .unwrap()
                                         .then(() => {
                                             addToast('تمت إضافة الصنف', 'success');
                                             setIsCreateOpen(false);
                                             setNewItem({ name: '', unit: 'pcs', category: '', costPerUnit: 0, currentStock: 0, minimumStock: 0, location: '', sku: '', description: '' });
-                                            dispatch(fetchInventory({ page: 1, limit: 50 }));
+                                            dispatch(slices.inventoryitems.thunks.list({ params: { page: 1, limit: 50 } }));
                                         })
                                         .catch(() => addToast('فشل إضافة الصنف', 'error'));
                                 }}
@@ -442,9 +499,9 @@ const Inventory: React.FC = () => {
                                         return;
                                     }
                                     const { id, ...data } = editItem as any;
-                                    dispatch(updateInventoryItem({ id: editItem.id, data }))
+                                    dispatch(slices.inventoryitems.thunks.updateOne({ id: String(editItem.id), body: data }))
                                         .unwrap()
-                                        .then(() => { addToast('تم التحديث', 'success'); setIsEditOpen(false); dispatch(fetchInventory({ page: 1, limit: 50 })); })
+                                        .then(() => { addToast('تم التحديث', 'success'); setIsEditOpen(false); dispatch(slices.inventoryitems.thunks.list({ params: { page: 1, limit: 50 } })); })
                                         .catch(() => addToast('فشل التحديث', 'error'));
                                 }}
                             >حفظ</button>
@@ -496,12 +553,17 @@ const Inventory: React.FC = () => {
                                         addToast('يرجى إدخال كمية صحيحة', 'error');
                                         return;
                                     }
-                                    import('../src/store/slices/movementsSlice').then(({ createMovement }) => {
-                                        dispatch(createMovement(movementForm as any) as any)
-                                          .unwrap()
-                                          .then(() => { addToast('تم تسجيل الحركة', 'success'); setIsMovementOpen(false); dispatch(fetchInventory({ page: 1, limit: 50 })); if (activeTab === 'movements') dispatch(fetchMovements({ page: 1, limit: 50 })); })
-                                          .catch(() => addToast('فشل تسجيل الحركة', 'error'));
-                                    });
+                                    dispatch(slices.stockmovements.thunks.createOne(movementForm as any))
+                                      .unwrap()
+                                      .then(() => {
+                                        addToast('تم تسجيل الحركة', 'success');
+                                        setIsMovementOpen(false);
+                                        dispatch(slices.inventoryitems.thunks.list({ params: { page: 1, limit: 50 } }));
+                                        if (activeTab === 'movements') {
+                                          dispatch(slices.stockmovements.thunks.list({ params: { page: 1, limit: 50 } }));
+                                        }
+                                      })
+                                      .catch(() => addToast('فشل تسجيل الحركة', 'error'));
                                 }}
                             >حفظ</button>
                         </div>

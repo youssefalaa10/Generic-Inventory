@@ -2,24 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { PlusIcon } from '../components/Icon';
 import InventoryRequisitionModal from '../components/InventoryRequisitionModal';
 import { InventoryRequisition } from '../types';
-import { useAppDispatch, useAppSelector } from '../src/store/hooks';
-import { fetchRequisitions, createRequisition, updateRequisition, deleteRequisition } from '../src/store/slices/requisitionsSlice';
-import { fetchBranches } from '../src/store/slices/branchSlice';
-import { fetchProducts } from '../src/store/slices/productsSlice';
+import { useAppDispatch, useAppSelector, slices } from '../redux-store/src';
 
 const InventoryRequisitions: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { items: requisitions } = useAppSelector(s => s.requisitions);
-    const branches = useAppSelector(s => s.branches.branches);
-    const products = useAppSelector(s => s.products.items);
+    const reqState = useAppSelector(s => (s as any).inventoryrequisitions || {});
+    const requisitions = ((reqState.allIds || []) as string[]).map(id => (reqState.byId || {})[id]).filter(Boolean) as InventoryRequisition[];
+    const branchesState = useAppSelector(s => (s as any).branchinventories || {});
+    const branches = ((branchesState.allIds || []) as string[]).map(id => (branchesState.byId || {})[id]).filter(Boolean) as any[];
+    const productsState = useAppSelector(s => (s as any).products || {});
+    const products = ((productsState.allIds || []) as string[]).map(id => (productsState.byId || {})[id]).filter(Boolean) as any[];
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'view' | 'edit'>('create');
     const [selectedReq, setSelectedReq] = useState<InventoryRequisition | null>(null);
 
     useEffect(() => {
-        dispatch(fetchRequisitions());
-        if (!branches?.length) dispatch(fetchBranches({ page: 1, limit: 100 }));
-        if (!products?.length) dispatch(fetchProducts());
+        dispatch(slices.inventoryrequisitions.thunks.list(undefined));
+        if (!branches?.length) dispatch(slices.branchinventories.thunks.list({ params: { page: 1, limit: 100 } }));
+        if (!products?.length) dispatch(slices.products.thunks.list(undefined));
     }, [dispatch]);
 
     const handleSave = (req: InventoryRequisition) => {
@@ -33,9 +33,9 @@ const InventoryRequisitions: React.FC = () => {
             branchName: selectedBranchName,
             notes: req.notes || ''
         } as any;
-        dispatch(createRequisition(payload)).finally(() => {
+        dispatch(slices.inventoryrequisitions.thunks.createOne(payload as any)).finally(() => {
             setIsModalOpen(false);
-            dispatch(fetchRequisitions());
+            dispatch(slices.inventoryrequisitions.thunks.list(undefined));
         });
     };
 
@@ -52,11 +52,11 @@ const InventoryRequisitions: React.FC = () => {
         } as any;
         const id = String(original?._id || original?.id);
         if (!id) return;
-        dispatch(updateRequisition({ id, data: payload })).finally(() => {
+        dispatch(slices.inventoryrequisitions.thunks.updateOne({ id, body: payload as any })).finally(() => {
             setIsModalOpen(false);
             setSelectedReq(null);
             setModalMode('create');
-            dispatch(fetchRequisitions());
+            dispatch(slices.inventoryrequisitions.thunks.list(undefined));
         });
     };
 
@@ -64,8 +64,8 @@ const InventoryRequisitions: React.FC = () => {
         const id = String(req?._id || req?.id);
         if (!id) return;
         if (!window.confirm('هل أنت متأكد من حذف هذه الطلبية؟')) return;
-        dispatch(deleteRequisition(id)).finally(() => {
-            dispatch(fetchRequisitions());
+        dispatch(slices.inventoryrequisitions.thunks.removeOne(id)).finally(() => {
+            dispatch(slices.inventoryrequisitions.thunks.list(undefined));
         });
     };
 

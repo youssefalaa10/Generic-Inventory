@@ -1,12 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { AuthContext } from '../App';
 import CustomerModal from '../components/CustomerModal';
 import { ChatIcon, PencilIcon } from '../components/Icon';
 import { useToasts } from '../components/Toast';
-import { PROJECTS } from '../services/mockData';
-import { AppDispatch, RootState } from '../src/store';
-import { createCustomer, deleteCustomer, fetchCustomers, setParams, updateCustomer } from '../src/store/slices/customersSlice';
+import { useAppDispatch, useAppSelector, selectAll, slices } from '../src/store';
 import { Branch, Customer, WhatsAppSettings } from '../types';
 
 interface CustomersProps {
@@ -15,10 +12,17 @@ interface CustomersProps {
 }
 
 const Customers: React.FC<CustomersProps> = ({ whatsappSettings, branches }) => {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const { addToast } = useToasts();
     const { user } = useContext(AuthContext);
-    const { items: customers, loading, error, pagination, params } = useSelector((state: RootState) => state.customers);
+    
+    // Get data from Redux store
+    const customers = useAppSelector(s => selectAll(s, 'customers')) as Customer[];
+    const projects = useAppSelector(s => selectAll(s as any, 'projects'));
+    const loading = useAppSelector(s => s.customers?.loading?.list || false);
+    const error = useAppSelector(s => s.customers?.error?.list || null);
+    
+    const [params, setParamsState] = useState<{ page: number; limit: number }>({ page: 1, limit: 20 });
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -26,24 +30,37 @@ const Customers: React.FC<CustomersProps> = ({ whatsappSettings, branches }) => 
     const [customerForWhatsapp, setCustomerForWhatsapp] = useState<Customer | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [projectFilter, setProjectFilter] = useState<string>('all');
+    
+    // Pagination state
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        hasPrevPage: false,
+        hasNextPage: false
+    });
 
     // Load customers on mount and when params change
     useEffect(() => {
-        dispatch(fetchCustomers({
+        dispatch(slices.customers.thunks.list({ params: {
             q: searchTerm || undefined,
             projectId: projectFilter !== 'all' ? parseInt(projectFilter, 10) : undefined,
             page: params.page,
             limit: params.limit
-        }));
+        }}));
     }, [dispatch, searchTerm, projectFilter, params.page, params.limit]);
+
+    const handlePageChange = (page: number) => {
+        setParamsState(prev => ({ ...prev, page }));
+    };
 
     const handleSave = async (customer: Customer) => {
         try {
             if (customer.id) {
-                await dispatch(updateCustomer({ id: customer.id, data: customer })).unwrap();
+                await dispatch(slices.customers.thunks.updateOne({ id: String(customer.id), body: customer })).unwrap();
                 addToast('تم تحديث العميل بنجاح!', 'success');
             } else {
-                await dispatch(createCustomer(customer)).unwrap();
+                await dispatch(slices.customers.thunks.createOne(customer)).unwrap();
                 addToast('تم إضافة العميل بنجاح!', 'success');
             }
             setIsModalOpen(false);
@@ -56,7 +73,7 @@ const Customers: React.FC<CustomersProps> = ({ whatsappSettings, branches }) => 
     const handleDelete = async (customer: Customer) => {
         if (window.confirm(`هل أنت متأكد من حذف العميل "${customer.name}"؟`)) {
             try {
-                await dispatch(deleteCustomer(customer.id)).unwrap();
+                await dispatch(slices.customers.thunks.removeOne(String(customer.id))).unwrap();
                 addToast('تم حذف العميل بنجاح!', 'success');
             } catch (error: any) {
                 addToast(error.message || 'حدث خطأ في حذف العميل', 'error');
@@ -81,19 +98,12 @@ const Customers: React.FC<CustomersProps> = ({ whatsappSettings, branches }) => 
 
     const getProjectName = (projectId?: number) => {
         if (!projectId) return 'N/A';
-        return PROJECTS.find(p => p.id === projectId)?.name || 'غير معروف';
+        return projects.find(p => p.id === projectId)?.name || 'غير معروف';
     };
 
     const getBranchName = (branchId?: number) => {
         if (!branchId) return 'N/A';
-        
-        // Try both string and number comparison to handle type mismatches
-        const branch = branches.find(b => 
-            b.id === String(branchId) || 
-            b.id === branchId.toString() ||
-            Number(b.id) === branchId
-        );
-        
+        const branch = branches.find(b => b.id === branchId);
         return branch?.name || 'غير معروف';
     };
 
@@ -105,16 +115,12 @@ const Customers: React.FC<CustomersProps> = ({ whatsappSettings, branches }) => 
 
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
-        dispatch(setParams({ page: 1 })); // Reset to first page on search
+        setParamsState(prev => ({ ...prev, page: 1 })); // Reset to first page on search
     };
 
     const handleProjectFilterChange = (value: string) => {
         setProjectFilter(value);
-        dispatch(setParams({ page: 1 })); // Reset to first page on filter change
-    };
-
-    const handlePageChange = (newPage: number) => {
-        dispatch(setParams({ page: newPage }));
+        setParamsState(prev => ({ ...prev, page: 1 })); // Reset to first page on filter change
     };
 
     return (
@@ -138,7 +144,7 @@ const Customers: React.FC<CustomersProps> = ({ whatsappSettings, branches }) => 
                             style={{ width: '200px' }}
                         >
                             <option value="all">كل المشاريع</option>
-                            {PROJECTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
                         <div className="customers-actions">
                             <button onClick={handleAddNew} className="btn btn-primary customers-button">

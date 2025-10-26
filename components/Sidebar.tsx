@@ -80,6 +80,9 @@ const allNavItems: NavItem[] = [
         ]
     },
     {
+        name: 'سلسلة التوريد', view: 'SupplyChain', icon: TruckIcon, permission: 'supplychain:read'
+    },
+    {
         name: 'المشتريات', view: 'Purchases', icon: TruckIcon, permission: 'purchases:read',
         children: [
             { name: 'إدارة الموردين', view: 'Purchases/Suppliers' },
@@ -163,8 +166,13 @@ const NavGroup: React.FC<{
     const [showTooltip, setShowTooltip] = useState(false);
     const tooltipRef = useRef<HTMLDivElement>(null);
 
-    if (item.permission && !userPermissions.includes(item.permission)) return null;
-    const filteredChildren = item.children?.filter(child => !child.permission || userPermissions.includes(child.permission));
+    // Check if user has permission - SuperAdmin with "all" permission can see everything
+    const hasPermission = !item.permission || userPermissions.includes(item.permission) || userPermissions.includes('all');
+    if (!hasPermission) return null;
+    
+    const filteredChildren = item.children?.filter(child => 
+        !child.permission || userPermissions.includes(child.permission) || userPermissions.includes('all')
+    );
     const hasChildren = filteredChildren && filteredChildren.length > 0;
     const isParentActive = activeView.startsWith(item.view);
 

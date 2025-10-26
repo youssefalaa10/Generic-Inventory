@@ -3,20 +3,25 @@ import { AuthContext } from '../App';
 import { ChevronDownIcon, ChevronUpIcon } from '../components/Icon';
 import SaleDetailModal from '../components/SaleDetailModal';
 import { useToasts } from '../components/Toast';
+import { useAppSelector, useAppDispatch, selectAll, slices } from '../src/store';
 import { Branch, Customer, InventoryItem, Product, Sale } from '../types';
 
 interface SalesInvoicesProps {
-    sales: Sale[];
-    onSave: (sale: Sale) => void;
-    branches: Branch[];
-    products: Product[];
-    inventory: InventoryItem[];
-    customers: Customer[];
+    // Props removed - now using Redux
 }
 
-const SalesInvoices: React.FC<SalesInvoicesProps> = ({ sales, onSave, branches, products, inventory, customers }) => {
+const SalesInvoices: React.FC<SalesInvoicesProps> = () => {
     const { user } = useContext(AuthContext);
     const { addToast } = useToasts();
+    const dispatch = useAppDispatch();
+    
+    // Get data from Redux store
+    const sales = useAppSelector(s => selectAll(s, 'sales')) as Sale[];
+    const branches = useAppSelector(s => selectAll(s, 'branchinventories')) as Branch[];
+    const products = useAppSelector(s => selectAll(s, 'products')) as Product[];
+    const inventory = useAppSelector(s => selectAll(s, 'inventoryitems')) as InventoryItem[];
+    const customers = useAppSelector(s => selectAll(s, 'customers')) as Customer[];
+    
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
@@ -40,10 +45,30 @@ const SalesInvoices: React.FC<SalesInvoicesProps> = ({ sales, onSave, branches, 
     };
 
     const handleSave = (sale: Sale) => {
-        onSave(sale);
-        setIsModalOpen(false);
-        setSelectedSale(null);
-        addToast('Sale saved successfully!', 'success');
+        const hasId = (sale as any)._id || sale.id;
+        const idForApi = String((sale as any)._id || sale.id || '');
+        const payload: Partial<Sale> = { ...sale };
+        if ((payload as any)._id) delete (payload as any)._id;
+        
+        if (hasId) {
+            dispatch(slices.sales.thunks.updateOne({ id: idForApi, body: payload }))
+                .unwrap()
+                .then(() => {
+                    addToast('تم تحديث الفاتورة بنجاح!', 'success');
+                    setIsModalOpen(false);
+                    setSelectedSale(null);
+                })
+                .catch(() => addToast('فشل تحديث الفاتورة', 'error'));
+        } else {
+            dispatch(slices.sales.thunks.createOne(payload))
+                .unwrap()
+                .then(() => {
+                    addToast('تم إضافة الفاتورة بنجاح!', 'success');
+                    setIsModalOpen(false);
+                    setSelectedSale(null);
+                })
+                .catch(() => addToast('فشل إضافة الفاتورة', 'error'));
+        }
     };
 
     const handleAddNew = () => {

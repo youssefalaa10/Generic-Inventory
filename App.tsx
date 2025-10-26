@@ -38,6 +38,7 @@ import POSSessions from './pages/POSSessions';
 import ProductDetailPage from './pages/ProductDetailPage';
 import ProductionTasks from './pages/ProductionTasks';
 import ProductsPage from './pages/ProductsPage';
+import SupplyChain from './pages/SupplyChain';
 import PurchaseInvoices from './pages/PurchaseInvoices';
 import PurchaseOrders from './pages/PurchaseOrders';
 import PurchaseQuotations from './pages/PurchaseQuotations';
@@ -60,9 +61,8 @@ import UsersPage from './pages/UsersPage';
 import { getDailyBriefing } from './services/geminiService';
 
 import { ToastProvider, useToasts } from './components/Toast';
-import { useAppDispatch, useAppSelector } from './src/store/hooks';
-import { createProduct, updateProduct, fetchProducts, deleteProduct } from './src/store/slices/productsSlice';
-import { INVENTORY_ADJUSTMENT_LOGS as MOCK_ADJUSTMENT_LOGS, MOCK_ADVANCE_REQUESTS, ATTENDANCE_RECORDS as MOCK_ATTENDANCE, BRANCHES as MOCK_BRANCHES, CHART_OF_ACCOUNTS as MOCK_CHART_OF_ACCOUNTS, MOCK_CREDIT_NOTES, MOCK_CUSTOMER_PAYMENTS, CUSTOMERS as MOCK_CUSTOMERS, MOCK_DEBIT_NOTES, EMPLOYEES as MOCK_EMPLOYEES, EXPENSES as MOCK_EXPENSES, FINANCIAL_ACCOUNTS as MOCK_FINANCIAL_ACCOUNTS, MOCK_GENERAL_REQUESTS, MOCK_INTEGRATION_SETTINGS, INVENTORY as MOCK_INVENTORY, MOCK_INVENTORY_REQUISITIONS, MOCK_INVENTORY_VOUCHERS, MOCK_JOURNAL_VOUCHERS, LEAVE_REQUESTS as MOCK_LEAVE_REQUESTS, MANUFACTURING_ORDERS_MOCK as MOCK_PRODUCTION_ORDERS, PRODUCTION_TASKS as MOCK_PRODUCTION_TASKS, PRODUCTS as MOCK_PRODUCTS, MOCK_PURCHASE_INVOICES, MOCK_PURCHASE_ORDERS, MOCK_PURCHASE_REQUESTS, MOCK_PURCHASE_RETURNS, MOCK_PURCHASE_SETTINGS, MOCK_QUOTATIONS, MOCK_RECURRING_INVOICES, MOCK_RENEWABLES, MOCK_RFQS, SALES as MOCK_SALES, MOCK_SALES_QUOTATIONS, MOCK_SALES_RETURNS, SESSIONS as MOCK_SESSIONS, MOCK_SUPPLIER_PAYMENTS, MOCK_SUPPLIERS, USERS as MOCK_USERS } from './services/mockData';
+import { useAppDispatch, useAppSelector, slices, selectAll } from './src/store';
+// NOTE: mock data removed from App; app will initialize data from Redux/API on mount.
 import { Account, AdjustmentReason, AdvanceRequest, AttendanceRecord, Branch, ChatbotDataContext, CreditNote, Customer, CustomerPayment, DailyBriefingContext, DebitNote, EmployeeData, Expense, FinancialAccount, GeneralRequest, IntegrationSettings, InventoryAdjustmentLog, InventoryItem, InventoryRequisition, InventoryVoucher, JournalVoucher, LeaveRequest, ManufacturingOrder, POSSession, Product, ProductionTask, PurchaseInvoice, PurchaseOrder, PurchaseQuotation, PurchaseRequest, PurchaseReturn, PurchaseSettings, RecurringInvoice, RenewableItem, RequestForQuotation, RequestStatus, Role, SalaryPayment, Sale, SalesQuotation, SalesReturn, Supplier, SupplierPayment, User } from './types';
 
 export const AuthContext = React.createContext<{ user: User | null; login: (role: Role) => void; logout: () => void; }>({
@@ -76,7 +76,101 @@ type Theme = 'light' | 'dark';
 const AppContent: React.FC = () => {
     const { addToast } = useToasts();
     const dispatch = useAppDispatch();
-    const productsFromStore = useAppSelector(s => s.products.items);
+    const productsFromStore = useAppSelector(s => selectAll(s as any, 'products')) as Product[];
+    // Selectors for core entities (keep App local state in sync with Redux store)
+    const usersFromStore = useAppSelector(s => selectAll(s as any, 'users')) as User[];
+    const branchesFromStore = useAppSelector(s => selectAll(s as any, 'branchinventories')) as Branch[];
+    const customersFromStore = useAppSelector(s => selectAll(s as any, 'customers')) as Customer[];
+    const employeesFromStore = useAppSelector(s => selectAll(s as any, 'employees')) as EmployeeData[];
+    const suppliersFromStore = useAppSelector(s => selectAll(s as any, 'suppliers')) as Supplier[];
+    const inventoryFromStore = useAppSelector(s => selectAll(s as any, 'inventoryitems')) as InventoryItem[];
+    const purchaseInvoicesFromStore = useAppSelector(s => selectAll(s as any, 'purchaseinvoices')) as PurchaseInvoice[];
+    const salesFromStore = useAppSelector(s => selectAll(s as any, 'sales')) as Sale[];
+    const projectsFromStore = useAppSelector(s => selectAll(s as any, 'projects')) as any[];
+
+    // Load core entities from backend on mount
+    useEffect(() => {
+        // Dispatch a set of thunks to populate the Redux store. Each thunk returns a promise via unwrap.
+        try {
+            dispatch(slices.products.thunks.list({ params: { page: 1, limit: 200 } }));
+            // Ensure users are loaded so AuthContext.login can find matching users by role
+            if (slices.users && slices.users.thunks && typeof slices.users.thunks.list === 'function') {
+                dispatch(slices.users.thunks.list({ params: { page: 1, limit: 200 } }));
+            }
+            dispatch(slices.branchinventories.thunks.list({ params: { page: 1, limit: 200 } }));
+            dispatch(slices.customers.thunks.list({ params: { page: 1, limit: 200 } }));
+            dispatch(slices.employees.thunks.list({ params: { page: 1, limit: 200 } }));
+            dispatch(slices.suppliers.thunks.list({ params: { page: 1, limit: 200 } }));
+            dispatch(slices.inventoryitems.thunks.list({ params: { page: 1, limit: 200 } }));
+            dispatch(slices.purchaseinvoices.thunks.list({ params: { page: 1, limit: 200 } }));
+            dispatch(slices.sales.thunks.list({ params: { page: 1, limit: 200 } }));
+            dispatch(slices.projects.thunks.list({ params: { page: 1, limit: 50 } }));
+        } catch (err) {
+            console.warn('Initial data load failed', err);
+        }
+    }, [dispatch]);
+
+
+
+    // Sync local App state with Redux store selections - use useMemo to create stable references
+    const usersFromStoreStr = useMemo(() => JSON.stringify(usersFromStore), [usersFromStore]);
+    const branchesFromStoreStr = useMemo(() => JSON.stringify(branchesFromStore), [branchesFromStore]);
+    const customersFromStoreStr = useMemo(() => JSON.stringify(customersFromStore), [customersFromStore]);
+    const employeesFromStoreStr = useMemo(() => JSON.stringify(employeesFromStore), [employeesFromStore]);
+    const suppliersFromStoreStr = useMemo(() => JSON.stringify(suppliersFromStore), [suppliersFromStore]);
+    const inventoryFromStoreStr = useMemo(() => JSON.stringify(inventoryFromStore), [inventoryFromStore]);
+    const purchaseInvoicesFromStoreStr = useMemo(() => JSON.stringify(purchaseInvoicesFromStore), [purchaseInvoicesFromStore]);
+    const salesFromStoreStr = useMemo(() => JSON.stringify(salesFromStore), [salesFromStore]);
+
+    useEffect(() => { 
+        if (usersFromStore?.length) {
+            setUsers(usersFromStore);
+        }
+    }, [usersFromStoreStr]);
+    
+    useEffect(() => { 
+        if (branchesFromStore?.length) {
+            setBranches(branchesFromStore);
+        }
+    }, [branchesFromStoreStr]);
+    
+    useEffect(() => { 
+        if (customersFromStore?.length) {
+            setCustomers(customersFromStore);
+        }
+    }, [customersFromStoreStr]);
+    
+    useEffect(() => { 
+        if (employeesFromStore?.length) {
+            setEmployees(employeesFromStore);
+        }
+    }, [employeesFromStoreStr]);
+    
+    useEffect(() => { 
+        if (suppliersFromStore?.length) {
+            setSuppliers(suppliersFromStore);
+        }
+    }, [suppliersFromStoreStr]);
+    
+    useEffect(() => { 
+        if (inventoryFromStore?.length) {
+            setInventory(inventoryFromStore);
+        }
+    }, [inventoryFromStoreStr]);
+    
+    useEffect(() => { 
+        if (purchaseInvoicesFromStore?.length) {
+            setPurchaseInvoices(purchaseInvoicesFromStore);
+        }
+    }, [purchaseInvoicesFromStoreStr]);
+    
+    useEffect(() => { 
+        if (salesFromStore?.length) {
+            setSales(salesFromStore);
+        }
+    }, [salesFromStoreStr]);
+    
+    useEffect(() => { if (projectsFromStore?.length) {/* projects used by pages via selectors; keep for compatibility */} }, [projectsFromStore]);
     const [user, setUser] = useState<User | null>(null);
     const [activeView, setActiveView] = useState('Dashboard');
     const [theme, setTheme] = useState<Theme>('dark');
@@ -85,33 +179,33 @@ const AppContent: React.FC = () => {
         const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
         const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     // Centralized Data State
-    const [users, setUsers] = useState<User[]>(MOCK_USERS);
-    const [purchaseInvoices, setPurchaseInvoices] = useState<PurchaseInvoice[]>(MOCK_PURCHASE_INVOICES);
-    const [sales, setSales] = useState<Sale[]>(MOCK_SALES);
-    const [employees, setEmployees] = useState<EmployeeData[]>(MOCK_EMPLOYEES);
-    const [renewables, setRenewables] = useState<RenewableItem[]>(MOCK_RENEWABLES);
-    const [branches, setBranches] = useState<Branch[]>(MOCK_BRANCHES);
-    const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
-    const [inventory, setInventory] = useState<InventoryItem[]>(MOCK_INVENTORY);
-    const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(MOCK_LEAVE_REQUESTS);
-    const [attendance, setAttendance] = useState<AttendanceRecord[]>(MOCK_ATTENDANCE);
+    const [users, setUsers] = useState<User[]>([]);
+    const [purchaseInvoices, setPurchaseInvoices] = useState<PurchaseInvoice[]>([]);
+    const [sales, setSales] = useState<Sale[]>([]);
+    const [employees, setEmployees] = useState<EmployeeData[]>([]);
+    const [renewables, setRenewables] = useState<RenewableItem[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [inventory, setInventory] = useState<InventoryItem[]>([]);
+    const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+    const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
     const [salaryPayments, setSalaryPayments] = useState<SalaryPayment[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
-    const [expenses, setExpenses] = useState<Expense[]>(MOCK_EXPENSES);
-    const [financialAccounts, setFinancialAccounts] = useState<FinancialAccount[]>(MOCK_FINANCIAL_ACCOUNTS);
-    const [chartOfAccounts, setChartOfAccounts] = useState<Account[]>(MOCK_CHART_OF_ACCOUNTS);
-    const [journalVouchers, setJournalVouchers] = useState<JournalVoucher[]>(MOCK_JOURNAL_VOUCHERS);
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [financialAccounts, setFinancialAccounts] = useState<FinancialAccount[]>([]);
+    const [chartOfAccounts, setChartOfAccounts] = useState<Account[]>([]);
+    const [journalVouchers, setJournalVouchers] = useState<JournalVoucher[]>([]);
     const [settings, setSettings] = useState({ 
         salesTarget: 50000,
         renewalReminders: { days: [30, 15, 7, 3] } 
     });
-    const [posSessions, setPosSessions] = useState<POSSession[]>(MOCK_SESSIONS);
-    const [productionOrders, setProductionOrders] = useState<ManufacturingOrder[]>(MOCK_PRODUCTION_ORDERS);
-    const [inventoryAdjustmentLogs, setInventoryAdjustmentLogs] = useState<InventoryAdjustmentLog[]>(MOCK_ADJUSTMENT_LOGS);
-    const [productionTasks, setProductionTasks] = useState<ProductionTask[]>(MOCK_PRODUCTION_TASKS);
-    const [integrationSettings, setIntegrationSettings] = useState<IntegrationSettings>(MOCK_INTEGRATION_SETTINGS);
-    const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>(MOCK_ADVANCE_REQUESTS);
-    const [generalRequests, setGeneralRequests] = useState<GeneralRequest[]>(MOCK_GENERAL_REQUESTS);
+    const [posSessions, setPosSessions] = useState<POSSession[]>([]);
+    const [productionOrders, setProductionOrders] = useState<ManufacturingOrder[]>([]);
+    const [inventoryAdjustmentLogs, setInventoryAdjustmentLogs] = useState<InventoryAdjustmentLog[]>([]);
+    const [productionTasks, setProductionTasks] = useState<ProductionTask[]>([]);
+    const [integrationSettings, setIntegrationSettings] = useState<IntegrationSettings>({} as IntegrationSettings);
+    const [advanceRequests, setAdvanceRequests] = useState<AdvanceRequest[]>([]);
+    const [generalRequests, setGeneralRequests] = useState<GeneralRequest[]>([]);
     const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
     const [viewingPermissionsFor, setViewingPermissionsFor] = useState<User | null>(null);
     const [isBriefingOpen, setIsBriefingOpen] = useState(false);
@@ -119,26 +213,26 @@ const AppContent: React.FC = () => {
     const [isBriefingLoading, setIsBriefingLoading] = useState(false);
 
     // Purchase Module State
-    const [suppliers, setSuppliers] = useState<Supplier[]>(MOCK_SUPPLIERS);
-    const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>(MOCK_PURCHASE_REQUESTS);
-    const [rfqs, setRfqs] = useState<RequestForQuotation[]>(MOCK_RFQS);
-    const [purchaseQuotations, setPurchaseQuotations] = useState<PurchaseQuotation[]>(MOCK_QUOTATIONS);
-    const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>(MOCK_PURCHASE_ORDERS);
-    const [purchaseReturns, setPurchaseReturns] = useState<PurchaseReturn[]>(MOCK_PURCHASE_RETURNS);
-    const [debitNotes, setDebitNotes] = useState<DebitNote[]>(MOCK_DEBIT_NOTES);
-    const [supplierPayments, setSupplierPayments] = useState<SupplierPayment[]>(MOCK_SUPPLIER_PAYMENTS);
-    const [purchaseSettings, setPurchaseSettings] = useState<PurchaseSettings>(MOCK_PURCHASE_SETTINGS);
+    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>([]);
+    const [rfqs, setRfqs] = useState<RequestForQuotation[]>([]);
+    const [purchaseQuotations, setPurchaseQuotations] = useState<PurchaseQuotation[]>([]);
+    const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+    const [purchaseReturns, setPurchaseReturns] = useState<PurchaseReturn[]>([]);
+    const [debitNotes, setDebitNotes] = useState<DebitNote[]>([]);
+    const [supplierPayments, setSupplierPayments] = useState<SupplierPayment[]>([]);
+    const [purchaseSettings, setPurchaseSettings] = useState<PurchaseSettings>({} as PurchaseSettings);
     
     // Sales Module State
-    const [salesQuotations, setSalesQuotations] = useState<SalesQuotation[]>(MOCK_SALES_QUOTATIONS);
-    const [salesReturns, setSalesReturns] = useState<SalesReturn[]>(MOCK_SALES_RETURNS);
-    const [creditNotes, setCreditNotes] = useState<CreditNote[]>(MOCK_CREDIT_NOTES);
-    const [recurringInvoices, setRecurringInvoices] = useState<RecurringInvoice[]>(MOCK_RECURRING_INVOICES);
-    const [customerPayments, setCustomerPayments] = useState<CustomerPayment[]>(MOCK_CUSTOMER_PAYMENTS);
+    const [salesQuotations, setSalesQuotations] = useState<SalesQuotation[]>([]);
+    const [salesReturns, setSalesReturns] = useState<SalesReturn[]>([]);
+    const [creditNotes, setCreditNotes] = useState<CreditNote[]>([]);
+    const [recurringInvoices, setRecurringInvoices] = useState<RecurringInvoice[]>([]);
+    const [customerPayments, setCustomerPayments] = useState<CustomerPayment[]>([]);
 
     // New Inventory State
-    const [inventoryVouchers, setInventoryVouchers] = useState<InventoryVoucher[]>(MOCK_INVENTORY_VOUCHERS);
-    const [inventoryRequisitions, setInventoryRequisitions] = useState<InventoryRequisition[]>(MOCK_INVENTORY_REQUISITIONS);
+    const [inventoryVouchers, setInventoryVouchers] = useState<InventoryVoucher[]>([]);
+    const [inventoryRequisitions, setInventoryRequisitions] = useState<InventoryRequisition[]>([]);
 
     const activeSession = useMemo(() => posSessions.find(s => s.status === 'Open' && s.branchId === user?.branchId), [posSessions, user]);
     
@@ -146,10 +240,7 @@ const AppContent: React.FC = () => {
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
-    useEffect(() => {
-        // Ensure products are loaded from API when the app mounts
-        dispatch(fetchProducts());
-    }, [dispatch]);
+    
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -166,9 +257,30 @@ const AppContent: React.FC = () => {
 
     const authContextValue = useMemo(() => ({
         user,
-        login: (role: Role) => {
-            const loggedInUser = users.find(u => u.role === role);
+        login: async (role: Role) => {
+            console.log('=== LOGIN DEBUG ===');
+            console.log('Looking for role:', role);
+            console.log('usersFromStore:', usersFromStore);
+            console.log('usersFromStore length:', usersFromStore?.length);
+            
+            // Try to find user in Redux store first
+            let loggedInUser = usersFromStore.find(u => u.role === role);
+            
+            // If not found in Redux store, try to load from API directly
+            if (!loggedInUser) {
+                console.log('User not found in Redux store, trying to load from API...');
+                try {
+                    const response = await fetch('http://localhost:4000/api/users');
+                    const users = await response.json();
+                    console.log('Users loaded from API:', users);
+                    loggedInUser = users.find((u: any) => u.role === role);
+                } catch (error) {
+                    console.error('Failed to load users from API:', error);
+                }
+            }
+            
             if (loggedInUser) {
+                console.log('Found user:', loggedInUser);
                 setUser(loggedInUser);
                 switch (role) {
                     case Role.ShopAssistant:
@@ -184,12 +296,15 @@ const AppContent: React.FC = () => {
                         setActiveView('Dashboard');
                         break;
                 }
+            } else {
+                console.warn('No user found with role:', role);
+                addToast('لم يتم العثور على مستخدم بهذا الدور', 'error');
             }
         },
         logout: () => {
             setUser(null);
         }
-    }), [user, users]);
+    }), [user, usersFromStore, addToast]);
     
     useEffect(() => {
         if (user) { 
@@ -199,7 +314,7 @@ const AppContent: React.FC = () => {
             }, 60 * 1000 * 5); 
             return () => clearInterval(interval);
         }
-    }, [user, renewables, settings.renewalReminders.days]);
+    }, [user, settings.renewalReminders.days]); // Remove renewables from dependencies to prevent infinite loop
 
 
     const checkAndSendRenewalReminders = (): boolean => {
@@ -355,21 +470,21 @@ const AppContent: React.FC = () => {
         const payload: Partial<Product> = { ...productToSave };
         if ((payload as any)._id) delete (payload as any)._id;
         if (hasId) {
-            dispatch(updateProduct({ id: idForApi, data: payload }))
+            dispatch(slices.products.thunks.updateOne({ id: idForApi, body: payload }))
                 .unwrap()
                 .then(() => {
                     addToast('تم تحديث المنتج بنجاح!', 'success');
                     handleCloseProductModal();
-                    dispatch(fetchProducts());
+                    dispatch(slices.products.thunks.list(undefined));
                 })
                 .catch(() => addToast('فشل تحديث المنتج', 'error'));
         } else {
-            dispatch(createProduct(payload))
+            dispatch(slices.products.thunks.createOne(payload))
                 .unwrap()
                 .then(() => {
                     addToast('تم إضافة المنتج بنجاح!', 'success');
                     handleCloseProductModal();
-                    dispatch(fetchProducts());
+                    dispatch(slices.products.thunks.list(undefined));
                 })
                 .catch(() => addToast('فشل إضافة المنتج', 'error'));
         }
@@ -538,7 +653,7 @@ const AppContent: React.FC = () => {
             brand: 'Arabiva', // Or determine dynamically
             branchId: user.branchId,
             customerName: customer.name,
-            customerId: customer.id,
+            customerId: (typeof customer.id === 'number' && Number.isFinite(customer.id as number)) ? (customer.id as number) : Number(customer.id),
             date: new Date().toISOString().split('T')[0],
             paymentMethod: 'Credit',
             paymentStatus: 'Pending',
@@ -837,13 +952,14 @@ const AppContent: React.FC = () => {
     };
     
     // POS Session Handlers
-    const handleStartSession = (openingBalance: number) => {
+    const handleStartSession = (openingBalance: number, selectedBranchId?: number) => {
         if (activeSession) {
             addToast('There is already an active session.', 'error');
             return;
         }
-        if (!user?.branchId) {
-            addToast('User is not assigned to a branch.', 'error');
+        const branchId = Number(selectedBranchId ?? user?.branchId);
+        if (!Number.isFinite(branchId)) {
+            addToast('اختر فرعًا قبل بدء الجلسة.', 'error');
             return;
         }
         const newSession: POSSession = {
@@ -853,7 +969,7 @@ const AppContent: React.FC = () => {
             openingBalance,
             salesIds: [],
             totalSalesValue: 0,
-            branchId: user.branchId,
+            branchId,
         };
         setPosSessions(prev => [...prev, newSession]);
         addToast('Session started successfully!', 'success');
@@ -1024,10 +1140,10 @@ const AppContent: React.FC = () => {
     
     const renderView = () => {
         if (activeView.startsWith('MyProfile')) return <EmployeePortal user={user} employees={employees} leaveRequests={leaveRequests} advanceRequests={advanceRequests} generalRequests={generalRequests} attendance={attendance} salaryPayments={salaryPayments} onSaveLeaveRequest={handleSaveLeaveRequest} onSaveAdvanceRequest={handleSaveAdvanceRequest} onSaveGeneralRequest={handleSaveGeneralRequest} />;
-        if (activeView.startsWith('Dashboard')) return <Dashboard sales={salesForView} purchases={purchaseInvoicesForView} employees={employeesForView} inventory={inventoryForView} products={products} branches={branches} settings={settings} accounts={chartOfAccounts} expenses={expensesForView} renewables={renewables} leaveRequests={leaveRequests} advanceRequests={advanceRequests} generalRequests={generalRequests} suppliers={suppliers} />;
+        if (activeView.startsWith('Dashboard')) return <Dashboard settings={settings} />;
         
         // Sales Module
-        if (activeView.startsWith('Sales/Invoices') || activeView === 'Sales') return <SalesInvoices sales={salesForView} onSave={handleSaveSale} branches={branches} products={products} inventory={inventoryForView} customers={customers} />;
+        if (activeView.startsWith('Sales/Invoices') || activeView === 'Sales') return <SalesInvoices />;
         if (activeView.startsWith('Sales/Quotations')) return <SalesQuotations quotations={salesQuotations} onSave={handleSaveSalesQuotation} onConvertToInvoice={handleConvertQuoteToInvoice} customers={customers} products={products} />;
         if (activeView.startsWith('Sales/Returns')) return <SalesReturns returns={salesReturns} sales={sales} customers={customers} />;
         if (activeView.startsWith('Sales/CreditNotes')) return <CreditNotes notes={creditNotes} customers={customers} />;
@@ -1035,7 +1151,7 @@ const AppContent: React.FC = () => {
         if (activeView.startsWith('Sales/Payments')) return <CustomerPayments payments={customerPayments} customers={customers} />;
 
         // Purchases Module
-        if (activeView.startsWith('Purchases/Invoices')) return <PurchaseInvoices invoices={purchaseInvoicesForView} onSave={handleSavePurchaseInvoice} branches={branches} products={products} sales={salesForView} inventory={inventoryForView} suppliers={suppliers} />;
+        if (activeView.startsWith('Purchases/Invoices')) return <PurchaseInvoices />;
         if (activeView.startsWith('Purchases/Suppliers')) return <Suppliers suppliers={suppliers} onSave={handleSaveSupplier} />;
         if (activeView.startsWith('Purchases/Requests')) return <PurchaseRequests requests={purchaseRequests} onSave={handleSavePurchaseRequest} employees={employees} branches={branches} products={products} />;
         if (activeView.startsWith('Purchases/RFQs')) return <RequestForQuotations rfqs={rfqs} onSave={handleSaveRfq} suppliers={suppliers} products={products} purchaseRequests={purchaseRequests} />;
@@ -1049,10 +1165,10 @@ const AppContent: React.FC = () => {
         if (activeView === 'Inventory/Vouchers') return <InventoryVouchers />;
         if (activeView === 'Inventory/Requisitions') return <InventoryRequisitions />;
         if (activeView === 'Inventory/Tracking') return <InventoryTracking />;
+        if (activeView === 'Inventory/SupplyChain' || activeView === 'SupplyChain') return <SupplyChain />;
         if (activeView === 'Inventory/Products') {
             return (
                 <ProductsPage
-                    products={productsFromStore}
                     onAddNew={() => handleOpenProductModal({})}
                     onProductSelect={(product) => {
                         const idStr = String((product as any)._id ?? product.id);
@@ -1083,9 +1199,9 @@ const AppContent: React.FC = () => {
                         const id = String(((p as any)._id) ?? (p as any).id);
                         if (!id) return;
                         if (!window.confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
-                        dispatch(deleteProduct(id))
+                        dispatch(slices.products.thunks.removeOne(id))
                           .unwrap()
-                          .then(() => { setActiveView('Inventory/Products'); dispatch(fetchProducts()); })
+                          .then(() => { setActiveView('Inventory/Products'); dispatch(slices.products.thunks.list(undefined)); })
                           .catch(() => {});
                     }}
                 />
@@ -1093,14 +1209,15 @@ const AppContent: React.FC = () => {
         }
         if (activeView.startsWith('POS/Start')) return <POS products={products} inventory={inventory} customers={customers} onSaveCustomer={handleSaveCustomer} onSave={handleSaveSale} integrationSettings={integrationSettings} branches={branches} />;
         if (activeView.startsWith('POS/Sessions')) return <POSSessions sessions={sessionsForView} activeSession={activeSession} sales={sales} branches={branches} employees={employees} onStartSession={handleStartSession} onCloseSession={handleCloseSession} setActiveView={setActiveView} />;
-        if (activeView.startsWith('Customers')) return <Customers customers={customers} onSave={handleSaveCustomer} whatsappSettings={integrationSettings.whatsapp} branches={branches} />;
+        if (activeView.startsWith('Customers')) return <Customers whatsappSettings={integrationSettings.whatsapp} branches={branches} />;
         if (activeView.startsWith('Manufacturing/Orders')) return <ManufacturingOrderPage order={productionOrders[0]} branches={branches} products={products} inventory={inventoryForView} employees={employeesForView} onSave={handleSaveProductionOrder} />;
         if (activeView.startsWith('Manufacturing/Tasks')) return <ProductionTasks tasks={productionTasks} orders={productionOrders} employees={employeesForView} onSave={handleSaveProductionTask} />;
+        if (activeView.startsWith('SupplyChain')) return <SupplyChain />;
         if (activeView.startsWith('Finance/Expenses')) return <Expenses expenses={expensesForView} onSave={handleSaveExpense} branches={branches} financialAccounts={financialAccounts} />;
         if (activeView.startsWith('Finance/Accounts')) return <FinancialAccounts financialAccounts={financialAccounts} branches={branches} />;
         if (activeView.startsWith('Ledger/ChartOfAccounts')) return <ChartOfAccountsPage accounts={chartOfAccounts} onSave={() => {}} sales={sales} purchases={purchaseInvoices} expenses={expenses}/>;
         if (activeView.startsWith('Ledger/Journal')) return <JournalEntriesPage journalVouchers={journalVouchers} onSave={handleSaveJournalVoucher} accounts={chartOfAccounts} />;
-        if (activeView.startsWith('HR/Employees')) return <Employees employees={employeesForView} onSave={handleSaveEmployee} onDelete={handleDeleteEmployee} branches={branches} />;
+        if (activeView.startsWith('HR/Employees')) return <Employees />;
         if (activeView.startsWith('HR/Attendance')) return <Attendance employees={employeesForView} attendanceRecords={attendance} onRecordAttendance={handleRecordAttendance} />;
         if (activeView.startsWith('HR/LeaveRequests')) return <LeaveRequests employees={employees} leaveRequests={leaveRequests} onSaveRequest={handleSaveLeaveRequest} />;
         if (activeView.startsWith('HR/AdvanceRequests')) return <AdvanceRequestsPage requests={advanceRequests} employees={employees} onSaveRequest={handleSaveAdvanceRequest} />;
@@ -1121,7 +1238,7 @@ const AppContent: React.FC = () => {
         if (activeView.startsWith('Settings/Integrations')) return <IntegrationsPage settings={integrationSettings} onSave={handleSaveIntegrations} />;
         if (activeView.startsWith('Users')) return <UsersPage users={users} branches={branches} onSave={handleSaveUser} onViewPermissions={setViewingPermissionsFor} />;
         
-        return <Dashboard sales={salesForView} purchases={purchaseInvoicesForView} employees={employeesForView} inventory={inventoryForView} products={products} branches={branches} settings={settings} accounts={chartOfAccounts} expenses={expensesForView} renewables={renewables} leaveRequests={leaveRequests} advanceRequests={advanceRequests} generalRequests={generalRequests} suppliers={suppliers} />;
+        return <Dashboard settings={settings} />;
     };
 
     return (
