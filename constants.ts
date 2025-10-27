@@ -1,13 +1,13 @@
 
-import { Role, Permission } from './types';
+import { Permission, Role } from './types';
 
 export const PERMISSIONS: Record<Role, Permission[]> = {
-    [Role.SuperAdmin]: ['purchases:create', 'purchases:read', 'purchases:update', 'purchases:delete', 'sales:create', 'sales:read', 'sales:update', 'sales:delete', 'products:create', 'products:read', 'products:update', 'products:delete', 'employees:create', 'employees:read', 'employees:update', 'employees:delete', 'licenses:create', 'licenses:read', 'licenses:update', 'licenses:delete', 'branches:create', 'branches:read', 'branches:update', 'branches:delete', 'inventory:read', 'inventory:transfer', 'inventory:update', 'inventory:adjust', 'payroll:manage', 'payroll:read', 'reports:read:full', 'settings:manage', 'manufacturing:create', 'manufacturing:read', 'manufacturing:tasks:manage', 'integrations:manage', 'advances:manage', 'general_requests:manage'],
-    [Role.Perfumer]: ['manufacturing:create', 'manufacturing:read', 'manufacturing:tasks:manage', 'inventory:read', 'products:read', 'advances:request', 'general_requests:request'],
-    [Role.Accountant]: ['purchases:create', 'purchases:read', 'purchases:update', 'sales:read', 'employees:read', 'licenses:read', 'inventory:read', 'payroll:read', 'reports:read:limited', 'advances:request', 'general_requests:request'],
-    [Role.BranchManager]: ['purchases:create', 'purchases:read', 'sales:create', 'sales:read', 'inventory:read', 'inventory:transfer', 'inventory:update', 'inventory:adjust', 'employees:read', 'manufacturing:create', 'manufacturing:read', 'manufacturing:tasks:manage', 'advances:manage', 'general_requests:manage'],
-    [Role.ShopAssistant]: ['sales:create', 'sales:read', 'inventory:read', 'products:read', 'advances:request', 'general_requests:request'],
-    [Role.EcommerceManager]: ['sales:create', 'sales:read', 'inventory:read', 'products:read', 'reports:read:limited', 'advances:request', 'general_requests:request'],
+    [Role.SuperAdmin]: ['purchases:create', 'purchases:read', 'purchases:update', 'purchases:delete', 'sales:create', 'sales:read', 'sales:update', 'sales:delete', 'products:create', 'products:read', 'products:update', 'products:delete', 'employees:create', 'employees:read', 'employees:update', 'employees:delete', 'licenses:create', 'licenses:read', 'licenses:update', 'licenses:delete', 'branches:create', 'branches:read', 'branches:update', 'branches:delete', 'inventory:read', 'inventory:transfer', 'inventory:update', 'inventory:adjust', 'supplies:create', 'supplies:read', 'supplies:update', 'supplies:delete', 'payroll:manage', 'payroll:read', 'reports:read:full', 'settings:manage', 'manufacturing:create', 'manufacturing:read', 'manufacturing:tasks:manage', 'integrations:manage', 'advances:manage', 'general_requests:manage'],
+    [Role.Perfumer]: ['manufacturing:create', 'manufacturing:read', 'manufacturing:tasks:manage', 'inventory:read', 'products:read', 'supplies:read', 'advances:request', 'general_requests:request'],
+    [Role.Accountant]: ['purchases:create', 'purchases:read', 'purchases:update', 'sales:read', 'employees:read', 'licenses:read', 'inventory:read', 'supplies:read', 'payroll:read', 'reports:read:limited', 'advances:request', 'general_requests:request'],
+    [Role.BranchManager]: ['purchases:create', 'purchases:read', 'sales:create', 'sales:read', 'inventory:read', 'inventory:transfer', 'inventory:update', 'inventory:adjust', 'employees:read', 'manufacturing:create', 'manufacturing:read', 'manufacturing:tasks:manage', 'supplies:read', 'advances:manage', 'general_requests:manage'],
+    [Role.ShopAssistant]: ['sales:create', 'sales:read', 'inventory:read', 'products:read', 'supplies:read', 'advances:request', 'general_requests:request'],
+    [Role.EcommerceManager]: ['sales:create', 'sales:read', 'inventory:read', 'products:read', 'supplies:read', 'reports:read:limited', 'advances:request', 'general_requests:request'],
     [Role.Employee]: ['advances:request', 'general_requests:request'],
 };
 
@@ -53,6 +53,12 @@ export const PERMISSION_GROUPS: { [group: string]: { key: Permission, label: str
         { key: 'inventory:transfer', label: 'تحويل' },
         { key: 'inventory:update', label: 'تحديث' },
         { key: 'inventory:adjust', label: 'تعديل' },
+    ],
+    'سلسلة التوريد': [
+        { key: 'supplies:create', label: 'إنشاء' },
+        { key: 'supplies:read', label: 'قراءة' },
+        { key: 'supplies:update', label: 'تحديث' },
+        { key: 'supplies:delete', label: 'حذف' },
     ],
     'التصنيع': [
         { key: 'manufacturing:create', label: 'إنشاء' },

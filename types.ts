@@ -17,6 +17,7 @@ export type Permission =
   | 'licenses:create' | 'licenses:read' | 'licenses:update' | 'licenses:delete'
   | 'branches:create' | 'branches:read' | 'branches:update' | 'branches:delete'
   | 'inventory:read' | 'inventory:transfer' | 'inventory:update' | 'inventory:adjust'
+  | 'supplies:create' | 'supplies:read' | 'supplies:update' | 'supplies:delete'
   | 'payroll:manage' | 'payroll:read'
   | 'reports:read:full' | 'reports:read:limited'
   | 'settings:manage'
@@ -935,6 +936,47 @@ export interface PurchaseSettings {
   defaultShippingPreference: 'Collect' | 'Delivery';
   isApprovalWorkflowEnabled: boolean;
   approvalTiers: PurchaseApprovalTier[];
+}
+
+// Supply Chain Types
+export interface Supply {
+  id: number;
+  name: string;
+  sku: string;
+  category: string;
+  unitPrice: number;
+  baseUnit: 'pcs' | 'g' | 'ml' | 'kg' | 'l';
+  supplierId: number;
+  description?: string;
+  density?: number; // g/ml
+  minStock?: number;
+  reorderPoint?: number;
+  leadTime?: number; // days
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupplyInventory {
+  id?: number;
+  supplyId: number;
+  branchId: number;
+  quantity: number;
+  minStock?: number;
+  reorderPoint?: number;
+  lastMovementDate?: string;
+}
+
+export interface SupplyMovement {
+  id: number;
+  supplyId: number;
+  branchId: number;
+  type: 'IN' | 'OUT' | 'TRANSFER' | 'ADJUSTMENT';
+  quantity: number;
+  date: string;
+  referenceType?: 'PURCHASE' | 'PRODUCTION' | 'INVENTORY_ADJUSTMENT' | 'TRANSFER';
+  referenceId?: number;
+  notes?: string;
+  createdBy: number;
 }
 
 // Declare QRCode library from CDN for TypeScript

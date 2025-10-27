@@ -25,8 +25,8 @@ import Expenses from './pages/Expenses';
 import FinancialAccounts from './pages/FinancialAccounts';
 import GeneralRequestsPage from './pages/GeneralRequestsPage';
 import IntegrationsPage from './pages/IntegrationsPage';
-import InventoryTracking from './pages/InventoryTracking';
 import InventoryRequisitions from './pages/InventoryRequisitions';
+import InventoryTracking from './pages/InventoryTracking';
 import InventoryVouchers from './pages/InventoryVouchers';
 import JournalEntriesPage from './pages/JournalEntriesPage';
 import LeaveRequests from './pages/LeaveRequests';
@@ -56,13 +56,16 @@ import SettingsSales from './pages/SettingsSales';
 import SettingsSuppliers from './pages/SettingsSuppliers';
 import SupplierPayments from './pages/SupplierPayments';
 import Suppliers from './pages/Suppliers';
+import SupplyChainPage from './pages/SupplyChainPage';
+import SupplyInventoryPage from './pages/SupplyInventoryPage';
+import SupplyMovementsPage from './pages/SupplyMovementsPage';
 import UsersPage from './pages/UsersPage';
 import { getDailyBriefing } from './services/geminiService';
 
 import { ToastProvider, useToasts } from './components/Toast';
-import { useAppDispatch, useAppSelector } from './src/store/hooks';
-import { createProduct, updateProduct, fetchProducts, deleteProduct } from './src/store/slices/productsSlice';
 import { INVENTORY_ADJUSTMENT_LOGS as MOCK_ADJUSTMENT_LOGS, MOCK_ADVANCE_REQUESTS, ATTENDANCE_RECORDS as MOCK_ATTENDANCE, BRANCHES as MOCK_BRANCHES, CHART_OF_ACCOUNTS as MOCK_CHART_OF_ACCOUNTS, MOCK_CREDIT_NOTES, MOCK_CUSTOMER_PAYMENTS, CUSTOMERS as MOCK_CUSTOMERS, MOCK_DEBIT_NOTES, EMPLOYEES as MOCK_EMPLOYEES, EXPENSES as MOCK_EXPENSES, FINANCIAL_ACCOUNTS as MOCK_FINANCIAL_ACCOUNTS, MOCK_GENERAL_REQUESTS, MOCK_INTEGRATION_SETTINGS, INVENTORY as MOCK_INVENTORY, MOCK_INVENTORY_REQUISITIONS, MOCK_INVENTORY_VOUCHERS, MOCK_JOURNAL_VOUCHERS, LEAVE_REQUESTS as MOCK_LEAVE_REQUESTS, MANUFACTURING_ORDERS_MOCK as MOCK_PRODUCTION_ORDERS, PRODUCTION_TASKS as MOCK_PRODUCTION_TASKS, PRODUCTS as MOCK_PRODUCTS, MOCK_PURCHASE_INVOICES, MOCK_PURCHASE_ORDERS, MOCK_PURCHASE_REQUESTS, MOCK_PURCHASE_RETURNS, MOCK_PURCHASE_SETTINGS, MOCK_QUOTATIONS, MOCK_RECURRING_INVOICES, MOCK_RENEWABLES, MOCK_RFQS, SALES as MOCK_SALES, MOCK_SALES_QUOTATIONS, MOCK_SALES_RETURNS, SESSIONS as MOCK_SESSIONS, MOCK_SUPPLIER_PAYMENTS, MOCK_SUPPLIERS, USERS as MOCK_USERS } from './services/mockData';
+import { useAppDispatch, useAppSelector } from './src/store/hooks';
+import { createProduct, deleteProduct, fetchProducts, updateProduct } from './src/store/slices/productsSlice';
 import { Account, AdjustmentReason, AdvanceRequest, AttendanceRecord, Branch, ChatbotDataContext, CreditNote, Customer, CustomerPayment, DailyBriefingContext, DebitNote, EmployeeData, Expense, FinancialAccount, GeneralRequest, IntegrationSettings, InventoryAdjustmentLog, InventoryItem, InventoryRequisition, InventoryVoucher, JournalVoucher, LeaveRequest, ManufacturingOrder, POSSession, Product, ProductionTask, PurchaseInvoice, PurchaseOrder, PurchaseQuotation, PurchaseRequest, PurchaseReturn, PurchaseSettings, RecurringInvoice, RenewableItem, RequestForQuotation, RequestStatus, Role, SalaryPayment, Sale, SalesQuotation, SalesReturn, Supplier, SupplierPayment, User } from './types';
 
 export const AuthContext = React.createContext<{ user: User | null; login: (role: Role) => void; logout: () => void; }>({
@@ -1044,6 +1047,17 @@ const AppContent: React.FC = () => {
         if (activeView.startsWith('Purchases/Returns')) return <PurchaseReturns returns={purchaseReturns} onSave={handleSavePurchaseReturn} suppliers={suppliers} products={products} />;
         if (activeView.startsWith('Purchases/DebitNotes')) return <DebitNotes notes={debitNotes} onSave={handleSaveDebitNote} suppliers={suppliers} products={products} />;
         if (activeView.startsWith('Purchases/Payments')) return <SupplierPayments payments={supplierPayments} suppliers={suppliers} />;
+        
+        // Supply Chain Module
+        if (activeView.startsWith('Supplies/Materials') || activeView === 'Supplies') {
+            return <SupplyChainPage activeView={activeView} setActiveView={setActiveView} />;
+        }
+        if (activeView.startsWith('Supplies/Inventory')) {
+            return <SupplyInventoryPage activeView={activeView} setActiveView={setActiveView} />;
+        }
+        if (activeView.startsWith('Supplies/Movements')) {
+            return <SupplyMovementsPage activeView={activeView} setActiveView={setActiveView} />;
+        }
         
         // Inventory Module
         if (activeView === 'Inventory/Vouchers') return <InventoryVouchers />;

@@ -1,7 +1,7 @@
 // FIX: Added RecurringInvoice to the import list.
 // FIX: Added InventoryVoucher and InventoryRequisition to import to support new mock data.
-import { User, Role, Permission, Project, Branch, PurchaseInvoice, Sale, EmployeeData, RenewableItem, Product, InventoryItem, LeaveRequest, AttendanceRecord, Customer, FinancialAccount, Expense, POSSession, ProductionOrder_Legacy, InventoryAdjustmentLog, ProductionTask, ManufacturingOrder, Account, IntegrationSettings, WebhookEvent, AdvanceRequest, GeneralRequest, Supplier, PurchaseRequest, PurchaseOrder, PurchaseReturn, SupplierPayment, DebitNote, RequestForQuotation, PurchaseQuotation, ExpenseCategory, SalesQuotation, SalesReturn, CreditNote, CustomerPayment, RecurringInvoice, InventoryVoucher, InventoryRequisition, PurchaseSettings, JournalVoucher } from '../types';
 import { PERMISSIONS } from '../constants';
+import { Account, AdvanceRequest, AttendanceRecord, Branch, CreditNote, Customer, CustomerPayment, DebitNote, EmployeeData, Expense, ExpenseCategory, FinancialAccount, GeneralRequest, IntegrationSettings, InventoryAdjustmentLog, InventoryItem, InventoryRequisition, InventoryVoucher, JournalVoucher, LeaveRequest, ManufacturingOrder, POSSession, Product, ProductionOrder_Legacy, ProductionTask, Project, PurchaseInvoice, PurchaseOrder, PurchaseQuotation, PurchaseRequest, PurchaseReturn, PurchaseSettings, RecurringInvoice, RenewableItem, RequestForQuotation, Role, Sale, SalesQuotation, SalesReturn, Supplier, SupplierPayment, Supply, SupplyInventory, SupplyMovement, User, WebhookEvent } from '../types';
 
 export const USERS: User[] = [
     { id: 1, name: 'أحمد (المالك)', role: Role.SuperAdmin, permissions: PERMISSIONS[Role.SuperAdmin] },
@@ -628,3 +628,185 @@ export const MOCK_PURCHASE_SETTINGS: PurchaseSettings = {
     { id: 3, minAmount: 20000, approverRole: Role.SuperAdmin },
   ]
 };
+
+// Supply Chain Mock Data
+export const SUPPLIES: Supply[] = [
+  {
+    id: 1,
+    name: 'زيت الورد الدمشقي',
+    sku: 'SUP-OIL-001',
+    category: 'Raw Material',
+    unitPrice: 15,
+    baseUnit: 'g',
+    supplierId: 1,
+    description: 'زيت ورد عضوي عالي الجودة',
+    density: 0.98,
+    minStock: 5000,
+    reorderPoint: 7000,
+    leadTime: 7,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-07-01'
+  },
+  {
+    id: 2,
+    name: 'كحول عطور 96%',
+    sku: 'SUP-ALC-001',
+    category: 'Chemical',
+    unitPrice: 0.1,
+    baseUnit: 'ml',
+    supplierId: 1,
+    description: 'كحول عطور طبي',
+    density: 0.82,
+    minStock: 20000,
+    reorderPoint: 30000,
+    leadTime: 5,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-07-15'
+  },
+  {
+    id: 3,
+    name: 'ماء مقطر',
+    sku: 'SUP-WAT-001',
+    category: 'Chemical',
+    unitPrice: 0.01,
+    baseUnit: 'ml',
+    supplierId: 2,
+    description: 'ماء مقطر نقي',
+    density: 1.0,
+    minStock: 50000,
+    reorderPoint: 80000,
+    leadTime: 3,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-07-10'
+  },
+  {
+    id: 4,
+    name: 'مثبت - مسك كيتون',
+    sku: 'SUP-FIX-001',
+    category: 'Fixative',
+    unitPrice: 0.2,
+    baseUnit: 'g',
+    supplierId: 1,
+    description: 'مثبت عطري طبيعي',
+    density: 1.32,
+    minStock: 1000,
+    reorderPoint: 2000,
+    leadTime: 10,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-07-05'
+  },
+  {
+    id: 5,
+    name: 'زجاجة عطر 50مل (شفاف)',
+    sku: 'SUP-BTL-001',
+    category: 'Packaging',
+    unitPrice: 2.5,
+    baseUnit: 'pcs',
+    supplierId: 2,
+    description: 'زجاجة عطر بلاستيكية شفافة',
+    minStock: 1000,
+    reorderPoint: 1500,
+    leadTime: 14,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-06-20'
+  },
+  {
+    id: 6,
+    name: 'بخاخ ذهبي 18مم',
+    sku: 'SUP-SPR-001',
+    category: 'Packaging',
+    unitPrice: 0.25,
+    baseUnit: 'pcs',
+    supplierId: 2,
+    description: 'بخاخ ذهبي فاخر',
+    minStock: 2000,
+    reorderPoint: 3000,
+    leadTime: 14,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-06-20'
+  }
+];
+
+export const SUPPLY_INVENTORY: SupplyInventory[] = [
+  { supplyId: 1, branchId: 4, quantity: 8000, minStock: 5000, reorderPoint: 7000 },
+  { supplyId: 2, branchId: 4, quantity: 35000, minStock: 20000, reorderPoint: 30000 },
+  { supplyId: 3, branchId: 4, quantity: 60000, minStock: 50000, reorderPoint: 80000 },
+  { supplyId: 4, branchId: 4, quantity: 1500, minStock: 1000, reorderPoint: 2000 },
+  { supplyId: 5, branchId: 4, quantity: 1200, minStock: 1000, reorderPoint: 1500 },
+  { supplyId: 6, branchId: 4, quantity: 2500, minStock: 2000, reorderPoint: 3000 },
+];
+
+export const SUPPLY_MOVEMENTS: SupplyMovement[] = [
+  {
+    id: 1,
+    supplyId: 1,
+    branchId: 4,
+    type: 'IN',
+    quantity: 10000,
+    date: '2024-07-15',
+    referenceType: 'PURCHASE',
+    referenceId: 1,
+    notes: 'وارد من مورد العطور الدولي',
+    createdBy: 1
+  },
+  {
+    id: 2,
+    supplyId: 2,
+    branchId: 4,
+    type: 'IN',
+    quantity: 50000,
+    date: '2024-07-10',
+    referenceType: 'PURCHASE',
+    referenceId: 1,
+    notes: 'وارد شحنة كحول',
+    createdBy: 1
+  },
+  {
+    id: 3,
+    supplyId: 3,
+    branchId: 4,
+    type: 'IN',
+    quantity: 100000,
+    date: '2024-07-05',
+    referenceType: 'PURCHASE',
+    referenceId: 2,
+    notes: 'وارد ماء مقطر',
+    createdBy: 1
+  },
+  {
+    id: 4,
+    supplyId: 4,
+    branchId: 4,
+    type: 'IN',
+    quantity: 2000,
+    date: '2024-07-20',
+    referenceType: 'PURCHASE',
+    referenceId: 1,
+    notes: 'وارد مثبت عطري',
+    createdBy: 1
+  },
+  {
+    id: 5,
+    supplyId: 1,
+    branchId: 4,
+    type: 'OUT',
+    quantity: 2000,
+    date: '2024-07-22',
+    referenceType: 'PRODUCTION',
+    referenceId: 1,
+    notes: 'صرف لأمر التصنيع MO-20240728-001',
+    createdBy: 4
+  },
+  {
+    id: 6,
+    supplyId: 2,
+    branchId: 4,
+    type: 'OUT',
+    quantity: 15000,
+    date: '2024-07-22',
+    referenceType: 'PRODUCTION',
+    referenceId: 1,
+    notes: 'صرف لأمر التصنيع MO-20240728-001',
+    createdBy: 4
+  }
+];

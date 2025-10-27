@@ -7,6 +7,8 @@ import movementsReducer from './slices/movementsSlice';
 import posProductsReducer from './slices/posProductsSlice';
 import productsReducer from './slices/productsSlice';
 import requisitionsReducer from './slices/requisitionsSlice';
+import suppliesReducer from './slices/suppliesSlice';
+import supplyInventoryReducer from './slices/supplyInventorySlice';
 import vouchersReducer from './slices/vouchersSlice';
 
 export const store = configureStore({
@@ -20,6 +22,8 @@ export const store = configureStore({
     products: productsReducer,
     posProducts: posProductsReducer,
     customers: customersReducer,
+    supplies: suppliesReducer,
+    supplyInventory: supplyInventoryReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

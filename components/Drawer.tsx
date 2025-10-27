@@ -94,6 +94,14 @@ const allNavItems: NavItem[] = [
         ]
     },
     {
+        name: 'سلسلة التوريد', view: 'Supplies', icon: CollectionIcon, permission: 'supplies:read',
+        children: [
+            { name: 'المواد', view: 'Supplies/Materials' },
+            { name: 'المخزون', view: 'Supplies/Inventory' },
+            { name: 'حركات المخزون', view: 'Supplies/Movements' },
+        ]
+    },
+    {
         name: 'المالية', view: 'Finance', icon: SafeIcon,
         children: [
             { name: 'المصروفات', view: 'Finance/Expenses' },
