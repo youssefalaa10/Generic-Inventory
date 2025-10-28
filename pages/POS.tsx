@@ -4,6 +4,7 @@ import { AuthContext } from '../App';
 import CustomerModal from '../components/CustomerModal';
 import { FolderDownloadIcon, MinusIcon, PlusIcon, SaveIcon, SearchIcon, ShoppingCartIcon, TrashIcon, UserAddIcon, XIcon } from '../components/Icon';
 import PaymentModal from '../components/PaymentModal';
+import ProductConfigModal, { CartItemConfig } from '../components/ProductConfigModal';
 import QuantityInputModal from '../components/QuantityInputModal';
 import SaleCompleteModal from '../components/SaleCompleteModal';
 import { useToasts } from '../components/Toast';
@@ -45,6 +46,8 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
     const [productForQty, setProductForQty] = useState<(Product & {stock: number}) | null>(null);
     const [isQrModalOpen, setQrModalOpen] = useState(false);
     const [paymentMethodForQr, setPaymentMethodForQr] = useState<PaymentMethod | null>(null);
+    const [isConfigModalOpen, setConfigModalOpen] = useState(false);
+    const [productForConfig, setProductForConfig] = useState<(Product & {stock: number}) | null>(null);
 
     // New features state
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -375,32 +378,27 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
             return;
         }
         
-        // Use _id for Redux products, id for local products
-        const productId = (product as any)._id || product.id;
+        // Open the product configuration modal
+        setProductForConfig(product);
+        setConfigModalOpen(true);
+    };
+
+    // Handle adding configured product to cart
+    const handleAddConfiguredToCart = (config: CartItemConfig) => {
+        const productId = (config.product as any)._id || config.product.id;
         
-        if (product.baseUnit === 'g' || product.baseUnit === 'ml') {
-            setProductForQty(product);
-            setQtyModalOpen(true);
-        } else {
-            const existingItem = cart.find(item => item.productId === productId);
-            if (existingItem) {
-                if (existingItem.quantity < product.stock) {
-                    updateQuantity(productId, 1);
-                } else {
-                    addToast(`لا يوجد المزيد من ${product.name} في المخزون.`, 'info');
-                }
-            } else {
-                const newItem: SaleItem = {
-                    id: Date.now(),
-                    productId: productId,
-                    productName: product.name,
-                    quantity: 1,
-                    unitPrice: product.unitPrice,
-                    total: product.unitPrice
-                };
-                setCart([...cart, newItem]);
-            }
-        }
+        // Create cart item with configured options
+        const newItem: SaleItem = {
+            id: Date.now(),
+            productId: productId,
+            productName: `${config.product.name} (${config.material?.name || ''} - ${config.packaging?.name || ''})`,
+            quantity: config.quantity,
+            unitPrice: config.totalPrice / config.quantity,
+            total: config.totalPrice
+        };
+        
+        setCart([...cart, newItem]);
+        addToast('تم إضافة المنتج إلى السلة', 'success');
     };
     
     const addCustomQuantityToCart = (product: Product, quantity: number) => {
@@ -516,11 +514,15 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
 
         const brand: 'Arabiva' | 'Generic' = [1, 2, 3].includes(user.branchId) ? 'Arabiva' : 'Generic';
 
+        const customerId = selectedCustomer?.id 
+            ? (typeof selectedCustomer.id === 'string' ? parseInt(selectedCustomer.id) : selectedCustomer.id)
+            : 4;
+
         const newSale: Omit<Sale, 'id' | 'invoiceNumber'> = {
             brand,
             branchId: user.branchId,
             customerName: selectedCustomer?.name || 'زبون نقدي عام',
-            customerId: selectedCustomer?.id || 4, 
+            customerId: customerId, 
             date: new Date().toISOString().split('T')[0],
             paymentMethod: paymentMethod,
             paymentStatus: 'Paid',
@@ -570,11 +572,15 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
         }
 
         try {
+            const parkedCustomerId = selectedCustomer?.id 
+                ? (typeof selectedCustomer.id === 'string' ? parseInt(selectedCustomer.id) : selectedCustomer.id)
+                : undefined;
+
             const newParkedSale: ParkedSale = {
                 id: Date.now(),
                 timestamp: new Date(),
                 items: cart,
-                customerId: selectedCustomer?.id,
+                customerId: parkedCustomerId,
                 customerName: selectedCustomer?.name || 'زبون نقدي عام'
             };
             setParkedSales(prev => [...prev, newParkedSale]);
@@ -643,7 +649,7 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
         }
     };
 
-    const handleSaveNewCustomer = (customer: Customer) => {
+    const handleSaveNewCustomer = async (customer: Customer) => {
         // Validation: Check if customer has required fields
         if (!customer.name || customer.name.trim().length === 0) {
             addToast('اسم العميل مطلوب', 'error');
@@ -1264,6 +1270,18 @@ const POS: React.FC<POSProps> = ({ products, inventory, customers, onSaveCustome
                     onSave={handleSaveNewCustomer}
                     branches={branches}
                     existingCustomers={customers}
+                />
+            )}
+
+            {isConfigModalOpen && productForConfig && (
+                <ProductConfigModal
+                    product={productForConfig}
+                    isOpen={isConfigModalOpen}
+                    onClose={() => {
+                        setConfigModalOpen(false);
+                        setProductForConfig(null);
+                    }}
+                    onAddToCart={handleAddConfiguredToCart}
                 />
             )}
         </>
