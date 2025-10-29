@@ -956,6 +956,31 @@ export interface Supply {
   updatedAt: string;
 }
 
+// Supply Chain Item for incoming materials tracking
+export type SupplyChainStatus = 'In Transit' | 'Stored' | 'Delivered' | 'Returned' | 'Expired' | 'Damaged';
+
+export type SupplyChainTransportMode = 'Air' | 'Sea' | 'Road' | 'Rail' | 'None';
+
+export interface SupplyChainItem {
+  id: number;
+  _id?: string;
+  sku?: string;
+  gtin?: string;
+  batchNumber?: string;
+  serialNumber?: string;
+  productName: string;
+  quantity: number;
+  unit?: string;
+  manufacturer?: string;
+  originCountry?: string;
+  manufactureDate?: string;
+  expiryDate?: string;
+  currentStatus?: SupplyChainStatus;
+  transportMode?: SupplyChainTransportMode;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface SupplyInventory {
   id?: number;
   supplyId: number;

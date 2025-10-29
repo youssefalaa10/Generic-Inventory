@@ -4,15 +4,26 @@ import { API_BASE_URL } from '../../config/api';
 // Local type aligned with backend InventoryItem model
 export interface InvItem {
   id: string;
-  name: string;
+  name?: string;
+  productName?: string;
+  sku?: string;
+  gtin?: string;
+  batchNumber?: string;
+  serialNumber?: string;
+  quantity?: number;
+  unit?: string;
+  manufacturer?: string;
+  originCountry?: string;
+  manufactureDate?: string;
+  expiryDate?: string;
+  currentStatus?: string;
+  transportMode?: string;
   type?: 'packaging' | 'supplies' | 'fixtures' | 'maintenance' | 'security' | 'marketing';
   currentStock?: number;
   minimumStock?: number;
-  unit: string;
   costPerUnit?: number;
   location?: string;
   barcode?: string;
-  sku?: string;
   locked?: boolean;
   category?: string;
   supplier?: string;
@@ -21,6 +32,9 @@ export interface InvItem {
   lastUpdatedBy?: string;
   createdAt?: string;
   updatedAt?: string;
+  created_at?: string;
+  updated_at?: string;
+  __v?: number;
 }
 
 interface Pagination {
@@ -62,9 +76,15 @@ export const fetchInventory = createAsyncThunk(
     const res = await fetch(`${API_BASE_URL}/inventory?${qp.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch inventory');
     const json = await res.json();
-    // Map backend _id to id
-    const data: InvItem[] = json.data.map((d: any) => ({ id: d._id, ...d }));
-    return { data, pagination: json.pagination as Pagination };
+    const rawData = Array.isArray(json.data) ? json.data : [];
+    const mapped = rawData.map((d: any) => {
+      const { _id, id: altId, ...rest } = d;
+      const resolvedId = _id ?? altId;
+      return { ...rest, id: resolvedId ? String(resolvedId) : '' } as InvItem;
+    });
+    const data = mapped.filter((item) => item.id);
+    const pagination = json.pagination ?? null;
+    return { data, pagination };
   }
 );
 
@@ -72,7 +92,10 @@ export const fetchInventoryById = createAsyncThunk('inventory/fetchById', async 
   const res = await fetch(`${API_BASE_URL}/inventory/${id}`);
   if (!res.ok) throw new Error('Failed to fetch item');
   const json = await res.json();
-  const item: InvItem = { id: json.data._id, ...json.data };
+  const source = json.data ?? {};
+  const { _id, id: altId, ...rest } = source;
+  const resolvedId = _id ?? altId ?? id;
+  const item: InvItem = { ...rest, id: resolvedId ? String(resolvedId) : '' };
   return item;
 });
 
@@ -85,7 +108,10 @@ export const createInventoryItem = createAsyncThunk('inventory/create', async (p
   });
   if (!res.ok) throw new Error('Failed to create item');
   const json = await res.json();
-  const item: InvItem = { id: json.data._id, ...json.data };
+  const source = json.data ?? {};
+  const { _id, id: altId, ...rest } = source;
+  const resolvedId = _id ?? altId;
+  const item: InvItem = { ...rest, id: resolvedId ? String(resolvedId) : '' };
   return item;
 });
 
@@ -99,7 +125,10 @@ export const updateInventoryItem = createAsyncThunk(
     });
     if (!res.ok) throw new Error('Failed to update item');
     const json = await res.json();
-    const item: InvItem = { id: json.data._id, ...json.data };
+    const source = json.data ?? {};
+    const { _id, id: altId, ...rest } = source;
+    const resolvedId = _id ?? altId ?? id;
+    const item: InvItem = { ...rest, id: resolvedId ? String(resolvedId) : '' };
     return item;
   }
 );
@@ -124,7 +153,7 @@ const slice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchInventory.fulfilled, (state, action: PayloadAction<{ data: InvItem[]; pagination: Pagination }>) => {
+      .addCase(fetchInventory.fulfilled, (state, action: PayloadAction<{ data: InvItem[]; pagination: Pagination | null }>) => {
         state.loading = false;
         state.items = action.payload.data;
         state.pagination = action.payload.pagination;
